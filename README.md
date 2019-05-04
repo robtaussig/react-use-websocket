@@ -100,14 +100,10 @@ Will be an integer representing the readyState of the WebSocket.
 **Right now, the options object, if any, passed to useWebSocket must be static (and any change to it after the first render will throw an error). In my own experimentation, and upon personal observation of colleagues using this in their own projects, it is too easy to create unintentional bugs due to misunderstanding how closures interact with dynamic props in React Hooks. I found that accounting for these misunderstandings at the library-level meant writing it in a way that would make it less intuitive to audit yourself. Solving for this at the component-level should be much easier and likely involve defining your event callbacks using a ref.**
 
 ### Event Handlers: Callback
-```
 Each of options.onMessage, options.onError, options.onClose, and options.onOpen will be called on the corresponding WebSocket event, if provided. Each will be passed the same event provided from the WebSocket.
-```
 
 ### Share: Boolean
-```
 If set to true, a new websocket will not be instantiated if one for the same url has already been created for another component. Once all subscribing components have either unmounted or changed their target socket url, shared WebSockets will be closed and cleaned up. No other APIs should be affected by this.
-```
 
 #### Example options with ref solution
 ```
