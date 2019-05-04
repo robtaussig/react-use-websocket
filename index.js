@@ -18,28 +18,28 @@ const attachListeners = (webSocketInstance, url, setters, options) => {
     }, options);
 
     return removeSubscriber;
-  } else {
-    webSocketInstance.onmessage = message => {
-      if (options.onMessage) options.onMessage(message);
-      setLastMessage(message);
-    };
-    webSocketInstance.onopen = event => {
-      if (options.onOpen) options.onOpen(event);
-      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
-    };
-    webSocketInstance.onclose = event => {
-      if (options.onClose) options.onClose(event);
-      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSED}));
-    };
-    webSocketInstance.onerror = error => {
-      if (options.onError) options.onError(error);
-    };
-
-    return () => {
-      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
-      webSocketInstance.close();
-    };
   }
+  
+  webSocketInstance.onmessage = message => {
+    options.onMessage && options.onMessage(message);
+    setLastMessage(message);
+  };
+  webSocketInstance.onopen = event => {
+    options.onOpen && options.onOpen(event);
+    setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
+  };
+  webSocketInstance.onclose = event => {
+    options.onClose && options.onClose(event);
+    setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSED}));
+  };
+  webSocketInstance.onerror = error => {
+    options.onError && options.onError(error);
+  };
+
+  return () => {
+    setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
+    webSocketInstance.close();
+  };
 };
 
 const createOrJoinSocket = (webSocketRef, url, options) => {
@@ -98,6 +98,8 @@ const addSubscriber = (webSocketInstance, url, setters, options = {}) => {
         }
       });
     };
+  } else {
+    setReadyState(prev => Object.assign({}, prev, {[url]: sharedWebSockets[url].readyState}));
   }
 
   const subscriber = {
@@ -110,15 +112,14 @@ const addSubscriber = (webSocketInstance, url, setters, options = {}) => {
   return () => {
     if (subscribers[url] !== undefined) {
       const index = subscribers[url].indexOf(subscriber);
-      if (index !== -1) {
-        if (subscribers[url].length === 1) {
-          subscribers[url][0].setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
-          webSocketInstance.close();
-        } else {
-          subscribers[url].splice(index, 1);
-        }
-      } else {
+      if (index === -1) {
         throw new Error('A subscriber that is no longer registered has attempted to unsubscribe');
+      }
+      if (subscribers[url].length === 1) {
+        subscribers[url][0].setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
+        webSocketInstance.close();
+      } else {
+        subscribers[url].splice(index, 1);
       }
     }
   };
