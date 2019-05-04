@@ -1,4 +1,4 @@
-# useSocket React Hook
+# useWebSocket React Hook
 [Live Demo](https://robtaussig.com/socket/)
 
 React Hook designed to provide robust WebSocket integrations to your React Components.
