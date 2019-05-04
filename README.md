@@ -85,15 +85,10 @@ The argument sent through sendMessage will be passed directly to WebSocket#send.
 
 
 ### lastMessage: MessageEvent
-```
 Will be an unparsed MessageEvent received from the WebSocket.
-```
 
 ### readyState: Enum<0, 1, 2, 3>
-A better explanation than I can provide on readyState can be found [here](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState)
-```
 Will be an integer representing the readyState of the WebSocket.
-```
 
 ## Options
 
