@@ -1,33 +1,5 @@
 "use strict";
 
-require("core-js/modules/es.symbol");
-
-require("core-js/modules/es.symbol.description");
-
-require("core-js/modules/es.symbol.iterator");
-
-require("core-js/modules/es.array.for-each");
-
-require("core-js/modules/es.array.index-of");
-
-require("core-js/modules/es.array.is-array");
-
-require("core-js/modules/es.array.iterator");
-
-require("core-js/modules/es.array.splice");
-
-require("core-js/modules/es.object.assign");
-
-require("core-js/modules/es.object.define-property");
-
-require("core-js/modules/es.object.to-string");
-
-require("core-js/modules/es.string.iterator");
-
-require("core-js/modules/web.dom-collections.for-each");
-
-require("core-js/modules/web.dom-collections.iterator");
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
