@@ -73,14 +73,16 @@ const addSubscriber = (webSocketInstance, url, setLastMessage, options = {}) => 
   subscribers[url].push(subscriber);
 
   return () => {
-    const index = subscribers[url].indexOf(subscriber);
-    if (index !== -1) {
-      if (subscribers[url].length === 1) {
-        webSocketInstance.close();
+    if (subscribers[url] !== undefined) {
+      const index = subscribers[url].indexOf(subscriber);
+      if (index !== -1) {
+        if (subscribers[url].length === 1) {
+          webSocketInstance.close();
+        }
+        subscribers[url].splice(index, 1);
+      } else {
+        throw new Error('A subscriber that is no longer registered has attempted to unsubscribe');
       }
-      subscribers[url].splice(index, 1);
-    } else {
-      throw new Error('A subscriber that is no longer registered has attempted to unsubscribe');
     }
   };
 };
