@@ -1,11 +1,21 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 const sharedWebSockets = {};
 const subscribers = {};
+const READY_STATE_CONNECTING = 0;
+const READY_STATE_OPEN = 1;
+const READY_STATE_CLOSING = 2;
+const READY_STATE_CLOSED = 3;
 
-const attachListeners = (webSocketInstance, url, setLastMessage, options) => {
+
+const attachListeners = (webSocketInstance, url, setters, options) => {
+  const { setLastMessage, setReadyState } = setters;
+
   if (options.share) {
-    const removeSubscriber = addSubscriber(webSocketInstance, url, setLastMessage, options);
+    const removeSubscriber = addSubscriber(webSocketInstance, url, {
+      setLastMessage,
+      setReadyState,
+    }, options);
 
     return removeSubscriber;
   } else {
@@ -13,12 +23,22 @@ const attachListeners = (webSocketInstance, url, setLastMessage, options) => {
       if (options.onMessage) options.onMessage(message);
       setLastMessage(message);
     };
-  
-    if (options.onOpen) webSocketInstance.onopen = options.onOpen;
-    if (options.onClose) webSocketInstance.onclose = options.onClose;
-    if (options.onError) webSocketInstance.onerror = options.onError;
+    webSocketInstance.onopen = event => {
+      if (options.onOpen) options.onOpen(event);
+      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
+    };
+    webSocketInstance.onclose = event => {
+      if (options.onClose) options.onClose(event);
+      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSED}));
+    };
+    webSocketInstance.onerror = error => {
+      if (options.onError) options.onError(error);
+    };
 
-    return webSocketInstance.close;
+    return () => {
+      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
+      webSocketInstance.close();
+    };
   }
 };
 
@@ -33,13 +53,16 @@ const createOrJoinSocket = (webSocketRef, url, options) => {
   }
 };
 
-const addSubscriber = (webSocketInstance, url, setLastMessage, options = {}) => {
+const addSubscriber = (webSocketInstance, url, setters, options = {}) => {
+  const { setLastMessage, setReadyState } = setters;
+
   if (subscribers[url] === undefined) {
     subscribers[url] = [];
 
     webSocketInstance.onmessage = message => {
       subscribers[url].forEach(subscriber => {
         subscriber.setLastMessage(message);
+
         if (subscriber.options.onMessage) {
           subscriber.options.onMessage(message);
         }
@@ -48,6 +71,7 @@ const addSubscriber = (webSocketInstance, url, setLastMessage, options = {}) => 
 
     webSocketInstance.onclose = event => {
       subscribers[url].forEach(subscriber => {
+        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSED}));
         if (subscriber.options.onClose) {
           subscriber.options.onClose(event);
         }
@@ -59,8 +83,18 @@ const addSubscriber = (webSocketInstance, url, setLastMessage, options = {}) => 
 
     webSocketInstance.onerror = error => {
       subscribers[url].forEach(subscriber => {
+
         if (subscriber.options.onError) {
           subscriber.options.onError(error);
+        }
+      });
+    };
+
+    webSocketInstance.onopen = event => {
+      subscribers[url].forEach(subscriber => {
+        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
+        if (subscriber.options.onOpen) {
+          subscriber.options.onOpen(event);
         }
       });
     };
@@ -68,6 +102,7 @@ const addSubscriber = (webSocketInstance, url, setLastMessage, options = {}) => 
 
   const subscriber = {
     setLastMessage,
+    setReadyState,
     options,
   };
   subscribers[url].push(subscriber);
@@ -77,9 +112,11 @@ const addSubscriber = (webSocketInstance, url, setLastMessage, options = {}) => 
       const index = subscribers[url].indexOf(subscriber);
       if (index !== -1) {
         if (subscribers[url].length === 1) {
+          subscribers[url][0].setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
           webSocketInstance.close();
+        } else {
+          subscribers[url].splice(index, 1);
         }
-        subscribers[url].splice(index, 1);
       } else {
         throw new Error('A subscriber that is no longer registered has attempted to unsubscribe');
       }
@@ -90,6 +127,7 @@ const addSubscriber = (webSocketInstance, url, setLastMessage, options = {}) => 
 export const useWebSocket = (url, options = {}) => {
   const webSocketRef = useRef(null);
   const [ lastMessage, setLastMessage ] = useState(null);
+  const [ readyState, setReadyState ] = useState(url ? { [url]: READY_STATE_CONNECTING } : null);
   const staticOptionsCheck = useRef(null);
 
   const sendMessage = useCallback(message => {
@@ -99,7 +137,10 @@ export const useWebSocket = (url, options = {}) => {
   useEffect(() => {
     createOrJoinSocket(webSocketRef, url, options);
 
-    const removeListeners = attachListeners(webSocketRef.current, url, setLastMessage, options);
+    const removeListeners = attachListeners(webSocketRef.current, url, {
+      setLastMessage,
+      setReadyState,
+    }, options);
 
     return removeListeners;
   }, [url]);
@@ -110,7 +151,11 @@ export const useWebSocket = (url, options = {}) => {
     staticOptionsCheck.current = true;
   }, [options]);
 
-  return [ sendMessage, lastMessage ];
+  const readyStateFromUrl = useMemo(() => {
+    return readyState && readyState[url] !== undefined ? readyState[url] : null;
+  }, [readyState, url]);
+
+  return [ sendMessage, lastMessage, readyStateFromUrl ];
 };
 
 export default useWebSocket;
