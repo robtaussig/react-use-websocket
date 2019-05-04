@@ -90,6 +90,7 @@ const addSubscriber = (webSocketInstance, url, setLastMessage, options = {}) => 
 export const useWebSocket = (url, options = {}) => {
   const webSocketRef = useRef(null);
   const [ lastMessage, setLastMessage ] = useState(null);
+  const staticOptionsCheck = useRef(null);
 
   const sendMessage = useCallback(message => {
     webSocketRef.current && webSocketRef.current.send(message);
@@ -101,7 +102,13 @@ export const useWebSocket = (url, options = {}) => {
     const removeListeners = attachListeners(webSocketRef.current, url, setLastMessage, options);
 
     return removeListeners;
-  }, [url, options]);
+  }, [url]);
+
+  useEffect(() => {
+    if (staticOptionsCheck.current) throw new Error('The options object you pass must be static');
+
+    staticOptionsCheck.current = true;
+  }, [options]);
 
   return [ sendMessage, lastMessage ];
 };
