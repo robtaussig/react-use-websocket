@@ -79,17 +79,17 @@ const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocke
 
 ## API
 
-### sendMessage (Function(Any))
-```
-The argument sent through sendMessage will be passed directly to WebSocket#send. sendMessage will be static, and thus can be passed down through children components without triggering prop changes.
-```
+### sendMessage: Function(Any)
 
-### lastMessage (MessageEvent)
+The argument sent through sendMessage will be passed directly to WebSocket#send. sendMessage will be static, and thus can be passed down through children components without triggering prop changes.
+
+
+### lastMessage: MessageEvent
 ```
 Will be an unparsed MessageEvent received from the WebSocket.
 ```
 
-### readyState (Enum<0, 1, 2, 3>)
+### readyState: Enum<0, 1, 2, 3>
 A better explanation than I can provide on readyState can be found [here](https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/readyState)
 ```
 Will be an integer representing the readyState of the WebSocket.
@@ -99,12 +99,12 @@ Will be an integer representing the readyState of the WebSocket.
 
 **Right now, the options object, if any, passed to useWebSocket must be static (and any change to it after the first render will throw an error). In my own experimentation, and upon personal observation of colleagues using this in their own projects, it is too easy to create unintentional bugs due to misunderstanding how closures interact with dynamic props in React Hooks. I found that accounting for these misunderstandings at the library-level meant writing it in a way that would make it less intuitive to audit yourself. Solving for this at the component-level should be much easier and likely involve defining your event callbacks using a ref.**
 
-### Event Handlers (Callback)
+### Event Handlers: Callback
 ```
 Each of options.onMessage, options.onError, options.onClose, and options.onOpen will be called on the corresponding WebSocket event, if provided. Each will be passed the same event provided from the WebSocket.
 ```
 
-### Share (Boolean)
+### Share: Boolean
 ```
 If set to true, a new websocket will not be instantiated if one for the same url has already been created for another component. Once all subscribing components have either unmounted or changed their target socket url, shared WebSockets will be closed and cleaned up. No other APIs should be affected by this.
 ```
