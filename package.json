@@ -1,14 +1,53 @@
 {
   "name": "react-use-websocket",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "React Hook for WebSocket communication",
-  "main": "index.js",
+  "main": "./dist/index.js",
+  "module": "./src/index.js",
+  "files": [
+    "src",
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "compile": "babel src -d dist"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/robtaussig/react-use-websocket.git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.4.3",
+    "@babel/core": "^7.4.3",
+    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-react": "^7.0.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-eslint": "^10.0.1",
+    "babel-loader": "^8.0.5",
+    "core-js": "^3.0.1",
+    "html-webpack-plugin": "^3.2.0",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-testing-library": "^6.1.2",
+    "webpack": "^4.30.0",
+    "webpack-cli": "^3.3.0",
+    "webpack-dev-server": "^3.3.1"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "useBuiltIns": "usage",
+          "corejs": 3
+        }
+      ],
+      "@babel/preset-react"
+    ]
   },
   "keywords": [
     "react",
