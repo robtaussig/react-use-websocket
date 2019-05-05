@@ -19,6 +19,7 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 
 var sharedWebSockets = {};
 var subscribers = {};
+var DEFAULT_OPTIONS = {};
 var READY_STATE_CONNECTING = 0;
 var READY_STATE_OPEN = 1;
 var READY_STATE_CLOSING = 2;
@@ -162,16 +163,44 @@ var addSubscriber = function addSubscriber(webSocketInstance, url, setters) {
   };
 };
 
+var parseSocketIOUrl = function parseSocketIOUrl(url) {
+  if (url) {
+    var isSecure = /^https|ws/.test(url);
+    var strippedProtocol = url.replace(/^(https?|wss?)(:\/\/)?/, '');
+    var removedFinalBackSlack = strippedProtocol.replace(/\/$/, '');
+    var protocol = isSecure ? 'wss' : 'ws';
+    return "".concat(protocol, "://").concat(removedFinalBackSlack, "/socket.io/?EIO=3&transport=websocket");
+  } else if (url === '') {
+    console.warn('If no url is provided for a socketIO connection, the default is to use the same host and port that serves the page');
+
+    var _isSecure = /^https/.test(window.location.protocol);
+
+    var _protocol = _isSecure ? 'wss' : 'ws';
+
+    var port = window.location.port ? ":".concat(window.location.port) : '';
+    return "".concat(_protocol, "://").concat(window.location.hostname).concat(port, "/socket.io/?EIO=3&transport=websocket");
+  }
+
+  return url;
+};
+
 var useWebSocket = function useWebSocket(url) {
-  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_OPTIONS;
   var webSocketRef = (0, _react.useRef)(null);
+  var convertedUrl = (0, _react.useMemo)(function () {
+    if (options.fromSocketIO) {
+      return parseSocketIOUrl(url);
+    }
+
+    return url;
+  }, [url]);
 
   var _useState = (0, _react.useState)(null),
       _useState2 = _slicedToArray(_useState, 2),
       lastMessage = _useState2[0],
       setLastMessage = _useState2[1];
 
-  var _useState3 = (0, _react.useState)(url ? _defineProperty({}, url, READY_STATE_CONNECTING) : null),
+  var _useState3 = (0, _react.useState)(convertedUrl ? _defineProperty({}, convertedUrl, READY_STATE_CONNECTING) : null),
       _useState4 = _slicedToArray(_useState3, 2),
       readyState = _useState4[0],
       setReadyState = _useState4[1];
@@ -181,20 +210,21 @@ var useWebSocket = function useWebSocket(url) {
     webSocketRef.current && webSocketRef.current.send(message);
   }, []);
   (0, _react.useEffect)(function () {
-    createOrJoinSocket(webSocketRef, url, options);
-    var removeListeners = attachListeners(webSocketRef.current, url, {
+    createOrJoinSocket(webSocketRef, convertedUrl, options);
+    var removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
       setLastMessage: setLastMessage,
       setReadyState: setReadyState
     }, options);
     return removeListeners;
-  }, [url]);
+  }, [convertedUrl]);
   (0, _react.useEffect)(function () {
+    console.log(options);
     if (staticOptionsCheck.current) throw new Error('The options object you pass must be static');
     staticOptionsCheck.current = true;
   }, [options]);
   var readyStateFromUrl = (0, _react.useMemo)(function () {
-    return readyState && readyState[url] !== undefined ? readyState[url] : null;
-  }, [readyState, url]);
+    return readyState && readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : null;
+  }, [readyState, convertedUrl]);
   return [sendMessage, lastMessage, readyStateFromUrl];
 };
 
