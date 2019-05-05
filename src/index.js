@@ -178,9 +178,7 @@ export const useWebSocket = (url, options = DEFAULT_OPTIONS) => {
     staticOptionsCheck.current = true;
   }, [options]);
 
-  const readyStateFromUrl = useMemo(() => {
-    return readyState && readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : null;
-  }, [readyState, convertedUrl]);
+  const readyStateFromUrl = readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : READY_STATE_CONNECTING;
 
   return [ sendMessage, lastMessage, readyStateFromUrl ];
 };
