@@ -1,7 +1,7 @@
 # useWebSocket React Hook
 [Live Demo](https://robtaussig.com/socket/)
 
-React Hook designed to provide robust WebSocket integrations to your React Components.
+React Hook designed to provide robust WebSocket integrations to your React Components. Experimental support for SocketIO (read documentation below for more information)
 
 Pull requests welcomed!
 
@@ -100,6 +100,9 @@ Each of options.onMessage, options.onError, options.onClose, and options.onOpen 
 ### Share: Boolean
 If set to true, a new websocket will not be instantiated if one for the same url has already been created for another component. Once all subscribing components have either unmounted or changed their target socket url, shared WebSockets will be closed and cleaned up. No other APIs should be affected by this.
 
+### FromSocketIO: Boolean
+SocketIO acts as a layer on top of the WebSocket protocol, and the required client-side implementation involves a few peculiarities. If you have a SocketIO back-end, or are converting a client-side application that uses the socketIO library, setting this to true might be enough to allow useWebSocket to work interchangeably. This is an experimental option as the SocketIO library might change its API at any time. This was tested with Socket IO 2.1.1.
+
 #### Example options with ref solution
 ```
 const dynamicPropRef = useRef(null);
@@ -110,6 +113,7 @@ const options = useMemo(() => ({
   onClose: event => console.log('onClose', event),
   onError: error => console.log('onError', error),
   onOpen: event => console.log('onOpen', event),
+  fromSocketIO: true,
 }),[]);
 
 const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', options);
