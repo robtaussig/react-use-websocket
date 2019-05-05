@@ -68,14 +68,20 @@ var attachListeners = function attachListeners(webSocketInstance, url, setters, 
   };
 };
 
-var createOrJoinSocket = function createOrJoinSocket(webSocketRef, url, options) {
+var createOrJoinSocket = function createOrJoinSocket(webSocketRef, url, setReadyState, options) {
   if (options.share) {
     if (sharedWebSockets[url] === undefined) {
+      setReadyState(function (prev) {
+        return Object.assign({}, prev, _defineProperty({}, url, READY_STATE_CONNECTING));
+      });
       sharedWebSockets[url] = new WebSocket(url);
     }
 
     webSocketRef.current = sharedWebSockets[url];
   } else {
+    setReadyState(function (prev) {
+      return Object.assign({}, prev, _defineProperty({}, url, READY_STATE_CONNECTING));
+    });
     webSocketRef.current = new WebSocket(url);
   }
 };
@@ -200,7 +206,7 @@ var useWebSocket = function useWebSocket(url) {
       lastMessage = _useState2[0],
       setLastMessage = _useState2[1];
 
-  var _useState3 = (0, _react.useState)(convertedUrl ? _defineProperty({}, convertedUrl, READY_STATE_CONNECTING) : null),
+  var _useState3 = (0, _react.useState)({}),
       _useState4 = _slicedToArray(_useState3, 2),
       readyState = _useState4[0],
       setReadyState = _useState4[1];
@@ -210,7 +216,7 @@ var useWebSocket = function useWebSocket(url) {
     webSocketRef.current && webSocketRef.current.send(message);
   }, []);
   (0, _react.useEffect)(function () {
-    createOrJoinSocket(webSocketRef, convertedUrl, options);
+    createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
     var removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
       setLastMessage: setLastMessage,
       setReadyState: setReadyState
@@ -218,13 +224,10 @@ var useWebSocket = function useWebSocket(url) {
     return removeListeners;
   }, [convertedUrl]);
   (0, _react.useEffect)(function () {
-    console.log(options);
     if (staticOptionsCheck.current) throw new Error('The options object you pass must be static');
     staticOptionsCheck.current = true;
   }, [options]);
-  var readyStateFromUrl = (0, _react.useMemo)(function () {
-    return readyState && readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : null;
-  }, [readyState, convertedUrl]);
+  var readyStateFromUrl = readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : READY_STATE_CONNECTING;
   return [sendMessage, lastMessage, readyStateFromUrl];
 };
 
