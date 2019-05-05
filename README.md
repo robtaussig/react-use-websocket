@@ -1,5 +1,6 @@
 # useWebSocket React Hook
 [Live Demo](https://robtaussig.com/socket/)
+[Test in StackBlitz](https://stackblitz.com/edit/react-dcwtsg)
 
 React Hook designed to provide robust WebSocket integrations to your React Components. Experimental support for SocketIO (read documentation below for more information)
 
@@ -120,7 +121,7 @@ const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocke
 ```
 
 ## Known Issues
-- I wanted this library to provide as much direct access to the WebSocket as possible, and so you still must follow traditional rules (no sending messages until the WebSocket is fully opened being the primary one). In the example implemntation above, the send message button is disabled if the readyState isn't 1 (OPEN). Similar safeguards should be employed.
+- I wanted this library to provide as much direct access to the WebSocket as possible, and so you still must follow traditional rules (no sending messages until the WebSocket is fully opened being the primary one). In the example implementation above, the send message button is disabled if the readyState isn't 1 (OPEN). Similar safeguards should be employed.
 
 ## Considered features
 - On the note of sending messages before the WebSocket is open, I have considered creating a queue of messages that are sent while the WebSocket is not OPEN, and then firing them as soon as it opens.
