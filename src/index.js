@@ -7,9 +7,10 @@ const READY_STATE_CONNECTING = 0;
 const READY_STATE_OPEN = 1;
 const READY_STATE_CLOSING = 2;
 const READY_STATE_CLOSED = 3;
+const RETRY_LIMIT = 2;
 
 
-const attachListeners = (webSocketInstance, url, setters, options) => {
+const attachListeners = (webSocketInstance, url, setters, options, retry, retryCount) => {
   const { setLastMessage, setReadyState } = setters;
 
   if (options.share) {
@@ -27,6 +28,7 @@ const attachListeners = (webSocketInstance, url, setters, options) => {
   };
   webSocketInstance.onopen = event => {
     options.onOpen && options.onOpen(event);
+    retryCount.current = 0;
     setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
   };
   webSocketInstance.onclose = event => {
@@ -35,6 +37,13 @@ const attachListeners = (webSocketInstance, url, setters, options) => {
   };
   webSocketInstance.onerror = error => {
     options.onError && options.onError(error);
+
+    if (options.retryOnError) {
+      if (retryCount.current < RETRY_LIMIT) {
+        retryCount.current++;
+        retry();
+      }
+    }    
   };
 
   return () => {
@@ -147,6 +156,7 @@ const parseSocketIOUrl = url => {
 
 export const useWebSocket = (url, options = DEFAULT_OPTIONS) => {
   const webSocketRef = useRef(null);
+  const retryCount = useRef(0);
   const convertedUrl = useMemo(() => {
     if (options.fromSocketIO) {
       return parseSocketIOUrl(url);
@@ -162,12 +172,16 @@ export const useWebSocket = (url, options = DEFAULT_OPTIONS) => {
   }, []);
 
   useEffect(() => {
-    createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
+    let removeListeners;
 
-    const removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
-      setLastMessage,
-      setReadyState,
-    }, options);
+    const start = () => {
+      createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
+
+      removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
+        setLastMessage,
+        setReadyState,
+      }, options, start, retryCount);
+    };
 
     return removeListeners;
   }, [convertedUrl]);

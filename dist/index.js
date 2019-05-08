@@ -24,8 +24,9 @@ var READY_STATE_CONNECTING = 0;
 var READY_STATE_OPEN = 1;
 var READY_STATE_CLOSING = 2;
 var READY_STATE_CLOSED = 3;
+var RETRY_LIMIT = 2;
 
-var attachListeners = function attachListeners(webSocketInstance, url, setters, options) {
+var attachListeners = function attachListeners(webSocketInstance, url, setters, options, retry, retryCount) {
   var setLastMessage = setters.setLastMessage,
       setReadyState = setters.setReadyState;
 
@@ -44,6 +45,7 @@ var attachListeners = function attachListeners(webSocketInstance, url, setters, 
 
   webSocketInstance.onopen = function (event) {
     options.onOpen && options.onOpen(event);
+    retryCount.current = 0;
     setReadyState(function (prev) {
       return Object.assign({}, prev, _defineProperty({}, url, READY_STATE_OPEN));
     });
@@ -58,6 +60,13 @@ var attachListeners = function attachListeners(webSocketInstance, url, setters, 
 
   webSocketInstance.onerror = function (error) {
     options.onError && options.onError(error);
+
+    if (options.retryOnError) {
+      if (retryCount.current < RETRY_LIMIT) {
+        retryCount.current++;
+        retry();
+      }
+    }
   };
 
   return function () {
@@ -193,6 +202,7 @@ var parseSocketIOUrl = function parseSocketIOUrl(url) {
 var useWebSocket = function useWebSocket(url) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_OPTIONS;
   var webSocketRef = (0, _react.useRef)(null);
+  var retryCount = (0, _react.useRef)(0);
   var convertedUrl = (0, _react.useMemo)(function () {
     if (options.fromSocketIO) {
       return parseSocketIOUrl(url);
@@ -216,11 +226,16 @@ var useWebSocket = function useWebSocket(url) {
     webSocketRef.current && webSocketRef.current.send(message);
   }, []);
   (0, _react.useEffect)(function () {
-    createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
-    var removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
-      setLastMessage: setLastMessage,
-      setReadyState: setReadyState
-    }, options);
+    var removeListeners;
+
+    var start = function start() {
+      createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
+      removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
+        setLastMessage: setLastMessage,
+        setReadyState: setReadyState
+      }, options, start, retryCount);
+    };
+
     return removeListeners;
   }, [convertedUrl]);
   (0, _react.useEffect)(function () {
