@@ -13,6 +13,12 @@ const RETRY_LIMIT = 2;
 const attachListeners = (webSocketInstance, url, setters, options, retry, retryCount) => {
   const { setLastMessage, setReadyState } = setters;
 
+  let interval;
+
+  if (options.fromSocketIO) {
+    interval = setUpSocketIOPing(webSocketInstance);
+  }
+  console.log(interval);
   if (options.share) {
     const removeSubscriber = addSubscriber(webSocketInstance, url, {
       setLastMessage,
@@ -49,6 +55,7 @@ const attachListeners = (webSocketInstance, url, setters, options, retry, retryC
   return () => {
     setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
     webSocketInstance.close();
+    if (interval) clearInterval(interval);
   };
 };
 
@@ -154,6 +161,11 @@ const parseSocketIOUrl = url => {
   return url;
 };
 
+const setUpSocketIOPing = socketInstance => {
+  const ping = () => socketInstance.send(2);
+  return setInterval(ping, 25000);
+};
+
 export const useWebSocket = (url, options = DEFAULT_OPTIONS) => {
   const webSocketRef = useRef(null);
   const retryCount = useRef(0);
@@ -183,6 +195,7 @@ export const useWebSocket = (url, options = DEFAULT_OPTIONS) => {
       }, options, start, retryCount);
     };
 
+    start();
     return removeListeners;
   }, [convertedUrl]);
 

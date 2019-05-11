@@ -29,6 +29,13 @@ var RETRY_LIMIT = 2;
 var attachListeners = function attachListeners(webSocketInstance, url, setters, options, retry, retryCount) {
   var setLastMessage = setters.setLastMessage,
       setReadyState = setters.setReadyState;
+  var interval;
+
+  if (options.fromSocketIO) {
+    interval = setUpSocketIOPing(webSocketInstance);
+  }
+
+  console.log(interval);
 
   if (options.share) {
     var removeSubscriber = addSubscriber(webSocketInstance, url, {
@@ -74,6 +81,7 @@ var attachListeners = function attachListeners(webSocketInstance, url, setters, 
       return Object.assign({}, prev, _defineProperty({}, url, READY_STATE_CLOSING));
     });
     webSocketInstance.close();
+    if (interval) clearInterval(interval);
   };
 };
 
@@ -199,6 +207,14 @@ var parseSocketIOUrl = function parseSocketIOUrl(url) {
   return url;
 };
 
+var setUpSocketIOPing = function setUpSocketIOPing(socketInstance) {
+  var ping = function ping() {
+    return socketInstance.send(2);
+  };
+
+  return setInterval(ping, 25000);
+};
+
 var useWebSocket = function useWebSocket(url) {
   var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : DEFAULT_OPTIONS;
   var webSocketRef = (0, _react.useRef)(null);
@@ -236,6 +252,7 @@ var useWebSocket = function useWebSocket(url) {
       }, options, start, retryCount);
     };
 
+    start();
     return removeListeners;
   }, [convertedUrl]);
   (0, _react.useEffect)(function () {
