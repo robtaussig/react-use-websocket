@@ -1,0 +1,28 @@
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.RETRY_LIMIT = exports.SOCKET_IO_PING_CODE = exports.SOCKET_IO_PATH = exports.SOCKET_IO_PING_INTERVAL = exports.READY_STATE_CLOSED = exports.READY_STATE_CLOSING = exports.READY_STATE_OPEN = exports.READY_STATE_CONNECTING = exports.DEFAULT_OPTIONS = exports.sharedWebSockets = void 0;
+var MILLISECONDS = 1;
+var SECONDS = 1000 * MILLISECONDS;
+var sharedWebSockets = {};
+exports.sharedWebSockets = sharedWebSockets;
+var DEFAULT_OPTIONS = {};
+exports.DEFAULT_OPTIONS = DEFAULT_OPTIONS;
+var READY_STATE_CONNECTING = 0;
+exports.READY_STATE_CONNECTING = READY_STATE_CONNECTING;
+var READY_STATE_OPEN = 1;
+exports.READY_STATE_OPEN = READY_STATE_OPEN;
+var READY_STATE_CLOSING = 2;
+exports.READY_STATE_CLOSING = READY_STATE_CLOSING;
+var READY_STATE_CLOSED = 3;
+exports.READY_STATE_CLOSED = READY_STATE_CLOSED;
+var SOCKET_IO_PING_INTERVAL = 25 * SECONDS;
+exports.SOCKET_IO_PING_INTERVAL = SOCKET_IO_PING_INTERVAL;
+var SOCKET_IO_PATH = '/socket.io/?EIO=3&transport=websocket';
+exports.SOCKET_IO_PATH = SOCKET_IO_PATH;
+var SOCKET_IO_PING_CODE = 2;
+exports.SOCKET_IO_PING_CODE = SOCKET_IO_PING_CODE;
+var RETRY_LIMIT = 2;
+exports.RETRY_LIMIT = RETRY_LIMIT;
