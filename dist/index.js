@@ -35,8 +35,6 @@ var attachListeners = function attachListeners(webSocketInstance, url, setters, 
     interval = setUpSocketIOPing(webSocketInstance);
   }
 
-  console.log(interval);
-
   if (options.share) {
     var removeSubscriber = addSubscriber(webSocketInstance, url, {
       setLastMessage: setLastMessage,

@@ -18,7 +18,7 @@ const attachListeners = (webSocketInstance, url, setters, options, retry, retryC
   if (options.fromSocketIO) {
     interval = setUpSocketIOPing(webSocketInstance);
   }
-  console.log(interval);
+
   if (options.share) {
     const removeSubscriber = addSubscriber(webSocketInstance, url, {
       setLastMessage,

@@ -1,6 +1,6 @@
 {
   "name": "react-use-websocket",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "React Hook for WebSocket communication",
   "main": "./dist/index.js",
   "files": [
@@ -24,9 +24,6 @@
     "babel-core": "^7.0.0-bridge.0",
     "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.5"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.0"
   },
   "babel": {
     "presets": [
