@@ -12,7 +12,7 @@ Using WebSockets from the client is more than just exchanging messages. It requi
 
 ## Example Implementation
 
-```
+```js
 import React, { useState, useCallback } from 'react';
 import useWebSocket from 'react-use-websocket';
 
@@ -63,14 +63,15 @@ A demo of this can be found [here](https://robtaussig.com/socket/). Each compone
 
 ## Getting Started
 
-```
+```sh
 npm install react-use-websocket
+```
 
-//In component
-
+```js
+// In component
 import useWebSocket from 'react-use-websocket';
 
-//In component function
+// In component function
 const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', { onOpen: console.log });
 ```
 
@@ -105,9 +106,10 @@ If set to true, a new websocket will not be instantiated if one for the same url
 SocketIO acts as a layer on top of the WebSocket protocol, and the required client-side implementation involves a few peculiarities. If you have a SocketIO back-end, or are converting a client-side application that uses the socketIO library, setting this to true might be enough to allow useWebSocket to work interchangeably. This is an experimental option as the SocketIO library might change its API at any time. This was tested with Socket IO 2.1.1.
 
 #### Example options with ref solution
-```
+```js
 const dynamicPropRef = useRef(null);
 dynamicPropRef.current = /*some prop you want to use in the options callbacks*/;
+
 const options = useMemo(() => ({
   share: true,
   onMessage: message => console.log(`onMessage with access to dynamicProp: ${dynamicPropRef.current}`, message),
