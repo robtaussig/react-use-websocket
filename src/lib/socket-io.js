@@ -2,7 +2,7 @@ import { SOCKET_IO_PING_INTERVAL, SOCKET_IO_PATH, SOCKET_IO_PING_CODE } from './
 
 export const parseSocketIOUrl = url => {
   if (url) {
-    const isSecure = /^https|ws/.test(url);
+    const isSecure = /^https|wss/.test(url);
     const strippedProtocol = url.replace(/^(https?|wss?)(:\/\/)?/, '');
     const removedFinalBackSlack = strippedProtocol.replace(/\/$/, '');
     const protocol = isSecure ? 'wss' : 'ws';

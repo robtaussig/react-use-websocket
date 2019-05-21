@@ -9,7 +9,7 @@ var _constants = require("./constants");
 
 var parseSocketIOUrl = function parseSocketIOUrl(url) {
   if (url) {
-    var isSecure = /^https|ws/.test(url);
+    var isSecure = /^https|wss/.test(url);
     var strippedProtocol = url.replace(/^(https?|wss?)(:\/\/)?/, '');
     var removedFinalBackSlack = strippedProtocol.replace(/\/$/, '');
     var protocol = isSecure ? 'wss' : 'ws';
