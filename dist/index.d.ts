@@ -18,4 +18,4 @@ enum ReadyState {
   READY_STATE_CLOSED = 3,
 }
 
-export function useWebSocket(url: string, options?: Options): [() => void, MessageEvent, ReadyState];
+export default function useWebSocket(url: string, options?: Options): [(message: any) => void, MessageEvent, ReadyState];
