@@ -32,6 +32,11 @@ var attachListeners = function attachListeners(webSocketInstance, url, setters, 
 
   webSocketInstance.onmessage = function (message) {
     options.onMessage && options.onMessage(message);
+
+    if (typeof options.filter === 'function' && options.filter(message) !== true) {
+      return;
+    }
+
     setLastMessage(message);
   };
 

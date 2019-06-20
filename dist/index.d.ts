@@ -2,16 +2,17 @@
 // Project: useWebSocket
 // Definitions by: Robert Taussig <robtaussig.com>
 
-export interface Options {
+declare interface Options {
   fromSocketIO?: boolean;
   onMessage?(message: MessageEvent): void;
   onClose?(event: CloseEvent): void;
   onError?(error: ErrorEvent): void;
   onOpen?(event: Event): void;
   share?: boolean;
+  filter?(message: MessageEvent): boolean;
 }
 
-enum ReadyState {
+declare enum ReadyState {
   READY_STATE_CONNECTING = 0,
   READY_STATE_OPEN = 1,
   READY_STATE_CLOSING = 2,

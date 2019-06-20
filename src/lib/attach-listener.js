@@ -22,6 +22,9 @@ export const attachListeners = (webSocketInstance, url, setters, options, retry,
   
   webSocketInstance.onmessage = message => {
     options.onMessage && options.onMessage(message);
+    if (typeof options.filter === 'function' && options.filter(message) !== true) {
+      return;
+    }
     setLastMessage(message);
   };
   webSocketInstance.onopen = event => {

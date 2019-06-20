@@ -22,6 +22,10 @@ var addSubscriber = function addSubscriber(webSocketInstance, url, setters) {
     subscribers[url] = [];
 
     webSocketInstance.onmessage = function (message) {
+      if (typeof options.filter === 'function' && options.filter(message) !== true) {
+        return;
+      }
+
       subscribers[url].forEach(function (subscriber) {
         subscriber.setLastMessage(message);
 

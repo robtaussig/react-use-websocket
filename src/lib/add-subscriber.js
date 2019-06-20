@@ -10,7 +10,10 @@ export const addSubscriber = (webSocketInstance, url, setters, options = {}) => 
     subscribers[url] = [];
 
     webSocketInstance.onmessage = message => {
-      subscribers[url].forEach(subscriber => {
+      if (typeof options.filter === 'function' && options.filter(message) !== true) {
+        return;
+      }
+      subscribers[url].forEach(subscriber => {        
         subscriber.setLastMessage(message);
 
         if (subscriber.options.onMessage) {
