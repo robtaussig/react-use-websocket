@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+      "outDir": "./dist/",
+      "sourceMap": true,
+      "noImplicitAny": true,
+      "moduleResolution": "node",
+      "module": "commonjs",
+      "target": "es6",
+      "jsx": "react",
+      "skipLibCheck": true,
+      "lib": ["es2017"],
+  },
+  
+  "files": [
+    "./src/index.ts"
+  ],
+}
