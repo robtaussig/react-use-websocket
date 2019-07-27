@@ -9,8 +9,9 @@
       "jsx": "react",
       "skipLibCheck": true,
       "lib": ["es2017"],
+      "types" : ["node", "websocket"]
   },
-  
+  "baseUrl": ".",
   "files": [
     "./src/index.ts"
   ],

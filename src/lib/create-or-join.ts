@@ -1,7 +1,14 @@
 import { sharedWebSockets } from './globals';
 import { READY_STATE_CONNECTING } from './constants';
+import { ReadyStateState, Options } from './use-websocket';
 
-export const createOrJoinSocket = (webSocketRef, url, setReadyState, options) => {
+declare global {
+  class WebSocket {
+    constructor(url: string)
+  }
+}
+
+export const createOrJoinSocket = (webSocketRef: any, url: string, setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void, options: Options) => {
   if (options.share) {
     if (sharedWebSockets[url] === undefined) {
       setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CONNECTING}));

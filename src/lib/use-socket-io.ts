@@ -1,13 +1,19 @@
 import { useMemo } from 'react'
 import { useWebSocket } from './use-websocket'
 import { DEFAULT_OPTIONS } from './constants'
+import { Options, Message } from './use-websocket';
 
-const emptyEvent = {
+interface EmptyEvent {
+  type: string,
+  payload: any
+}
+
+const emptyEvent: EmptyEvent = {
   type: 'empty',
   payload: null,
 }
 
-const getSocketData = (event) => {
+const getSocketData = (event: Message) => {
   if (!event || !event.data) {
     return emptyEvent
   }
@@ -30,7 +36,7 @@ const getSocketData = (event) => {
   }
 }
 
-export const useSocketIO = (url, options = DEFAULT_OPTIONS) => {
+export const useSocketIO = (url: string, options: Options = DEFAULT_OPTIONS) => {
   const optionsWithSocketIO = useMemo(() => ({
     ...options,
     fromSocketIO: true,

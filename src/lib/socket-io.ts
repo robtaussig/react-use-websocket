@@ -1,6 +1,16 @@
 import { SOCKET_IO_PING_INTERVAL, SOCKET_IO_PATH, SOCKET_IO_PING_CODE } from './constants';
 
-export const parseSocketIOUrl = url => {
+declare global {
+  const window: {
+    location: {
+      protocol: string,
+      port: number,
+      hostname: string,
+    }
+  }
+}
+
+export const parseSocketIOUrl = (url: string) => {
   if (url) {
     const isSecure = /^https|wss/.test(url);
     const strippedProtocol = url.replace(/^(https?|wss?)(:\/\/)?/, '');
@@ -19,7 +29,7 @@ export const parseSocketIOUrl = url => {
   return url;
 };
 
-export const setUpSocketIOPing = socketInstance => {
+export const setUpSocketIOPing = (socketInstance: any) => {
   const ping = () => socketInstance.send(SOCKET_IO_PING_CODE);
 
   return setInterval(ping, SOCKET_IO_PING_INTERVAL);
