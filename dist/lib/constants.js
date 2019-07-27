@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const MILLISECONDS = 1;
-const SECONDS = 1000 * MILLISECONDS;
+var MILLISECONDS = 1;
+var SECONDS = 1000 * MILLISECONDS;
 exports.sharedWebSockets = {};
 exports.DEFAULT_OPTIONS = {};
 exports.READY_STATE_CONNECTING = 0;

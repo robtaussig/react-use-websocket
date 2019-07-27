@@ -1,38 +1,44 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const socket_io_1 = require("./socket-io");
-const constants_1 = require("./constants");
-const add_subscriber_1 = require("./add-subscriber");
-exports.attachListeners = (webSocketInstance, url, setters, options, retry, retryCount) => {
-    const { setLastMessage, setReadyState } = setters;
-    let interval;
+var socket_io_1 = require("./socket-io");
+var constants_1 = require("./constants");
+var add_subscriber_1 = require("./add-subscriber");
+exports.attachListeners = function (webSocketInstance, url, setters, options, retry, retryCount) {
+    var setLastMessage = setters.setLastMessage, setReadyState = setters.setReadyState;
+    var interval;
     if (options.fromSocketIO) {
         interval = socket_io_1.setUpSocketIOPing(webSocketInstance);
     }
     if (options.share) {
-        const removeSubscriber = add_subscriber_1.addSubscriber(webSocketInstance, url, {
-            setLastMessage,
-            setReadyState,
+        var removeSubscriber = add_subscriber_1.addSubscriber(webSocketInstance, url, {
+            setLastMessage: setLastMessage,
+            setReadyState: setReadyState,
         }, options);
         return removeSubscriber;
     }
-    webSocketInstance.onmessage = (message) => {
+    webSocketInstance.onmessage = function (message) {
         options.onMessage && options.onMessage(message);
         if (typeof options.filter === 'function' && options.filter(message) !== true) {
             return;
         }
         setLastMessage(message);
     };
-    webSocketInstance.onopen = (event) => {
+    webSocketInstance.onopen = function (event) {
         options.onOpen && options.onOpen(event);
         retryCount.current = 0;
-        setReadyState(prev => Object.assign({}, prev, { [url]: constants_1.READY_STATE_OPEN }));
+        setReadyState(function (prev) {
+            var _a;
+            return Object.assign({}, prev, (_a = {}, _a[url] = constants_1.READY_STATE_OPEN, _a));
+        });
     };
-    webSocketInstance.onclose = (event) => {
+    webSocketInstance.onclose = function (event) {
         options.onClose && options.onClose(event);
-        setReadyState(prev => Object.assign({}, prev, { [url]: constants_1.READY_STATE_CLOSED }));
+        setReadyState(function (prev) {
+            var _a;
+            return Object.assign({}, prev, (_a = {}, _a[url] = constants_1.READY_STATE_CLOSED, _a));
+        });
     };
-    webSocketInstance.onerror = (error) => {
+    webSocketInstance.onerror = function (error) {
         options.onError && options.onError(error);
         if (options.retryOnError) {
             if (retryCount.current < constants_1.RETRY_LIMIT) {
@@ -41,8 +47,11 @@ exports.attachListeners = (webSocketInstance, url, setters, options, retry, retr
             }
         }
     };
-    return () => {
-        setReadyState(prev => Object.assign({}, prev, { [url]: constants_1.READY_STATE_CLOSING }));
+    return function () {
+        setReadyState(function (prev) {
+            var _a;
+            return Object.assign({}, prev, (_a = {}, _a[url] = constants_1.READY_STATE_CLOSING, _a));
+        });
         webSocketInstance.close();
         if (interval)
             clearInterval(interval);
