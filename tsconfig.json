@@ -14,5 +14,5 @@
   "baseUrl": ".",
   "files": [
     "./src/index.ts"
-  ],
+  ]
 }
