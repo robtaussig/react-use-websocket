@@ -8,7 +8,8 @@
       "jsx": "react",
       "skipLibCheck": true,
       "lib": ["es2017"],
-      "types" : ["node", "websocket"]
+      "types" : ["node", "websocket"],
+      "declaration": true 
   },
   "baseUrl": ".",
   "files": [
