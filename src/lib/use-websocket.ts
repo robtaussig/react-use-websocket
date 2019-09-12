@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { parseSocketIOUrl } from './socket-io';
+import { parseSocketIOUrl, appendQueryParams, QueryParams } from './socket-io';
 import { attachListeners } from './attach-listener';
 import { DEFAULT_OPTIONS, READY_STATE_CONNECTING } from './constants';
 import { createOrJoinSocket } from './create-or-join';
@@ -13,6 +13,7 @@ export enum ReadyStateEnum {
 
 export interface Options {
   fromSocketIO?: boolean,
+  queryParams?: QueryParams,
   share?: boolean,
   onOpen?: (event: Event) => void,
   onClose?: (event: Event) => void,
@@ -38,10 +39,12 @@ export const useWebSocket = (url: string, options: Options = DEFAULT_OPTIONS): [
   const staticOptionsCheck = useRef<boolean|null>(null);
 
   const convertedUrl = useMemo(() => {
-    if (options.fromSocketIO) {
-      return parseSocketIOUrl(url);
-    } 
-    return url;
+    const converted = options.fromSocketIO ? parseSocketIOUrl(url) : url;
+    const alreadyHasQueryParams = options.fromSocketIO;
+
+    return options.queryParams ?
+      appendQueryParams(converted, options.queryParams, alreadyHasQueryParams) :
+      converted;
   }, [url]);
 
   const sendMessage = useCallback((message: any): void => {

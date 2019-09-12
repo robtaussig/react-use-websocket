@@ -10,6 +10,10 @@ declare global {
   }
 }
 
+export interface QueryParams {
+  [key: string]: string | number,
+}
+
 export const parseSocketIOUrl = (url: string) => {
   if (url) {
     const isSecure = /^https|wss/.test(url);
@@ -27,6 +31,14 @@ export const parseSocketIOUrl = (url: string) => {
   }
 
   return url;
+};
+
+export const appendQueryParams = (url: string, params: QueryParams = {}, alreadyHasParams: boolean = false): string => {
+  const stringified = `${Object.entries(params).reduce((next, [key, value]) => {
+    return next + `${key}=${value}&`;
+  }, '').slice(0, -1)}`;
+
+  return `${url}${alreadyHasParams ? '&' : '?'}${stringified}`;
 };
 
 export const setUpSocketIOPing = (socketInstance: any) => {

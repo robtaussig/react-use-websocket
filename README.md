@@ -108,6 +108,7 @@ const options = useMemo(() => ({
   onError: error => console.log('onError', error),
   onOpen: event => console.log('onOpen', event),
   fromSocketIO: true,
+  queryParams: { 'user_id': 1 },
 }),[]);
 
 const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', options);
@@ -121,6 +122,17 @@ If set to true, a new websocket will not be instantiated if one for the same url
 
 ### FromSocketIO: Boolean
 SocketIO acts as a layer on top of the WebSocket protocol, and the required client-side implementation involves a few peculiarities. If you have a SocketIO back-end, or are converting a client-side application that uses the socketIO library, setting this to true might be enough to allow useWebSocket to work interchangeably. This is an experimental option as the SocketIO library might change its API at any time. This was tested with Socket IO 2.1.1.
+
+### QueryParams: Object
+Pass an object representing an arbitrary number of query parameters, which will be converted into stringified query params and appended to the websocket url.
+
+```js
+const queryParams = {
+  'user_id': 1,
+  'room_id': 5
+};
+//<url>?user_id=1&room_id=5
+```
 
 ## useSocketIO
 SocketIO sends messages in a format that isn't JSON-parsable. One example is:
