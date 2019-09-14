@@ -7,7 +7,7 @@
       "target": "es5",
       "jsx": "react",
       "skipLibCheck": true,
-      "lib": ["es2017"],
+      "lib": ["es2017", "dom"],
       "types" : ["node", "websocket"],
       "declaration": true 
   },

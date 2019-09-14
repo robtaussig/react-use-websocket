@@ -19,7 +19,7 @@ export interface Options {
   onClose?: (event: Event) => void,
   onMessage?: (event: Event) => void,
   onError?: (event: Event) => void,
-  filter?: (message: Message) => boolean,
+  filter?: (message: WebSocketEventMap['message']) => boolean,
   retryOnError?: boolean,
 }
 
@@ -27,16 +27,17 @@ export type ReadyStateState = {
   [url: string]: ReadyStateEnum,
 }
 
-export type Message = {
-  data: any,
-}
+export type SendMessage = (message: (string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView)) => void;
 
-export const useWebSocket = (url: string, options: Options = DEFAULT_OPTIONS): [(message:any) => void, Message, ReadyStateEnum] => {
-  const [ lastMessage, setLastMessage ] = useState<Message | null>(null);
+export const useWebSocket = (
+  url: string,
+  options: Options = DEFAULT_OPTIONS,
+): [SendMessage, WebSocketEventMap['message'], ReadyStateEnum] => {
+  const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
-  const webSocketRef = useRef<any>(null);
+  const webSocketRef = useRef<WebSocket>(null);
   const retryCount = useRef<number>(0);
-  const staticOptionsCheck = useRef<boolean|null>(null);
+  const staticOptionsCheck = useRef<boolean>(false);
 
   const convertedUrl = useMemo(() => {
     const converted = options.fromSocketIO ? parseSocketIOUrl(url) : url;
@@ -47,14 +48,14 @@ export const useWebSocket = (url: string, options: Options = DEFAULT_OPTIONS): [
       converted;
   }, [url]);
 
-  const sendMessage = useCallback((message: any): void => {
+  const sendMessage: SendMessage = useCallback(message => {
     webSocketRef.current && webSocketRef.current.send(message);
   }, []);
 
   useEffect(() => {
     let removeListeners;
 
-    const start = () => {
+    const start = (): void => {
       createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
 
       removeListeners = attachListeners(webSocketRef.current, convertedUrl, {

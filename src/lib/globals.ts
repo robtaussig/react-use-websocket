@@ -1,5 +1,5 @@
-type Sockets = {
-  [url: string]: any,
+interface SharedWebSockets {
+  [url: string]: WebSocket,
 }
 
-export const sharedWebSockets: Sockets = {};
+export const sharedWebSockets: SharedWebSockets = {};

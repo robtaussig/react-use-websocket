@@ -1,10 +1,10 @@
 import { READY_STATE_OPEN, READY_STATE_CLOSING, READY_STATE_CLOSED } from './constants';
 import { sharedWebSockets } from './globals';
 import { Setters } from './attach-listener';
-import { Message, ReadyStateState, Options } from './use-websocket';
+import { ReadyStateState, Options } from './use-websocket';
 
 type Subscriber = {
-  setLastMessage: (message: Message) => void,
+  setLastMessage: (message: WebSocketEventMap['message']) => void,
   setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
   options: Options,
 }
@@ -15,13 +15,13 @@ type Subscribers = {
 
 const subscribers: Subscribers = {};
 
-export const addSubscriber = (webSocketInstance: any, url: string, setters: Setters, options: Options = {}) => {
+export const addSubscriber = (webSocketInstance: WebSocket, url: string, setters: Setters, options: Options = {}) => {
   const { setLastMessage, setReadyState } = setters;
 
   if (subscribers[url] === undefined) {
     subscribers[url] = [];
 
-    webSocketInstance.onmessage = (message: Message) => {
+    webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
       if (typeof options.filter === 'function' && options.filter(message) !== true) {
         return;
       }
@@ -34,7 +34,7 @@ export const addSubscriber = (webSocketInstance: any, url: string, setters: Sett
       });
     };
 
-    webSocketInstance.onclose = (event: Event) => {
+    webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
       subscribers[url].forEach(subscriber => {
         subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSED}));
         if (subscriber.options.onClose) {
@@ -46,7 +46,7 @@ export const addSubscriber = (webSocketInstance: any, url: string, setters: Sett
       sharedWebSockets[url] = undefined;
     };
 
-    webSocketInstance.onerror = (error: Error) => {
+    webSocketInstance.onerror = (error: WebSocketEventMap['error']) => {
       subscribers[url].forEach(subscriber => {
 
         if (subscriber.options.onError) {
@@ -55,7 +55,7 @@ export const addSubscriber = (webSocketInstance: any, url: string, setters: Sett
       });
     };
 
-    webSocketInstance.onopen = (event: Error) => {
+    webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
       subscribers[url].forEach(subscriber => {
         subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
         if (subscriber.options.onOpen) {

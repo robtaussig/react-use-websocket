@@ -1,15 +1,5 @@
 import { SOCKET_IO_PING_INTERVAL, SOCKET_IO_PATH, SOCKET_IO_PING_CODE } from './constants';
 
-declare global {
-  const window: {
-    location: {
-      protocol: string,
-      port: number,
-      hostname: string,
-    }
-  }
-}
-
 export interface QueryParams {
   [key: string]: string | number,
 }
@@ -41,7 +31,7 @@ export const appendQueryParams = (url: string, params: QueryParams = {}, already
   return `${url}${alreadyHasParams ? '&' : '?'}${stringified}`;
 };
 
-export const setUpSocketIOPing = (socketInstance: any) => {
+export const setUpSocketIOPing = (socketInstance: WebSocket) => {
   const ping = () => socketInstance.send(SOCKET_IO_PING_CODE);
 
   return setInterval(ping, SOCKET_IO_PING_INTERVAL);
