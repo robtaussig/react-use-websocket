@@ -101,7 +101,36 @@ Will be an integer representing the readyState of the WebSocket.
 
 ### getWebSocket: Function() -> Proxy<WebSocket>
 
-Calling this function will lazily instantiate a Proxy instance that wraps the underlying websocket. You can get and set properties on the return value that will directly interact with the websocket, however certain properties/methods are protected (cannot invoke `close` or `send`, and cannot redefine any of the event handlers like `onmessage`, `onclose`, `onopen` and `onerror`.
+Calling this function will lazily instantiate a Proxy instance that wraps the underlying websocket. You can get and set properties on the return value that will directly interact with the websocket, however certain properties/methods are protected (cannot invoke `close` or `send`, and cannot redefine any of the event handlers like `onmessage`, `onclose`, `onopen` and `onerror`. An example of using this:
+
+```js
+const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket('wss://echo.websocket.org');
+
+//Run on mount
+useEffect(() => {
+  console.log(getWebSocket().binaryType)
+  //=> 'blob'
+  
+  //Change binaryType property of websocket
+  getWebSocket().binaryType = 'arraybuffer';
+  
+  console.log(getWebSocket().binaryType)
+  //=> 'arraybuffer'
+  
+  //Attempt to change event handler
+  getWebSocket().onmessage = console.log
+  //=> A warning is logged to console: 'The websocket's event handlers should be defined through the options object passed into useWebSocket.'
+  
+  //Attempt to change an immutable property
+  getWebSocket().url = 'www.google.com';
+  console.log(getWebSocket().url);
+  //=> 'wss://echo.websocket.org'
+  
+  //Attempt to call webSocket#send
+  getWebSocket().send('Hello from WebSocket');
+  //=> No message is sent, and no error thrown (a no-op function was returned), but an error will be logged to console: 'Calling methods directly on the websocket is not supported at this moment. You must use the methods returned by useWebSocket.'
+}, []);
+```
 
 ## Options
 
