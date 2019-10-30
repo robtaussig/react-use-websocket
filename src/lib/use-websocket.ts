@@ -3,6 +3,7 @@ import { parseSocketIOUrl, appendQueryParams, QueryParams } from './socket-io';
 import { attachListeners } from './attach-listener';
 import { DEFAULT_OPTIONS, READY_STATE_CONNECTING } from './constants';
 import { createOrJoinSocket } from './create-or-join';
+import websocketWrapper from './proxy';
 
 export enum ReadyStateEnum {
   Connecting = 0,
@@ -36,6 +37,7 @@ export const useWebSocket = (
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
   const webSocketRef = useRef<WebSocket>(null);
+  const webSocketProxy = useRef<Proxy<WebSocket>>(null)
   const retryCount = useRef<number>(0);
   const staticOptionsCheck = useRef<boolean>(false);
 
@@ -51,6 +53,14 @@ export const useWebSocket = (
   const sendMessage: SendMessage = useCallback(message => {
     webSocketRef.current && webSocketRef.current.send(message);
   }, []);
+  
+  const getWebSocket = useCallback(() => {
+    if (webSocketProxy.current === null) {
+      webSocketProxy.current = websocketWrapper(webSocketRef.current);
+    }
+    
+    return webSocketProxy.current;
+  }, []);
 
   useEffect(() => {
     let removeListeners;
@@ -65,7 +75,10 @@ export const useWebSocket = (
     };
 
     start();
-    return removeListeners;
+    return () => {
+      if (webSocketProxy.current) webSocketProxy.current = null;
+      removeListeners();
+    }
   }, [convertedUrl]);
 
   useEffect(() => {
@@ -76,5 +89,5 @@ export const useWebSocket = (
 
   const readyStateFromUrl = readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : READY_STATE_CONNECTING;
 
-  return [ sendMessage, lastMessage, readyStateFromUrl ];
+  return [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ];
 };
