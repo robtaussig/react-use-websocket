@@ -14,7 +14,7 @@ export const websocketWrapper = (webSocket: WebSocket): Proxy<WebSocket> => {
     },
     set: (obj, key, val) => {
       if (/^on/.test(key)) {
-        console.warn('The websocket's event handlers should be defined through the options object passed into useWebSocket.')
+        console.warn('The websocket\'s event handlers should be defined through the options object passed into useWebSocket.')
       } else {
         obj[key] = val;
       }
