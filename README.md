@@ -24,13 +24,18 @@ const CONNECTION_STATUS_CLOSED = 3;
 export const WebSocketDemo = () => {
   const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org'); //Public API that will echo messages sent to it back to the client
   const [messageHistory, setMessageHistory] = useState([]);
-  const [sendMessage, lastMessage, readyState] = useWebSocket(socketUrl);
+  const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket(socketUrl);
 
   const handleClickChangeSocketUrl = useCallback(() => setSocketUrl('wss://demos.kaazing.com/echo'), []);
   const handleClickSendMessage = useCallback(() => sendMessage('Hello'), []);
 
   useEffect(() => {
     if (lastMessage !== null) {
+    
+      //getWebSocket returns the WebSocket wrapped in a Proxy. This is to restrict actions like mutating a shared websocket, overwriting handlers, etc
+      const currentWebsocketUrl = getWebSocket().url;
+      console.log('received a message from ', currentWebsocketUrl);
+      
       setMessageHistory(prev => prev.concat(lastMessage));
     }
   }, [lastMessage]);
@@ -72,7 +77,7 @@ npm install react-use-websocket
 import useWebSocket from 'react-use-websocket';
 
 // In component function
-const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', { onOpen: console.log });
+const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket('wss://echo.websocket.org', { onOpen: console.log });
 ```
 
 ## Requirements
@@ -87,10 +92,16 @@ The argument sent through sendMessage will be passed directly to WebSocket#send.
 
 
 ### lastMessage: MessageEvent
+
 Will be an unparsed MessageEvent received from the WebSocket.
 
 ### readyState: Enum<0, 1, 2, 3>
+
 Will be an integer representing the readyState of the WebSocket.
+
+### getWebSocket: Function() -> Proxy<WebSocket>
+
+Calling this function will lazily instantiate a Proxy instance that wraps the underlying websocket. You can get and set properties on the return value that will directly interact with the websocket, however certain properties/methods are protected (cannot invoke `close` or `send`, and cannot redefine any of the event handlers like `onmessage`, `onclose`, `onopen` and `onerror`.
 
 ## Options
 
