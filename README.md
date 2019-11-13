@@ -1,7 +1,7 @@
 # useWebSocket React Hook
 [Live Demo](https://robtaussig.com/socket/)
 
-[Test in StackBlitz](https://stackblitz.com/edit/react-dcwtsg)
+[Test in StackBlitz](https://stackblitz.com/edit/react-huzf9f)
 
 React Hook designed to provide robust WebSocket integrations to your React Components. Experimental support for SocketIO (read documentation below for more information)
 
