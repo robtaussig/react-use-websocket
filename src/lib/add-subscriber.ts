@@ -3,13 +3,13 @@ import { sharedWebSockets } from './globals';
 import { Setters } from './attach-listener';
 import { ReadyStateState, Options } from './use-websocket';
 
-type Subscriber = {
+export type Subscriber = {
   setLastMessage: (message: WebSocketEventMap['message']) => void,
   setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
   options: Options,
 }
 
-type Subscribers = {
+export type Subscribers = {
   [url: string]: Subscriber[],
 }
 

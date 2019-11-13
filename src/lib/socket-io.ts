@@ -1,7 +1,7 @@
 import { SOCKET_IO_PING_INTERVAL, SOCKET_IO_PATH, SOCKET_IO_PING_CODE } from './constants';
 
 export interface QueryParams {
-  [key: string]: string | number,
+  [key: string]: string | number;
 }
 
 export const parseSocketIOUrl = (url: string) => {

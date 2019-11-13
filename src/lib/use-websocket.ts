@@ -12,15 +12,18 @@ export enum ReadyStateEnum {
 }
 
 export interface Options {
-  fromSocketIO?: boolean,
-  queryParams?: QueryParams,
-  share?: boolean,
-  onOpen?: (event: Event) => void,
-  onClose?: (event: Event) => void,
-  onMessage?: (event: Event) => void,
-  onError?: (event: Event) => void,
-  filter?: (message: WebSocketEventMap['message']) => boolean,
-  retryOnError?: boolean,
+  fromSocketIO?: boolean;
+  queryParams?: QueryParams;
+  share?: boolean;
+  onOpen?: (event: WebSocketEventMap['open']) => void;
+  onClose?: (event: WebSocketEventMap['close']) => void;
+  onMessage?: (event: WebSocketEventMap['message']) => void;
+  onError?: (event: WebSocketEventMap['error']) => void;
+  shouldReconnect?: (event: WebSocketEventMap['close']) => boolean;
+  reconnectInterval?: number;
+  reconnectAttempts?: number;
+  filter?: (message: WebSocketEventMap['message']) => boolean;
+  retryOnError?: boolean;
 }
 
 export type ReadyStateState = {
@@ -36,7 +39,7 @@ export const useWebSocket = (
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
   const webSocketRef = useRef<WebSocket>(null);
-  const retryCount = useRef<number>(0);
+  const reconnectCount = useRef<number>(0);
   const staticOptionsCheck = useRef<boolean>(false);
 
   const convertedUrl = useMemo(() => {
@@ -61,7 +64,7 @@ export const useWebSocket = (
       removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
         setLastMessage,
         setReadyState,
-      }, options, start, retryCount);
+      }, options, start, reconnectCount);
     };
 
     start();

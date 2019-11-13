@@ -3,7 +3,7 @@ import { useWebSocket, SendMessage, ReadyStateEnum } from './use-websocket'
 import { DEFAULT_OPTIONS } from './constants'
 import { Options } from './use-websocket';
 
-interface SocketIOMessageData {
+export interface SocketIOMessageData {
   type: string,
   payload: any,
 }
