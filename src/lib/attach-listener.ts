@@ -16,7 +16,8 @@ export const attachListeners = (
     options: Options,
     reconnect: () => void,
     reconnectCount: MutableRefObject<number>,
-  ) => {
+    expectClose: MutableRefObject<boolean>,
+  ): (() => void) => {
   const { setLastMessage, setReadyState } = setters;
 
   let interval: NodeJS.Timeout;
@@ -39,23 +40,31 @@ export const attachListeners = (
     if (typeof options.filter === 'function' && options.filter(message) !== true) {
       return;
     }
-    setLastMessage(message);
+    if (expectClose.current === false) {
+      setLastMessage(message);
+    }
   };
   webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
     options.onOpen && options.onOpen(event);
     reconnectCount.current = 0;
-    setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
+    if (expectClose.current === false) {
+      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
+    }
   };
   webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
     options.onClose && options.onClose(event);
-    setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSED}));
+    if (expectClose.current === false) {
+      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSED}));
+    }
     if (options.shouldReconnect && options.shouldReconnect(event)) {
       const reconnectAttempts = options.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
       if (reconnectCount.current < reconnectAttempts) {
-        setTimeout(() => {
-          reconnectCount.current++;
-          reconnect();
-        }, options.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+        if (expectClose.current === false) {
+          setTimeout(() => {
+            reconnectCount.current++;
+            reconnect();
+          }, options.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+        }
       } else {
         console.error(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
       }

@@ -40,6 +40,7 @@ export const useWebSocket = (
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
   const webSocketRef = useRef<WebSocket>(null);
   const reconnectCount = useRef<number>(0);
+  const expectClose = useRef<boolean>(false);
   const staticOptionsCheck = useRef<boolean>(false);
 
   const convertedUrl = useMemo(() => {
@@ -56,19 +57,24 @@ export const useWebSocket = (
   }, []);
 
   useEffect(() => {
-    let removeListeners;
+    let removeListeners: () => void;
 
     const start = (): void => {
+      expectClose.current = false;
+      
       createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
 
       removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
         setLastMessage,
         setReadyState,
-      }, options, start, reconnectCount);
+      }, options, start, reconnectCount, expectClose);
     };
 
     start();
-    return removeListeners;
+    return () => {
+      expectClose.current = true;
+      removeListeners();
+    };
   }, [convertedUrl]);
 
   useEffect(() => {
