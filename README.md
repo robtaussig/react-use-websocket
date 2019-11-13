@@ -72,7 +72,12 @@ npm install react-use-websocket
 import useWebSocket from 'react-use-websocket';
 
 // In component function
-const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', { onOpen: console.log });
+const STATIC_OPTIONS = useMemo(() => ({
+  onOpen: () => console.log('opened'),
+  shouldReconnect: (closeEvent) => true, //Will attempt to reconnect on all close events, such as server shutting down
+}), []);
+
+const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', STATIC_OPTIONS);
 ```
 
 ## Requirements
@@ -82,7 +87,6 @@ const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocke
 ## API
 
 ### sendMessage: Function(Any)
-
 The argument sent through sendMessage will be passed directly to WebSocket#send. sendMessage will be static, and thus can be passed down through children components without triggering prop changes.
 
 
@@ -91,6 +95,29 @@ Will be an unparsed MessageEvent received from the WebSocket.
 
 ### readyState: Enum<0, 1, 2, 3>
 Will be an integer representing the readyState of the WebSocket.
+
+## Reconnecting
+By default, `useWebSocket` does not attempt to reconnect to a websocket after it disconnects. This behavior can be modified through a few options. To attempt to reconnect on error events, set `Options#retryOnError` to `true`. Because close events are a less straight forward (was the close event triggered intentionally by the client or by something unexpected by the server restarting?), `Options#shouldReconnect` must be provided as a callback, with the socket closeEvent as the first and only argument, and a return value of either `true` or `false`. If `true`, `useWebSocket` will attempt to reconnect up to a specified number of attempts (with a default of `20`) at a specified interval (with a default of `5000` (ms)). The option properties for attempts is `Options#reconnectAttempts` and the interval is `Options#reconnectInterval`. As an example:
+
+```js
+const didUnmount = useRef(false);
+
+const options = useMemo(() =>({
+  shouldReconnect: (closeEvent) => {
+    return didUnmount.current === false; //useWebSocket will handle unmounting for you, but this is an example of a case in which you would not want it to automatically reconnect
+  },
+  reconnectAttempts: 10,
+  reconnectInterval: 3000,
+}, []);
+
+const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', options);
+
+useEffect(() => {
+  return () => {
+    didUnmount.current = true;
+  };
+}, []);
+```
 
 ## Options
 
@@ -109,10 +136,14 @@ const options = useMemo(() => ({
   onOpen: event => console.log('onOpen', event),
   fromSocketIO: true,
   queryParams: { 'user_id': 1 },
+  shouldReconnect: () => dynamicPropRef.current === true, //If websocket closing is intentional, can set dynamicPropRef to false to avoid unnecessary reconnect attempts
 }),[]);
 
 const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', options);
 ```
+
+### ShouldReconnect
+See section on [Reconnecting](#Reconnecting)
 
 ### Event Handlers: Callback
 Each of options.onMessage, options.onError, options.onClose, and options.onOpen will be called on the corresponding WebSocket event, if provided. Each will be passed the same event provided from the WebSocket.
@@ -134,7 +165,7 @@ const queryParams = {
 //<url>?user_id=1&room_id=5
 ```
 
-## useSocketIO
+### useSocketIO
 SocketIO sends messages in a format that isn't JSON-parsable. One example is:
 ```
 "42["Action",{"key":"value"}]"
