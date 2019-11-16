@@ -188,7 +188,6 @@ If a function is provided with the key `filter`, incoming messages will be passe
 
 ## Considered features
 - On the note of sending messages before the WebSocket is open, I have considered creating a queue of messages that are sent while the WebSocket is not OPEN, and then firing them as soon as it opens.
-- Reconnecting after errors.
 
 ## Next steps
 - Eager to write tests and write a contributions guide.
