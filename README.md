@@ -162,7 +162,7 @@ useEffect(() => {
 
 ## Options
 
-**Right now, the options object, if any, passed to useWebSocket must be static (and any change to it after the first render will throw an error). In my own experimentation, and upon personal observation of colleagues using this in their own projects, it is too easy to create unintentional bugs due to misunderstanding how closures interact with dynamic props in React Hooks. I found that accounting for these misunderstandings at the library-level meant writing it in a way that would make it less intuitive to audit yourself. Solving for this at the component-level should be much easier and likely involve defining your event callbacks using a ref.**
+**Right now, the options object, if any, passed to useWebSocket must be static (and any change to it after the first render will throw an error [(see exception)](#Disabling-Static-Options-Check)). In my own experimentation, and upon personal observation of colleagues using this in their own projects, it is too easy to create unintentional bugs due to misunderstanding how closures interact with dynamic props in React Hooks. I found that accounting for these misunderstandings at the library-level meant writing it in a way that would make it less intuitive to audit yourself. Solving for this at the component-level should be much easier and likely involve defining your event callbacks using a ref.**
 
 ### Example options with ref solution
 ```js
@@ -231,3 +231,6 @@ If a function is provided with the key `filter`, incoming messages will be passe
 
 ## Next steps
 - Eager to write tests and write a contributions guide.
+
+## Disabling Static Options Check
+- If this error is being incorrectly thrown (in some cases, hot-reloading in development has been reported to trigger it), you can defined `enforceStaticOptions` as true in the options object. Note that I do not have plans at the moment to support dynamically generated options, and that bugs arising from abuse will be considered low priority.

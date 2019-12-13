@@ -25,6 +25,7 @@ export interface Options {
   reconnectAttempts?: number;
   filter?: (message: WebSocketEventMap['message']) => boolean;
   retryOnError?: boolean;
+  enforceStaticOptions?: boolean;
 }
 
 export type ReadyStateState = {
@@ -91,7 +92,11 @@ export const useWebSocket = (
   }, [convertedUrl]);
 
   useEffect(() => {
-    if (staticOptionsCheck.current) throw new Error('The options object you pass must be static');
+    if (
+      options.enforceStaticOptions !== false && staticOptionsCheck.current
+    ) {
+        throw new Error('The options object you pass must be static');
+    }
 
     staticOptionsCheck.current = true;
   }, [options]);
