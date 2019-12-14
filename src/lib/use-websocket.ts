@@ -13,7 +13,7 @@ export enum ReadyStateEnum {
 }
 
 export interface WorkerConfig {
-  processMessage: (message: WebSocketEventMap['message']) => boolean;
+  processMessage?: (message: WebSocketEventMap['message']) => any;
 }
 
 export interface Options {

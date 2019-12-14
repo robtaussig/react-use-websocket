@@ -13,11 +13,15 @@ export const createOrJoinSocket = (
   if (options.share) {
     if (sharedWebSockets[url] === undefined) {
       setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CONNECTING}));
-      sharedWebSockets[url] = options.workerConfig ? new WorkerSocket(url) : new WebSocket(url);
+      sharedWebSockets[url] = options.workerConfig ?
+        new WorkerSocket(url, options.workerConfig.processMessage) :
+        new WebSocket(url);
     }
     webSocketRef.current = sharedWebSockets[url];
   } else {
     setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CONNECTING}));
-    webSocketRef.current = options.workerConfig ? new WorkerSocket(url) : new WebSocket(url);
+    webSocketRef.current = options.workerConfig ?
+      new WorkerSocket(url, options.workerConfig.processMessage) :
+      new WebSocket(url);
   }
 };
