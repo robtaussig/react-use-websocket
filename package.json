@@ -1,7 +1,7 @@
 {
-  "name": "react-use-websocket",
-  "version": "1.2.0",
-  "description": "React Hook for WebSocket communication",
+  "name": "@robtaussig/worker-based-websocket",
+  "version": "0.1.0",
+  "description": "WebWorker-based React Hook for WebSocket communication",
   "main": "./dist/index.js",
   "files": [
     "src",
@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "test": "$(npm bin)/jest --verbose",
-    "compile": "$(npm bin)/parcel build ./src/index.ts --no-source-maps ./dist",
+    "compile": "$(npm bin)/parcel build ./src/index.ts -d ./dist/",
     "push": "npm run compile && git push && npm publish"
   },
   "repository": {
@@ -33,6 +33,7 @@
     "babel-loader": "^8.0.5",
     "jest": "^24.8.0",
     "parcel": "^1.12.4",
+    "parcel-bundler": "^1.12.4",
     "source-map-loader": "^0.2.4",
     "typescript": "^3.7.2"
   },
