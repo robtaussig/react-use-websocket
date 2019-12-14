@@ -12,6 +12,10 @@ export enum ReadyStateEnum {
   Closed = 3,
 }
 
+export interface WorkerConfig {
+  processMessage: (message: WebSocketEventMap['message']) => boolean;
+}
+
 export interface Options {
   fromSocketIO?: boolean;
   queryParams?: QueryParams;
@@ -26,6 +30,7 @@ export interface Options {
   filter?: (message: WebSocketEventMap['message']) => boolean;
   retryOnError?: boolean;
   enforceStaticOptions?: boolean;
+  workerConfig?: WorkerConfig;
 }
 
 export type ReadyStateState = {
@@ -33,7 +38,6 @@ export type ReadyStateState = {
 }
 
 export type SendMessage = (message: (string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView)) => void;
-// export type WebSocketProxy = <typeof ProxyWebSocket>;
 
 export const useWebSocket = (
   url: string,
@@ -45,7 +49,6 @@ export const useWebSocket = (
   const reconnectCount = useRef<number>(0);
   const expectClose = useRef<boolean>(false);
   const webSocketProxy = useRef<WebSocket>(null)
-  const retryCount = useRef<number>(0);
   const staticOptionsCheck = useRef<boolean>(false);
 
   const convertedUrl = useMemo(() => {

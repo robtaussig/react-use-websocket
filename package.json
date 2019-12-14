@@ -8,8 +8,8 @@
     "dist"
   ],
   "scripts": {
-    "test": "node_modules/.bin/jest --verbose",
-    "compile": "node_modules/.bin/tsc -p .",
+    "test": "$(npm bin)/jest --verbose",
+    "compile": "$(npm bin)/parcel build ./src/index.ts --no-source-maps ./dist",
     "push": "npm run compile && git push && npm publish"
   },
   "repository": {
@@ -22,9 +22,9 @@
     "@babel/core": "^7.4.3",
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-react": "^7.0.0",
+    "@types/node": "^12.6.8",
     "@types/react": "^16.8.23",
     "@types/react-dom": "^16.8.5",
-    "@types/node": "^12.6.8",
     "@types/websocket": "0.0.40",
     "awesome-typescript-loader": "^5.2.1",
     "babel-core": "^7.0.0-bridge.0",
@@ -32,6 +32,7 @@
     "babel-jest": "^24.8.0",
     "babel-loader": "^8.0.5",
     "jest": "^24.8.0",
+    "parcel": "^1.12.4",
     "source-map-loader": "^0.2.4",
     "typescript": "^3.7.2"
   },
