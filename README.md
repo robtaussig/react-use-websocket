@@ -14,7 +14,7 @@ Using WebSockets from the client is more than just exchanging messages. It requi
 ## Example Implementation
 
 ```js
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 
 const CONNECTION_STATUS_CONNECTING = 0;
