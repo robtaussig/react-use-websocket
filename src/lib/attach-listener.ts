@@ -21,6 +21,7 @@ export const attachListeners = (
   const { setLastMessage, setReadyState } = setters;
 
   let interval: NodeJS.Timeout;
+  let reconnectTimeout: NodeJS.Timeout;
 
   if (options.fromSocketIO) {
     interval = setUpSocketIOPing(webSocketInstance);
@@ -60,7 +61,7 @@ export const attachListeners = (
       const reconnectAttempts = options.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
       if (reconnectCount.current < reconnectAttempts) {
         if (expectClose.current === false) {
-          setTimeout(() => {
+          reconnectTimeout = setTimeout(() => {
             reconnectCount.current++;
             reconnect();
           }, options.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
@@ -75,7 +76,7 @@ export const attachListeners = (
 
     if (options.retryOnError) {
       if (reconnectCount.current < (options.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT)) {
-        setTimeout(() => {
+        reconnectTimeout = setTimeout(() => {
           reconnectCount.current++;
           reconnect();
         }, options.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
@@ -85,6 +86,7 @@ export const attachListeners = (
 
   return () => {
     setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
+    if (reconnectTimeout) clearTimeout(reconnectTimeout)
     webSocketInstance.close();
     if (interval) clearInterval(interval);
   };
