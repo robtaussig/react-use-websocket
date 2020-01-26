@@ -53,7 +53,7 @@ export const WebSocketDemo = () => {
       <button onClick={handleClickChangeSocketUrl}>Click Me to change Socket Url</button>
       <button onClick={handleClickSendMessage} disabled={readyState !== CONNECTION_STATUS_OPEN}>Click Me to send 'Hello'</button>
       <span>The WebSocket is currently {connectionStatus}</span>
-      <span>Last message: {lastMessage.data}</span>
+      {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
       <ul>
         {messageHistory.map((message, idx) => <span key={idx}>{message.data}</span>)}
       </ul>
