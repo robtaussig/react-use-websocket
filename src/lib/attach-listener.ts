@@ -1,8 +1,9 @@
 import { MutableRefObject } from 'react';
 import { setUpSocketIOPing } from './socket-io';
-import { READY_STATE_OPEN, READY_STATE_CLOSED, READY_STATE_CLOSING, DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS } from './constants';
+import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS } from './constants';
 import { addSubscriber } from './add-subscriber';
 import { ReadyStateState, Options } from './use-websocket';
+import { ReadyState } from '../';
 
 export interface Setters {
   setLastMessage: (message: WebSocketEventMap['message']) => void;
@@ -49,13 +50,13 @@ export const attachListeners = (
     options.onOpen && options.onOpen(event);
     reconnectCount.current = 0;
     if (expectClose.current === false) {
-      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
+      setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
     }
   };
   webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
     options.onClose && options.onClose(event);
     if (expectClose.current === false) {
-      setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSED}));
+      setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CLOSED}));
     }
     if (options.shouldReconnect && options.shouldReconnect(event)) {
       const reconnectAttempts = options.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
@@ -85,7 +86,7 @@ export const attachListeners = (
   };
 
   return () => {
-    setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
+    setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CLOSING}));
     if (reconnectTimeout) clearTimeout(reconnectTimeout)
     webSocketInstance.close();
     if (interval) clearInterval(interval);

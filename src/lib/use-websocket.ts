@@ -1,16 +1,10 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { parseSocketIOUrl, appendQueryParams, QueryParams } from './socket-io';
 import { attachListeners } from './attach-listener';
-import { DEFAULT_OPTIONS, READY_STATE_CONNECTING } from './constants';
+import { DEFAULT_OPTIONS } from './constants';
 import { createOrJoinSocket } from './create-or-join';
 import websocketWrapper from './proxy';
-
-export enum ReadyStateEnum {
-  Connecting = 0,
-  Open = 1,
-  Closing = 2,
-  Closed = 3,
-}
+import { ReadyState } from '../';
 
 export interface Options {
   fromSocketIO?: boolean;
@@ -29,7 +23,7 @@ export interface Options {
 }
 
 export type ReadyStateState = {
-  [url: string]: ReadyStateEnum,
+  [url: string]: ReadyState,
 }
 
 export type SendMessage = (message: (string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView)) => void;
@@ -38,14 +32,13 @@ export type SendMessage = (message: (string | ArrayBuffer | SharedArrayBuffer | 
 export const useWebSocket = (
   url: string,
   options: Options = DEFAULT_OPTIONS,
-): [SendMessage, WebSocketEventMap['message'], ReadyStateEnum, () => WebSocket] => {
+): [SendMessage, WebSocketEventMap['message'], ReadyState, () => WebSocket] => {
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
   const webSocketRef = useRef<WebSocket>(null);
   const reconnectCount = useRef<number>(0);
   const expectClose = useRef<boolean>(false);
   const webSocketProxy = useRef<WebSocket>(null)
-  const retryCount = useRef<number>(0);
   const staticOptionsCheck = useRef<boolean>(false);
 
   const convertedUrl = useMemo(() => {
@@ -101,7 +94,7 @@ export const useWebSocket = (
     staticOptionsCheck.current = true;
   }, [options]);
 
-  const readyStateFromUrl = readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : READY_STATE_CONNECTING;
+  const readyStateFromUrl = readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : ReadyState.CONNECTING;
 
   return [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ];
 };

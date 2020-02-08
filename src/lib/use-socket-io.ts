@@ -1,7 +1,8 @@
 import { useMemo } from 'react'
-import { useWebSocket, SendMessage, ReadyStateEnum } from './use-websocket'
+import { useWebSocket, SendMessage } from './use-websocket'
 import { DEFAULT_OPTIONS } from './constants'
 import { Options } from './use-websocket';
+import { ReadyState } from '../';
 
 export interface SocketIOMessageData {
   type: string,
@@ -39,7 +40,7 @@ const getSocketData = (event: WebSocketEventMap['message']): SocketIOMessageData
 export const useSocketIO = (
   url: string,
   options: Options = DEFAULT_OPTIONS,
-): [SendMessage, SocketIOMessageData, ReadyStateEnum] => {
+): [SendMessage, SocketIOMessageData, ReadyState] => {
   const optionsWithSocketIO = useMemo(() => ({
     ...options,
     fromSocketIO: true,

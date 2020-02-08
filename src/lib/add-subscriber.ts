@@ -1,7 +1,7 @@
-import { READY_STATE_OPEN, READY_STATE_CLOSING, READY_STATE_CLOSED } from './constants';
 import { sharedWebSockets } from './globals';
 import { Setters } from './attach-listener';
 import { ReadyStateState, Options } from './use-websocket';
+import { ReadyState } from '../';
 
 export type Subscriber = {
   setLastMessage: (message: WebSocketEventMap['message']) => void,
@@ -36,7 +36,7 @@ export const addSubscriber = (webSocketInstance: WebSocket, url: string, setters
 
     webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
       subscribers[url].forEach(subscriber => {
-        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSED}));
+        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CLOSED}));
         if (subscriber.options.onClose) {
           subscriber.options.onClose(event);
         }
@@ -57,7 +57,7 @@ export const addSubscriber = (webSocketInstance: WebSocket, url: string, setters
 
     webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
       subscribers[url].forEach(subscriber => {
-        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_OPEN}));
+        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
         if (subscriber.options.onOpen) {
           subscriber.options.onOpen(event);
         }
@@ -81,7 +81,7 @@ export const addSubscriber = (webSocketInstance: WebSocket, url: string, setters
         throw new Error('A subscriber that is no longer registered has attempted to unsubscribe');
       }
       if (subscribers[url].length === 1) {
-        subscribers[url][0].setReadyState(prev => Object.assign({}, prev, {[url]: READY_STATE_CLOSING}));
+        subscribers[url][0].setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CLOSING}));
         webSocketInstance.close();
       } else {
         subscribers[url].splice(index, 1);
