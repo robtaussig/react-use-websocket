@@ -40,13 +40,13 @@ const getSocketData = (event: WebSocketEventMap['message']): SocketIOMessageData
 export const useSocketIO = (
   url: string,
   options: Options = DEFAULT_OPTIONS,
-): [SendMessage, SocketIOMessageData, ReadyState] => {
+): [SendMessage, SocketIOMessageData, ReadyState, () => WebSocket] => {
   const optionsWithSocketIO = useMemo(() => ({
     ...options,
     fromSocketIO: true,
   }), [])
 
-  const [ sendMessage, lastMessage, readyStateFromUrl ] = useWebSocket(
+  const [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ] = useWebSocket(
     url,
     optionsWithSocketIO,
   )
@@ -55,5 +55,6 @@ export const useSocketIO = (
     sendMessage,
     useMemo(() => getSocketData(lastMessage), [lastMessage]),
     readyStateFromUrl,
+    getWebSocket,
   ]
 }

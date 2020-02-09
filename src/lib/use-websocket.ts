@@ -36,6 +36,7 @@ export const useWebSocket = (
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
   const webSocketRef = useRef<WebSocket>(null);
+  const startRef = useRef<() => void>(null);
   const reconnectCount = useRef<number>(0);
   const expectClose = useRef<boolean>(false);
   const webSocketProxy = useRef<WebSocket>(null)
@@ -56,7 +57,7 @@ export const useWebSocket = (
   
   const getWebSocket = useCallback(() => {
     if (webSocketProxy.current === null) {
-      webSocketProxy.current = websocketWrapper(webSocketRef.current);
+      webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef);
     }
     
     return webSocketProxy.current;
@@ -65,7 +66,7 @@ export const useWebSocket = (
   useEffect(() => {
     let removeListeners: () => void;
 
-    const start = (): void => {
+    startRef.current = (): void => {
       expectClose.current = false;
       
       createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
@@ -73,10 +74,10 @@ export const useWebSocket = (
       removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
         setLastMessage,
         setReadyState,
-      }, options, start, reconnectCount, expectClose);
+      }, options, startRef.current, reconnectCount, expectClose);
     };
 
-    start();
+    startRef.current();
     return () => {
       expectClose.current = true;
       if (webSocketProxy.current) webSocketProxy.current = null;
