@@ -66,7 +66,7 @@ export const useWebSocket = (
   useEffect(() => {
     let removeListeners: () => void;
 
-    startRef.current = (): void => {
+    const start = (): void => {
       expectClose.current = false;
       
       createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
@@ -77,7 +77,14 @@ export const useWebSocket = (
       }, options, startRef.current, reconnectCount, expectClose);
     };
 
-    startRef.current();
+    startRef.current = () => {
+      expectClose.current = true;
+      if (webSocketProxy.current) webSocketProxy.current = null;
+      removeListeners();
+      start();
+    };
+  
+    start();
     return () => {
       expectClose.current = true;
       if (webSocketProxy.current) webSocketProxy.current = null;
