@@ -3,7 +3,7 @@ import { setUpSocketIOPing } from './socket-io';
 import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS } from './constants';
 import { addSubscriber } from './add-subscriber';
 import { ReadyStateState, Options } from './use-websocket';
-import { ReadyState } from '../';
+import { ReadyState } from './constants';
 
 export interface Setters {
   setLastMessage: (message: WebSocketEventMap['message']) => void;

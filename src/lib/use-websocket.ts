@@ -4,7 +4,7 @@ import { attachListeners } from './attach-listener';
 import { DEFAULT_OPTIONS } from './constants';
 import { createOrJoinSocket } from './create-or-join';
 import websocketWrapper from './proxy';
-import { ReadyState } from '../';
+import { ReadyState } from './constants';
 
 export interface Options {
   fromSocketIO?: boolean;
