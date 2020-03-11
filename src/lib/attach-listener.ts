@@ -1,9 +1,8 @@
 import { MutableRefObject } from 'react';
 import { setUpSocketIOPing } from './socket-io';
-import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS } from './constants';
+import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
 import { addSubscriber } from './add-subscriber';
 import { ReadyStateState, Options } from './use-websocket';
-import { ReadyState } from '../';
 
 export interface Setters {
   setLastMessage: (message: WebSocketEventMap['message']) => void;

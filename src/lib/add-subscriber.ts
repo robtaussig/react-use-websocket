@@ -1,7 +1,7 @@
 import { sharedWebSockets } from './globals';
 import { Setters } from './attach-listener';
 import { ReadyStateState, Options } from './use-websocket';
-import { ReadyState } from '../';
+import { ReadyState } from './constants';
 
 export type Subscriber = {
   setLastMessage: (message: WebSocketEventMap['message']) => void,
