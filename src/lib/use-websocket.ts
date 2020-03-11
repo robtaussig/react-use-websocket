@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { parseSocketIOUrl, appendQueryParams, QueryParams } from './socket-io';
 import { attachListeners } from './attach-listener';
-import { DEFAULT_OPTIONS } from './constants';
+import { DEFAULT_OPTIONS, ReadyState } from './constants';
 import { createOrJoinSocket } from './create-or-join';
 import websocketWrapper from './proxy';
-import { ReadyState } from './constants';
 
 export interface Options {
   fromSocketIO?: boolean;
