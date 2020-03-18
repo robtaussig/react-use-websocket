@@ -20,7 +20,7 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 export const WebSocketDemo = () => {
   const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org'); //Public API that will echo messages sent to it back to the client
   const [messageHistory, setMessageHistory] = useState([]);
-  const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket(socketUrl);
+  const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(socketUrl);
 
   const handleClickChangeSocketUrl = useCallback(() => setSocketUrl('wss://demos.kaazing.com/echo'), []);
   const handleClickSendMessage = useCallback(() => sendMessage('Hello'), []);
@@ -78,7 +78,7 @@ const STATIC_OPTIONS = useMemo(() => ({
   shouldReconnect: (closeEvent) => true, //Will attempt to reconnect on all close events, such as server shutting down
 }), []);
 
-const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket('wss://echo.websocket.org', STATIC_OPTIONS);
+const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket('wss://echo.websocket.org', STATIC_OPTIONS);
 ```
 
 ## Requirements
@@ -113,7 +113,7 @@ const options = useMemo(() =>({
   reconnectInterval: 3000,
 }, []);
 
-const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', options);
+const { sendMessage, lastMessage, readyState } = useWebSocket('wss://echo.websocket.org', options);
 
 useEffect(() => {
   return () => {
@@ -127,7 +127,7 @@ useEffect(() => {
 Calling this function will lazily instantiate a Proxy instance that wraps the underlying websocket. You can get and set properties on the return value that will directly interact with the websocket, however certain properties/methods are protected (cannot invoke `close` or `send`, and cannot redefine any of the event handlers like `onmessage`, `onclose`, `onopen` and `onerror`. An example of using this:
 
 ```js
-const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket('wss://echo.websocket.org');
+const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket('wss://echo.websocket.org');
 
 //Run on mount
 useEffect(() => {
@@ -175,7 +175,7 @@ const options = useMemo(() => ({
   shouldReconnect: () => dynamicPropRef.current === true, //If websocket closing is intentional, can set dynamicPropRef to false to avoid unnecessary reconnect attempts
 }),[]);
 
-const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocket.org', options);
+const { sendMessage, lastMessage, readyState } = useWebSocket('wss://echo.websocket.org', options);
 ```
 
 ### ShouldReconnect
