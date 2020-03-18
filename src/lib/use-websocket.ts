@@ -25,40 +25,49 @@ export type ReadyStateState = {
   [url: string]: ReadyState,
 }
 
-export type SendMessage = (message: (string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView)) => void;
+export type SendMessage = (
+  message: string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView
+) => void;
 // export type WebSocketProxy = <typeof ProxyWebSocket>;
+
+export type WebSocketHook = {
+  sendMessage: SendMessage,
+  lastMessage: WebSocketEventMap['message'],
+  readyStateFromUrl: ReadyState,
+  getWebSocket: () => WebSocket,
+}
 
 export const useWebSocket = (
   url: string,
   options: Options = DEFAULT_OPTIONS,
-): [SendMessage, WebSocketEventMap['message'], ReadyState, () => WebSocket] => {
-  const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
-  const [ readyState, setReadyState ] = useState<ReadyStateState>({});
+): WebSocketHook => {
+  const [lastMessage, setLastMessage] = useState<WebSocketEventMap['message']>(null);
+  const [readyState, setReadyState] = useState<ReadyStateState>({});
   const webSocketRef = useRef<WebSocket>(null);
   const startRef = useRef<() => void>(null);
   const reconnectCount = useRef<number>(0);
   const expectClose = useRef<boolean>(false);
-  const webSocketProxy = useRef<WebSocket>(null)
+  const webSocketProxy = useRef<WebSocket>(null);
   const staticOptionsCheck = useRef<boolean>(false);
 
   const convertedUrl = useMemo(() => {
     const converted = options.fromSocketIO ? parseSocketIOUrl(url) : url;
     const alreadyHasQueryParams = options.fromSocketIO;
 
-    return options.queryParams ?
-      appendQueryParams(converted, options.queryParams, alreadyHasQueryParams) :
-      converted;
+    return options.queryParams
+      ? appendQueryParams(converted, options.queryParams, alreadyHasQueryParams)
+      : converted;
   }, [url]);
 
   const sendMessage: SendMessage = useCallback(message => {
     webSocketRef.current && webSocketRef.current.send(message);
   }, []);
-  
+
   const getWebSocket = useCallback(() => {
     if (webSocketProxy.current === null) {
       webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef);
     }
-    
+
     return webSocketProxy.current;
   }, []);
 
@@ -67,13 +76,21 @@ export const useWebSocket = (
 
     const start = (): void => {
       expectClose.current = false;
-      
+
       createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
 
-      removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
-        setLastMessage,
-        setReadyState,
-      }, options, startRef.current, reconnectCount, expectClose);
+      removeListeners = attachListeners(
+        webSocketRef.current,
+        convertedUrl,
+        {
+          setLastMessage,
+          setReadyState
+        },
+        options,
+        startRef.current,
+        reconnectCount,
+        expectClose
+      );
     };
 
     startRef.current = () => {
@@ -82,7 +99,7 @@ export const useWebSocket = (
       removeListeners();
       start();
     };
-  
+
     start();
     return () => {
       expectClose.current = true;
@@ -92,16 +109,17 @@ export const useWebSocket = (
   }, [convertedUrl]);
 
   useEffect(() => {
-    if (
-      options.enforceStaticOptions !== false && staticOptionsCheck.current
-    ) {
-        throw new Error('The options object you pass must be static');
+    if (options.enforceStaticOptions !== false && staticOptionsCheck.current) {
+      throw new Error('The options object you pass must be static');
     }
 
     staticOptionsCheck.current = true;
   }, [options]);
 
-  const readyStateFromUrl = readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : ReadyState.CONNECTING;
+  const readyStateFromUrl =
+    readyState[convertedUrl] !== undefined
+      ? readyState[convertedUrl]
+      : ReadyState.CONNECTING;
 
-  return [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ];
+  return { sendMessage, lastMessage, readyStateFromUrl, getWebSocket };
 };

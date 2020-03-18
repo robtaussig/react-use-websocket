@@ -45,7 +45,7 @@ export const useSocketIO = (
     fromSocketIO: true,
   }), [])
 
-  const [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ] = useWebSocket(
+  const { sendMessage, lastMessage, readyStateFromUrl, getWebSocket } = useWebSocket(
     url,
     optionsWithSocketIO,
   )
