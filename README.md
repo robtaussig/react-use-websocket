@@ -78,12 +78,34 @@ const STATIC_OPTIONS = useMemo(() => ({
   shouldReconnect: (closeEvent) => true, //Will attempt to reconnect on all close events, such as server shutting down
 }), []);
 
-const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket('wss://echo.websocket.org', STATIC_OPTIONS);
+// This can also be an async getter function. See notes below on Async Urls.
+const socketUrl = 'wss://echo.websocket.org';
+
+const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket(socketUrl, STATIC_OPTIONS);
 ```
 
 ## Requirements
 - React 16.8+
 - Cannot be used within a class component (must be a functional component that supports React Hooks)
+
+## Async Urls
+Instead of passing a string as the first argument to useWebSocket, you can pass a function that returns a string (or a promise that resolves to a string). It's important to note, however, that other rules still apply -- namely, that if the function reference changes, then it will be called again, potentially instantiating a new websocket if the returned url changes.
+
+```js
+// In component
+import useWebSocket from 'react-use-websocket';
+
+const getSocketUrl = useCallback(() => {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve('wss://echo.websocket.org');
+    }, 2000);
+  });
+}, []);
+
+const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket(getSocketUrl, STATIC_OPTIONS);
+```
+
 
 ## API
 
