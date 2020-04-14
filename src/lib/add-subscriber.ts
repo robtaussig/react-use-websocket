@@ -1,6 +1,6 @@
 import { sharedWebSockets } from './globals';
 import { Setters } from './attach-listener';
-import { ReadyStateState, Options } from './types';
+import { ReadyStateState, Options, SendMessage } from './types';
 import { ReadyState } from './constants';
 
 export type Subscriber = {
@@ -15,7 +15,13 @@ export type Subscribers = {
 
 const subscribers: Subscribers = {};
 
-export const addSubscriber = (webSocketInstance: WebSocket, url: string, setters: Setters, options: Options = {}) => {
+export const addSubscriber = (
+  webSocketInstance: WebSocket,
+  url: string,
+  setters: Setters,
+  options: Options = {},
+  sendMessage: SendMessage,
+) => {
   const { setLastMessage, setReadyState } = setters;
 
   if (subscribers[url] === undefined) {
@@ -59,7 +65,7 @@ export const addSubscriber = (webSocketInstance: WebSocket, url: string, setters
       subscribers[url].forEach(subscriber => {
         subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
         if (subscriber.options.onOpen) {
-          subscriber.options.onOpen(event);
+          subscriber.options.onOpen(event, sendMessage);
         }
       });
     };
