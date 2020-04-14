@@ -41,11 +41,11 @@ export const useWebSocket = (
   
   const getWebSocket = useCallback(() => {
     if (webSocketProxy.current === null) {
-      webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef);
+      webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef, options.share);
     }
     
     return webSocketProxy.current;
-  }, []);
+  }, [options.share]);
 
   useEffect(() => {
     const getUrl = async () => {

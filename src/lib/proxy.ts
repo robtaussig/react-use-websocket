@@ -8,13 +8,17 @@ type WritableKeys<T> = {
   [P in keyof T]-?: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P>
 }[keyof T];
 
-export const websocketWrapper = (webSocket: WebSocket, start: MutableRefObject<() => void>): WebSocket => {
+export const websocketWrapper = (
+  webSocket: WebSocket,
+  start: MutableRefObject<() => void>,
+  shared: boolean = false,
+): WebSocket => {
 
   return new Proxy<WebSocket>(webSocket, {
     get: (obj, key: keyof WebSocket) => {
       const val = obj[key];
       if ((key as any) === 'reconnect') return start;
-      if (typeof val === 'function') {
+      if (typeof val === 'function' && shared === true) {
         console.error('Calling methods directly on the websocket is not supported at this moment. You must use the methods returned by useWebSocket.');
         
         //Prevent error thrown by invoking a non-function
