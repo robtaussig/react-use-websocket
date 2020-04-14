@@ -45,7 +45,7 @@ export const useWebSocket = (
     }
 
     if (webSocketProxy.current === null) {
-      webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef, options.share);
+      webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef);
     }
     
     return webSocketProxy.current;

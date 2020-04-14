@@ -11,7 +11,6 @@ type WritableKeys<T> = {
 export const websocketWrapper = (
   webSocket: WebSocket,
   start: MutableRefObject<() => void>,
-  shared: boolean = false,
 ): WebSocket => {
 
   return new Proxy<WebSocket>(webSocket, {
