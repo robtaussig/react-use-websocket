@@ -147,7 +147,7 @@ useEffect(() => {
 
 ### getWebSocket: Function() -> Proxy<WebSocket>
 
-Calling this function will lazily instantiate a Proxy instance that wraps the underlying websocket. You can get and set properties on the return value that will directly interact with the websocket, however certain properties/methods are protected (cannot invoke `close` or `send`, and cannot redefine any of the event handlers like `onmessage`, `onclose`, `onopen` and `onerror`. An example of using this:
+If the websocket is shared, calling this function will lazily instantiate a Proxy instance that wraps the underlying websocket. You can get and set properties on the return value that will directly interact with the websocket, however certain properties/methods are protected (cannot invoke `close` or `send`, and cannot redefine any of the event handlers like `onmessage`, `onclose`, `onopen` and `onerror`. An example of using this:
 
 ```js
 const [sendMessage, lastMessage, readyState, getWebSocket] = useWebSocket('wss://echo.websocket.org');
@@ -177,6 +177,8 @@ useEffect(() => {
   //=> No message is sent, and no error thrown (a no-op function was returned), but an error will be logged to console: 'Calling methods directly on the websocket is not supported at this moment. You must use the methods returned by useWebSocket.'
 }, []);
 ```
+
+If the websocket is not shared (via options), then the return value is the underlying websocket, and thus methods such as `close` and `send` can be accessed and used.
 
 ## Options
 

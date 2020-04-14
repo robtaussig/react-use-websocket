@@ -40,12 +40,16 @@ export const useWebSocket = (
   }, []);
   
   const getWebSocket = useCallback(() => {
+    if (options.share !== true) {
+      return webSocketRef.current;
+    }
+
     if (webSocketProxy.current === null) {
       webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef);
     }
     
     return webSocketProxy.current;
-  }, []);
+  }, [options.share]);
 
   useEffect(() => {
     const getUrl = async () => {
