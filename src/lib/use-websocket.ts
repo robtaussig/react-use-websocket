@@ -1,31 +1,15 @@
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { parseSocketIOUrl, appendQueryParams, QueryParams } from './socket-io';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { parseSocketIOUrl, appendQueryParams } from './socket-io';
 import { attachListeners } from './attach-listener';
 import { DEFAULT_OPTIONS, ReadyState } from './constants';
 import { createOrJoinSocket } from './create-or-join';
 import websocketWrapper from './proxy';
-
-export interface Options {
-  fromSocketIO?: boolean;
-  queryParams?: QueryParams;
-  share?: boolean;
-  onOpen?: (event: WebSocketEventMap['open']) => void;
-  onClose?: (event: WebSocketEventMap['close']) => void;
-  onMessage?: (event: WebSocketEventMap['message']) => void;
-  onError?: (event: WebSocketEventMap['error']) => void;
-  shouldReconnect?: (event: WebSocketEventMap['close']) => boolean;
-  reconnectInterval?: number;
-  reconnectAttempts?: number;
-  filter?: (message: WebSocketEventMap['message']) => boolean;
-  retryOnError?: boolean;
-  enforceStaticOptions?: boolean;
-}
-
-export type ReadyStateState = {
-  [url: string]: ReadyState,
-}
-
-export type SendMessage = (message: (string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView)) => void;
+import {
+  Options,
+  ReadyStateState,
+  SendMessage,
+  WebSocketMessage,
+} from './types';
 
 export const useWebSocket = (
   url: () => Promise<string> | string,
@@ -37,12 +21,22 @@ export const useWebSocket = (
   const webSocketRef = useRef<WebSocket>(null);
   const startRef = useRef<() => void>(null);
   const reconnectCount = useRef<number>(0);
+  const messageQueue = useRef<WebSocketMessage[]>([]);
   const expectClose = useRef<boolean>(false);
   const webSocketProxy = useRef<WebSocket>(null)
   const staticOptionsCheck = useRef<boolean>(false);
 
+  const readyStateFromUrl =
+    convertedUrl && readyState[convertedUrl] !== undefined ?
+      readyState[convertedUrl] :
+      ReadyState.CONNECTING;
+
   const sendMessage: SendMessage = useCallback(message => {
-    webSocketRef.current && webSocketRef.current.send(message);
+    if (webSocketRef.current && webSocketRef.current.readyState === ReadyState.OPEN) {
+      webSocketRef.current.send(message);
+    } else {
+      messageQueue.current.push(message);
+    }
   }, []);
   
   const getWebSocket = useCallback(() => {
@@ -89,7 +83,7 @@ export const useWebSocket = (
         removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
           setLastMessage,
           setReadyState,
-        }, options, startRef.current, reconnectCount, expectClose);
+        }, options, startRef.current, reconnectCount, expectClose, sendMessage);
       };
 
       startRef.current = () => {
@@ -106,7 +100,7 @@ export const useWebSocket = (
         removeListeners();
       };
     }
-  }, [convertedUrl]);
+  }, [convertedUrl, sendMessage]);
 
   useEffect(() => {
     if (
@@ -118,10 +112,13 @@ export const useWebSocket = (
     staticOptionsCheck.current = true;
   }, [options]);
 
-  const readyStateFromUrl =
-    convertedUrl && readyState[convertedUrl] !== undefined ?
-      readyState[convertedUrl] :
-      ReadyState.CONNECTING;
+  useEffect(() => {
+    if (readyStateFromUrl === ReadyState.OPEN) {
+      messageQueue.current.splice(0).forEach(message => {
+        sendMessage(message);
+      });
+    }
+  }, [readyStateFromUrl]);
 
   return [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ];
 };

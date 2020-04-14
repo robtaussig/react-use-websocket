@@ -1,6 +1,6 @@
 import { sharedWebSockets } from './globals';
 import { Setters } from './attach-listener';
-import { ReadyStateState, Options } from './use-websocket';
+import { ReadyStateState, Options } from './types';
 import { ReadyState } from './constants';
 
 export type Subscriber = {
