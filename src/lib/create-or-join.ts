@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
 import { sharedWebSockets } from './globals';
-import { ReadyStateState, Options } from './use-websocket';
+import { ReadyStateState, Options } from './types';
 import { ReadyState } from './constants';
 
 export const createOrJoinSocket = (

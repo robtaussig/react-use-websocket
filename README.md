@@ -1,5 +1,6 @@
 # useWebSocket React Hook
 [Live Demo](https://robtaussig.com/socket/)
+Note: wss://demos.kaazing.com/echo has been down lately, so the demo will fail to connect when using that as the endpoint. On the plus side, this demonstrates the behavior of a connection failure.
 
 [Test in StackBlitz](https://stackblitz.com/edit/react-huzf9f)
 
@@ -191,7 +192,10 @@ const options = useMemo(() => ({
   onMessage: message => console.log(`onMessage with access to dynamicProp: ${dynamicPropRef.current}`, message),
   onClose: event => console.log('onClose', event),
   onError: error => console.log('onError', error),
-  onOpen: event => console.log('onOpen', event),
+  onOpen: (event, sendMessage) => {
+    console.log('onOpen', event);
+    sendMessage('Socket opened');
+  },
   fromSocketIO: true,
   queryParams: { 'user_id': 1 },
   shouldReconnect: () => dynamicPropRef.current === true, //If websocket closing is intentional, can set dynamicPropRef to false to avoid unnecessary reconnect attempts
@@ -204,7 +208,7 @@ const [sendMessage, lastMessage, readyState] = useWebSocket('wss://echo.websocke
 See section on [Reconnecting](#Reconnecting)
 
 ### Event Handlers: Callback
-Each of options.onMessage, options.onError, options.onClose, and options.onOpen will be called on the corresponding WebSocket event, if provided. Each will be passed the same event provided from the WebSocket.
+Each of options.onMessage, options.onError, options.onClose, and options.onOpen will be called on the corresponding WebSocket event, if provided. Each will be passed the same event provided from the WebSocket. OnOpen will receive a second parameter, which is a function that can be used to send a message. This implementation is due to the fact that the sendMessage returned from the hook is provided after the options definition, and thus will not be available.
 
 ### Share: Boolean
 If set to true, a new websocket will not be instantiated if one for the same url has already been created for another component. Once all subscribing components have either unmounted or changed their target socket url, shared WebSockets will be closed and cleaned up. No other APIs should be affected by this.
