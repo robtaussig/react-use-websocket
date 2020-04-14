@@ -26,29 +26,20 @@ export type ReadyStateState = {
 }
 
 export type SendMessage = (message: (string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView)) => void;
-// export type WebSocketProxy = <typeof ProxyWebSocket>;
 
 export const useWebSocket = (
-  url: string,
+  url: () => Promise<string> | string,
   options: Options = DEFAULT_OPTIONS,
 ): [SendMessage, WebSocketEventMap['message'], ReadyState, () => WebSocket] => {
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
+  const [ convertedUrl, setConvertedUrl ] = useState<string>(null);
   const webSocketRef = useRef<WebSocket>(null);
   const startRef = useRef<() => void>(null);
   const reconnectCount = useRef<number>(0);
   const expectClose = useRef<boolean>(false);
   const webSocketProxy = useRef<WebSocket>(null)
   const staticOptionsCheck = useRef<boolean>(false);
-
-  const convertedUrl = useMemo(() => {
-    const converted = options.fromSocketIO ? parseSocketIOUrl(url) : url;
-    const alreadyHasQueryParams = options.fromSocketIO;
-
-    return options.queryParams ?
-      appendQueryParams(converted, options.queryParams, alreadyHasQueryParams) :
-      converted;
-  }, [url]);
 
   const sendMessage: SendMessage = useCallback(message => {
     webSocketRef.current && webSocketRef.current.send(message);
@@ -63,32 +54,58 @@ export const useWebSocket = (
   }, []);
 
   useEffect(() => {
-    let removeListeners: () => void;
+    const getUrl = async () => {
+      let convertedUrl: string;
 
-    const start = (): void => {
-      expectClose.current = false;
-      
-      createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
+      if (typeof url === 'function') {
+        convertedUrl = await url();
+      } else {
+        convertedUrl = url;
+      }
 
-      removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
-        setLastMessage,
-        setReadyState,
-      }, options, startRef.current, reconnectCount, expectClose);
-    };
-
-    startRef.current = () => {
-      expectClose.current = true;
-      if (webSocketProxy.current) webSocketProxy.current = null;
-      removeListeners();
-      start();
-    };
+      const parsedUrl = options.fromSocketIO ?
+        parseSocketIOUrl(convertedUrl) :
+        convertedUrl;
   
-    start();
-    return () => {
-      expectClose.current = true;
-      if (webSocketProxy.current) webSocketProxy.current = null;
-      removeListeners();
+      const parsedWithQueryParams = options.queryParams ?
+        appendQueryParams(parsedUrl, options.queryParams, options.fromSocketIO) :
+        convertedUrl;
+
+        setConvertedUrl(parsedWithQueryParams);
     };
+
+    getUrl();
+  }, [url]);
+
+  useEffect(() => {
+    if (convertedUrl !== null) {
+      let removeListeners: () => void;
+
+      const start = (): void => {
+        expectClose.current = false;
+        
+        createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
+
+        removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
+          setLastMessage,
+          setReadyState,
+        }, options, startRef.current, reconnectCount, expectClose);
+      };
+
+      startRef.current = () => {
+        expectClose.current = true;
+        if (webSocketProxy.current) webSocketProxy.current = null;
+        removeListeners();
+        start();
+      };
+    
+      start();
+      return () => {
+        expectClose.current = true;
+        if (webSocketProxy.current) webSocketProxy.current = null;
+        removeListeners();
+      };
+    }
   }, [convertedUrl]);
 
   useEffect(() => {
@@ -101,7 +118,10 @@ export const useWebSocket = (
     staticOptionsCheck.current = true;
   }, [options]);
 
-  const readyStateFromUrl = readyState[convertedUrl] !== undefined ? readyState[convertedUrl] : ReadyState.CONNECTING;
+  const readyStateFromUrl =
+    convertedUrl && readyState[convertedUrl] !== undefined ?
+      readyState[convertedUrl] :
+      ReadyState.CONNECTING;
 
   return [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ];
 };
