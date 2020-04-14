@@ -12,7 +12,7 @@ import {
 } from './types';
 
 export const useWebSocket = (
-  url: () => Promise<string> | string,
+  url: string | (() => string | Promise<string>),
   options: Options = DEFAULT_OPTIONS,
 ): [SendMessage, WebSocketEventMap['message'], ReadyState, () => WebSocket] => {
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
