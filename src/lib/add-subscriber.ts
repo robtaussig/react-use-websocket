@@ -15,7 +15,7 @@ export const addSubscriber = (
   url: string,
   setters: Setters,
   options: Options = {},
-  reconnect: (subscribers?: Subscriber[]) => void,
+  reconnect: () => void,
   reconnectCount: MutableRefObject<number>,
   expectClose: MutableRefObject<boolean>,
   sendMessage: SendMessage,

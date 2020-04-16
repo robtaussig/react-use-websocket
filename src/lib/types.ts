@@ -35,5 +35,5 @@ export type Subscriber = {
   setLastMessage: (message: WebSocketEventMap['message']) => void,
   setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
   options: Options,
-  reconnect: (subscribers?: Subscriber[]) => void;
+  reconnect: () => void;
 }
