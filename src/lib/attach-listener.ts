@@ -32,7 +32,7 @@ export const attachListeners = (
     const removeSubscriber = addSubscriber(webSocketInstance, url, {
       setLastMessage,
       setReadyState,
-    }, options, sendMessage);
+    }, options, reconnect, reconnectCount, expectClose, sendMessage);
 
     return removeSubscriber;
   }

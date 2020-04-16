@@ -1,13 +1,8 @@
+import { MutableRefObject } from 'react';
 import { sharedWebSockets } from './globals';
 import { Setters } from './attach-listener';
-import { ReadyStateState, Options, SendMessage } from './types';
-import { ReadyState } from './constants';
-
-export type Subscriber = {
-  setLastMessage: (message: WebSocketEventMap['message']) => void,
-  setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
-  options: Options,
-}
+import { Options, SendMessage, Subscriber } from './types';
+import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
 
 export type Subscribers = {
   [url: string]: Subscriber[],
@@ -20,9 +15,13 @@ export const addSubscriber = (
   url: string,
   setters: Setters,
   options: Options = {},
+  reconnect: (subscribers?: Subscriber[]) => void,
+  reconnectCount: MutableRefObject<number>,
+  expectClose: MutableRefObject<boolean>,
   sendMessage: SendMessage,
 ) => {
   const { setLastMessage, setReadyState } = setters;
+  let reconnectTimeout: NodeJS.Timer;
 
   if (subscribers[url] === undefined) {
     subscribers[url] = [];
@@ -42,14 +41,35 @@ export const addSubscriber = (
 
     webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
       subscribers[url].forEach(subscriber => {
-        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CLOSED}));
+        if (expectClose.current === false) {
+          subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CLOSED}));
+        }
         if (subscriber.options.onClose) {
           subscriber.options.onClose(event);
         }
       });
-
-      subscribers[url] = undefined;
+      
       sharedWebSockets[url] = undefined;
+      const subscribersToReconnect = [...subscribers[url]];
+      subscribers[url] = undefined;
+
+      if (options.shouldReconnect && options.shouldReconnect(event)) {
+        const reconnectAttempts = options.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
+        if (reconnectCount.current < reconnectAttempts) {
+          if (expectClose.current === false) {
+            reconnectTimeout = setTimeout(() => {
+              reconnectCount.current++;
+              
+              subscribersToReconnect.forEach(subscriber => {
+                subscriber.reconnect();
+              })
+            }, options.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+          }
+        } else {
+          console.error(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
+        }
+      }
+      
     };
 
     webSocketInstance.onerror = (error: WebSocketEventMap['error']) => {
@@ -62,8 +82,11 @@ export const addSubscriber = (
     };
 
     webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
+      reconnectCount.current = 0;
       subscribers[url].forEach(subscriber => {
-        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
+        if (expectClose.current === false) {
+          subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
+        }
         if (subscriber.options.onOpen) {
           subscriber.options.onOpen(event, sendMessage);
         }
@@ -72,15 +95,18 @@ export const addSubscriber = (
   } else {
     setReadyState(prev => Object.assign({}, prev, {[url]: sharedWebSockets[url].readyState}));
   }
-
   const subscriber = {
     setLastMessage,
     setReadyState,
     options,
+    reconnect,
   };
+
   subscribers[url].push(subscriber);
 
   return () => {
+    if (reconnectTimeout) clearTimeout(reconnectTimeout);
+  
     if (subscribers[url] !== undefined) {
       const index = subscribers[url].indexOf(subscriber);
       if (index === -1) {
