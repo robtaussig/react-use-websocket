@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { parseSocketIOUrl, appendQueryParams } from './socket-io';
 import { attachListeners } from './attach-listener';
 import { DEFAULT_OPTIONS, ReadyState } from './constants';
 import { createOrJoinSocket } from './create-or-join';
+import { getUrl } from './get-url';
 import websocketWrapper from './proxy';
 import {
   Options,
@@ -17,7 +17,7 @@ export const useWebSocket = (
 ): [SendMessage, WebSocketEventMap['message'], ReadyState, () => WebSocket] => {
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
-  const [ convertedUrl, setConvertedUrl ] = useState<string>(null);
+  const convertedUrl = useRef<string>(null);
   const webSocketRef = useRef<WebSocket>(null);
   const startRef = useRef<() => void>(null);
   const reconnectCount = useRef<number>(0);
@@ -27,8 +27,8 @@ export const useWebSocket = (
   const staticOptionsCheck = useRef<boolean>(false);
 
   const readyStateFromUrl =
-    convertedUrl && readyState[convertedUrl] !== undefined ?
-      readyState[convertedUrl] :
+    convertedUrl.current && readyState[convertedUrl.current] !== undefined ?
+      readyState[convertedUrl.current] :
       ReadyState.CONNECTING;
 
   const sendMessage: SendMessage = useCallback(message => {
@@ -52,39 +52,16 @@ export const useWebSocket = (
   }, [options.share]);
 
   useEffect(() => {
-    const getUrl = async () => {
-      let convertedUrl: string;
-
-      if (typeof url === 'function') {
-        convertedUrl = await url();
-      } else {
-        convertedUrl = url;
-      }
-
-      const parsedUrl = options.fromSocketIO ?
-        parseSocketIOUrl(convertedUrl) :
-        convertedUrl;
-  
-      const parsedWithQueryParams = options.queryParams ?
-        appendQueryParams(parsedUrl, options.queryParams, options.fromSocketIO) :
-        convertedUrl;
-
-        setConvertedUrl(parsedWithQueryParams);
-    };
-
-    getUrl();
-  }, [url]);
-
-  useEffect(() => {
-    if (convertedUrl !== null) {
+    if (url !== null) {
       let removeListeners: () => void;
 
-      const start = (): void => {
+      const start = async () => {
         expectClose.current = false;
-        
-        createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
+        convertedUrl.current = await getUrl(url, options);
 
-        removeListeners = attachListeners(webSocketRef.current, convertedUrl, {
+        createOrJoinSocket(webSocketRef, convertedUrl.current, setReadyState, options);
+
+        removeListeners = attachListeners(webSocketRef.current, convertedUrl.current, {
           setLastMessage,
           setReadyState,
         }, options, startRef.current, reconnectCount, expectClose, sendMessage);
@@ -93,7 +70,7 @@ export const useWebSocket = (
       startRef.current = () => {
         expectClose.current = true;
         if (webSocketProxy.current) webSocketProxy.current = null;
-        removeListeners();
+        removeListeners?.();
         start();
       };
     
@@ -101,10 +78,10 @@ export const useWebSocket = (
       return () => {
         expectClose.current = true;
         if (webSocketProxy.current) webSocketProxy.current = null;
-        removeListeners();
+        removeListeners?.();
       };
     }
-  }, [convertedUrl, sendMessage]);
+  }, [url, sendMessage]);
 
   useEffect(() => {
     if (
