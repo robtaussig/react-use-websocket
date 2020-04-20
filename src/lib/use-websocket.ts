@@ -12,7 +12,7 @@ import {
 } from './types';
 
 export const useWebSocket = (
-  url: string | (() => string | Promise<string>),
+  url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
 ): [SendMessage, WebSocketEventMap['message'], ReadyState, () => WebSocket] => {
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
@@ -29,7 +29,9 @@ export const useWebSocket = (
   const readyStateFromUrl =
     convertedUrl.current && readyState[convertedUrl.current] !== undefined ?
       readyState[convertedUrl.current] :
-      ReadyState.CONNECTING;
+      url !== null ?
+        ReadyState.CONNECTING :
+        ReadyState.UNINSTANTIATED;
 
   const sendMessage: SendMessage = useCallback(message => {
     if (webSocketRef.current && webSocketRef.current.readyState === ReadyState.OPEN) {
