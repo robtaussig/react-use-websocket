@@ -13,12 +13,20 @@ import {
   UseWebSocketReturnValue,
 } from './types';
 
+export type WebSocketHook = {
+  sendMessage: SendMessage,
+  lastMessage: WebSocketEventMap['message'],
+  readyStateFromUrl: ReadyState,
+  getWebSocket: () => WebSocket,
+}
+
 export const useWebSocket = (
   url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
   connect: boolean = true,
-): UseWebSocketReturnValue => {
-  const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
+): WebSocketHook => {
+  const [lastMessage, setLastMessage] = useState<WebSocketEventMap['message']>(null);
+  const [readyState, setReadyState] = useState<ReadyStateState>({});
   const lastJsonMessage = useMemo(() => {
     if (lastMessage) {
       try {
@@ -29,7 +37,6 @@ export const useWebSocket = (
     }
     return null;
   },[lastMessage]);
-  const [ readyState, setReadyState ] = useState<ReadyStateState>({});
   const convertedUrl = useRef<string>(null);
   const webSocketRef = useRef<WebSocket>(null);
   const startRef = useRef<() => void>(null);
@@ -67,7 +74,7 @@ export const useWebSocket = (
     if (webSocketProxy.current === null) {
       webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef);
     }
-    
+
     return webSocketProxy.current;
   }, [optionsCache]);
 
@@ -81,10 +88,18 @@ export const useWebSocket = (
 
         createOrJoinSocket(webSocketRef, convertedUrl.current, setReadyState, optionsCache);
 
-        removeListeners = attachListeners(webSocketRef.current, convertedUrl.current, {
-          setLastMessage,
-          setReadyState,
-        }, optionsCache, startRef.current, reconnectCount, expectClose);
+        removeListeners = attachListeners(
+          webSocketRef.current,
+          convertedUrl.current,
+          {
+            setLastMessage,
+            setReadyState
+          },
+          optionsCache,
+          startRef.current,
+          reconnectCount,
+          expectClose
+        );
       };
 
       startRef.current = () => {
@@ -95,6 +110,7 @@ export const useWebSocket = (
       };
     
       start();
+        
       return () => {
         expectClose.current = true;
         if (webSocketProxy.current) webSocketProxy.current = null;

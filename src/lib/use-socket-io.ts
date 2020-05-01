@@ -53,6 +53,7 @@ export const useSocketIO = (
     readyState,
     getWebSocket,
   } = useWebSocket(
+
     url,
     optionsWithSocketIO,
     connect,
