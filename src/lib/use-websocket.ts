@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { attachListeners } from './attach-listener';
-import { DEFAULT_OPTIONS, ReadyState } from './constants';
+import { DEFAULT_OPTIONS, ReadyState, UNPARSABLE_JSON_OBJECT } from './constants';
 import { createOrJoinSocket } from './create-or-join';
 import { getUrl } from './get-url';
 import websocketWrapper from './proxy';
@@ -8,14 +8,27 @@ import {
   Options,
   ReadyStateState,
   SendMessage,
+  SendJsonMessage,
   WebSocketMessage,
+  UseWebSocketReturnValue,
 } from './types';
 
 export const useWebSocket = (
   url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
-): [SendMessage, WebSocketEventMap['message'], ReadyState, () => WebSocket] => {
+  connect: boolean = true,
+): UseWebSocketReturnValue => {
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
+  const lastJsonMessage = useMemo(() => {
+    if (lastMessage) {
+      try {
+        return JSON.parse(lastMessage.data);
+      } catch (e) {
+        return UNPARSABLE_JSON_OBJECT;
+      }
+    }
+    return null;
+  },[lastMessage]);
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
   const convertedUrl = useRef<string>(null);
   const webSocketRef = useRef<WebSocket>(null);
@@ -24,12 +37,13 @@ export const useWebSocket = (
   const messageQueue = useRef<WebSocketMessage[]>([]);
   const expectClose = useRef<boolean>(false);
   const webSocketProxy = useRef<WebSocket>(null)
-  const staticOptionsCheck = useRef<boolean>(false);
+  const optionsCache = useRef<Options>(null);
+  optionsCache.current = options;
 
   const readyStateFromUrl =
     convertedUrl.current && readyState[convertedUrl.current] !== undefined ?
       readyState[convertedUrl.current] :
-      url !== null ?
+      url !== null && connect === true ?
         ReadyState.CONNECTING :
         ReadyState.UNINSTANTIATED;
 
@@ -40,9 +54,13 @@ export const useWebSocket = (
       messageQueue.current.push(message);
     }
   }, []);
+
+  const sendJsonMessage: SendJsonMessage = useCallback(message => {
+    sendMessage(JSON.stringify(message));
+  }, [sendMessage]);
   
   const getWebSocket = useCallback(() => {
-    if (options.share !== true) {
+    if (optionsCache.current.share !== true) {
       return webSocketRef.current;
     }
 
@@ -51,22 +69,22 @@ export const useWebSocket = (
     }
     
     return webSocketProxy.current;
-  }, [options.share]);
+  }, [optionsCache]);
 
   useEffect(() => {
-    if (url !== null) {
+    if (url !== null && connect === true) {
       let removeListeners: () => void;
 
       const start = async () => {
         expectClose.current = false;
-        convertedUrl.current = await getUrl(url, options);
+        convertedUrl.current = await getUrl(url, optionsCache);
 
-        createOrJoinSocket(webSocketRef, convertedUrl.current, setReadyState, options);
+        createOrJoinSocket(webSocketRef, convertedUrl.current, setReadyState, optionsCache);
 
         removeListeners = attachListeners(webSocketRef.current, convertedUrl.current, {
           setLastMessage,
           setReadyState,
-        }, options, startRef.current, reconnectCount, expectClose, sendMessage);
+        }, optionsCache, startRef.current, reconnectCount, expectClose);
       };
 
       startRef.current = () => {
@@ -83,17 +101,7 @@ export const useWebSocket = (
         removeListeners?.();
       };
     }
-  }, [url, sendMessage]);
-
-  useEffect(() => {
-    if (
-      options.enforceStaticOptions !== false && staticOptionsCheck.current
-    ) {
-        throw new Error('The options object you pass must be static');
-    }
-
-    staticOptionsCheck.current = true;
-  }, [options]);
+  }, [url, connect, optionsCache, sendMessage]);
 
   useEffect(() => {
     if (readyStateFromUrl === ReadyState.OPEN) {
@@ -103,5 +111,12 @@ export const useWebSocket = (
     }
   }, [readyStateFromUrl]);
 
-  return [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ];
+  return {
+    sendMessage,
+    sendJsonMessage,
+    lastMessage,
+    lastJsonMessage,
+    readyState: readyStateFromUrl,
+    getWebSocket,
+  };
 };

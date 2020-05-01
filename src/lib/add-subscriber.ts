@@ -1,7 +1,7 @@
 import { MutableRefObject } from 'react';
 import { sharedWebSockets } from './globals';
 import { Setters } from './attach-listener';
-import { Options, SendMessage, Subscriber } from './types';
+import { Options, Subscriber } from './types';
 import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
 
 export type Subscribers = {
@@ -14,11 +14,10 @@ export const addSubscriber = (
   webSocketInstance: WebSocket,
   url: string,
   setters: Setters,
-  options: Options = {},
+  optionsRef: MutableRefObject<Options>,
   reconnect: () => void,
   reconnectCount: MutableRefObject<number>,
   expectClose: MutableRefObject<boolean>,
-  sendMessage: SendMessage,
 ) => {
   const { setLastMessage, setReadyState } = setters;
   let reconnectTimeout: NodeJS.Timer;
@@ -27,14 +26,14 @@ export const addSubscriber = (
     subscribers[url] = [];
 
     webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
-      if (typeof options.filter === 'function' && options.filter(message) !== true) {
+      if (typeof optionsRef.current.filter === 'function' && optionsRef.current.filter(message) !== true) {
         return;
       }
       subscribers[url].forEach(subscriber => {        
         subscriber.setLastMessage(message);
 
-        if (subscriber.options.onMessage) {
-          subscriber.options.onMessage(message);
+        if (subscriber.optionsRef.current.onMessage) {
+          subscriber.optionsRef.current.onMessage(message);
         }
       });
     };
@@ -44,8 +43,8 @@ export const addSubscriber = (
         if (expectClose.current === false) {
           subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CLOSED}));
         }
-        if (subscriber.options.onClose) {
-          subscriber.options.onClose(event);
+        if (subscriber.optionsRef.current.onClose) {
+          subscriber.optionsRef.current.onClose(event);
         }
       });
       
@@ -53,8 +52,8 @@ export const addSubscriber = (
       const subscribersToReconnect = [...subscribers[url]];
       subscribers[url] = undefined;
 
-      if (options.shouldReconnect && options.shouldReconnect(event)) {
-        const reconnectAttempts = options.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
+      if (optionsRef.current.shouldReconnect && optionsRef.current.shouldReconnect(event)) {
+        const reconnectAttempts = optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
         if (reconnectCount.current < reconnectAttempts) {
           if (expectClose.current === false) {
             reconnectTimeout = setTimeout(() => {
@@ -63,7 +62,7 @@ export const addSubscriber = (
               subscribersToReconnect.forEach(subscriber => {
                 subscriber.reconnect();
               })
-            }, options.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+            }, optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
           }
         } else {
           console.error(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
@@ -75,8 +74,8 @@ export const addSubscriber = (
     webSocketInstance.onerror = (error: WebSocketEventMap['error']) => {
       subscribers[url].forEach(subscriber => {
 
-        if (subscriber.options.onError) {
-          subscriber.options.onError(error);
+        if (subscriber.optionsRef.current.onError) {
+          subscriber.optionsRef.current.onError(error);
         }
       });
     };
@@ -87,8 +86,8 @@ export const addSubscriber = (
         if (expectClose.current === false) {
           subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
         }
-        if (subscriber.options.onOpen) {
-          subscriber.options.onOpen(event, sendMessage);
+        if (subscriber.optionsRef.current.onOpen) {
+          subscriber.optionsRef.current.onOpen(event);
         }
       });
     };
@@ -98,7 +97,7 @@ export const addSubscriber = (
   const subscriber = {
     setLastMessage,
     setReadyState,
-    options,
+    optionsRef,
     reconnect,
   };
 

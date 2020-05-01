@@ -13,33 +13,32 @@ export const attachListeners = (
     webSocketInstance: WebSocket,
     url: string,
     setters: Setters,
-    options: Options,
+    optionsRef: MutableRefObject<Options>,
     reconnect: () => void,
     reconnectCount: MutableRefObject<number>,
     expectClose: MutableRefObject<boolean>,
-    sendMessage: SendMessage,
   ): (() => void) => {
   const { setLastMessage, setReadyState } = setters;
 
   let interval: NodeJS.Timeout;
   let reconnectTimeout: NodeJS.Timeout;
 
-  if (options.fromSocketIO) {
+  if (optionsRef.current.fromSocketIO) {
     interval = setUpSocketIOPing(webSocketInstance);
   }
 
-  if (options.share) {
+  if (optionsRef.current.share) {
     const removeSubscriber = addSubscriber(webSocketInstance, url, {
       setLastMessage,
       setReadyState,
-    }, options, reconnect, reconnectCount, expectClose, sendMessage);
+    }, optionsRef, reconnect, reconnectCount, expectClose);
 
     return removeSubscriber;
   }
   
   webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
-    options.onMessage && options.onMessage(message);
-    if (typeof options.filter === 'function' && options.filter(message) !== true) {
+    optionsRef.current.onMessage && optionsRef.current.onMessage(message);
+    if (typeof optionsRef.current.filter === 'function' && optionsRef.current.filter(message) !== true) {
       return;
     }
     if (expectClose.current === false) {
@@ -47,25 +46,25 @@ export const attachListeners = (
     }
   };
   webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
-    options.onOpen && options.onOpen(event, sendMessage);
+    optionsRef.current.onOpen && optionsRef.current.onOpen(event);
     reconnectCount.current = 0;
     if (expectClose.current === false) {
       setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
     }
   };
   webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
-    options.onClose && options.onClose(event);
+    optionsRef.current.onClose && optionsRef.current.onClose(event);
     if (expectClose.current === false) {
       setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CLOSED}));
     }
-    if (options.shouldReconnect && options.shouldReconnect(event)) {
-      const reconnectAttempts = options.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
+    if (optionsRef.current.shouldReconnect && optionsRef.current.shouldReconnect(event)) {
+      const reconnectAttempts = optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
       if (reconnectCount.current < reconnectAttempts) {
         if (expectClose.current === false) {
           reconnectTimeout = setTimeout(() => {
             reconnectCount.current++;
             reconnect();
-          }, options.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+          }, optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
         }
       } else {
         console.error(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
@@ -73,14 +72,15 @@ export const attachListeners = (
     }
   };
   webSocketInstance.onerror = (error: WebSocketEventMap['error']) => {
-    options.onError && options.onError(error);
+    optionsRef.current.onError && optionsRef.current.onError(error);
 
-    if (options.retryOnError) {
-      if (reconnectCount.current < (options.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT)) {
+    if (optionsRef.current.retryOnError) {
+      if (reconnectCount.current < (optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT)) {
+        expectClose.current = true;
         reconnectTimeout = setTimeout(() => {
           reconnectCount.current++;
           reconnect();
-        }, options.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+        }, optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
       }
     }
   };
