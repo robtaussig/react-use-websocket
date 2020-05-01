@@ -1,9 +1,10 @@
+import { MutableRefObject } from 'react';
 import { parseSocketIOUrl, appendQueryParams } from './socket-io';
 import { Options } from './types';
 
 export const getUrl = async (
   url: string | (() => string | Promise<string>),
-  options: Options,
+  optionsRef: MutableRefObject<Options>,
 ) => {
   let convertedUrl: string;
 
@@ -13,12 +14,16 @@ export const getUrl = async (
     convertedUrl = url;
   }
 
-  const parsedUrl = options.fromSocketIO ?
+  const parsedUrl = optionsRef.current.fromSocketIO ?
     parseSocketIOUrl(convertedUrl) :
     convertedUrl;
 
-  const parsedWithQueryParams = options.queryParams ?
-    appendQueryParams(parsedUrl, options.queryParams, options.fromSocketIO) :
+  const parsedWithQueryParams = optionsRef.current.queryParams ?
+    appendQueryParams(
+      parsedUrl,
+      optionsRef.current.queryParams,
+      optionsRef.current.fromSocketIO,
+    ) :
     convertedUrl;
 
   return parsedWithQueryParams;

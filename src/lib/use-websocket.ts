@@ -37,7 +37,8 @@ export const useWebSocket = (
   const messageQueue = useRef<WebSocketMessage[]>([]);
   const expectClose = useRef<boolean>(false);
   const webSocketProxy = useRef<WebSocket>(null)
-  const staticOptionsCheck = useRef<boolean>(false);
+  const optionsCache = useRef<Options>(null);
+  optionsCache.current = options;
 
   const readyStateFromUrl =
     convertedUrl.current && readyState[convertedUrl.current] !== undefined ?
@@ -59,7 +60,7 @@ export const useWebSocket = (
   }, [sendMessage]);
   
   const getWebSocket = useCallback(() => {
-    if (options.share !== true) {
+    if (optionsCache.current.share !== true) {
       return webSocketRef.current;
     }
 
@@ -68,7 +69,7 @@ export const useWebSocket = (
     }
     
     return webSocketProxy.current;
-  }, [options.share]);
+  }, [optionsCache]);
 
   useEffect(() => {
     if (url !== null && connect === true) {
@@ -76,14 +77,14 @@ export const useWebSocket = (
 
       const start = async () => {
         expectClose.current = false;
-        convertedUrl.current = await getUrl(url, options);
+        convertedUrl.current = await getUrl(url, optionsCache);
 
-        createOrJoinSocket(webSocketRef, convertedUrl.current, setReadyState, options);
+        createOrJoinSocket(webSocketRef, convertedUrl.current, setReadyState, optionsCache);
 
         removeListeners = attachListeners(webSocketRef.current, convertedUrl.current, {
           setLastMessage,
           setReadyState,
-        }, options, startRef.current, reconnectCount, expectClose);
+        }, optionsCache, startRef.current, reconnectCount, expectClose);
       };
 
       startRef.current = () => {
@@ -100,17 +101,7 @@ export const useWebSocket = (
         removeListeners?.();
       };
     }
-  }, [url, connect, sendMessage]);
-
-  useEffect(() => {
-    if (
-      options.enforceStaticOptions !== false && staticOptionsCheck.current
-    ) {
-        throw new Error('The options object you pass must be static');
-    }
-
-    staticOptionsCheck.current = true;
-  }, [options]);
+  }, [url, connect, optionsCache, sendMessage]);
 
   useEffect(() => {
     if (readyStateFromUrl === ReadyState.OPEN) {
@@ -125,7 +116,7 @@ export const useWebSocket = (
     sendJsonMessage,
     lastMessage,
     lastJsonMessage,
-    readyStateFromUrl,
+    readyState: readyStateFromUrl,
     getWebSocket,
   };
 };

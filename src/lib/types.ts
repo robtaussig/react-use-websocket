@@ -1,3 +1,4 @@
+import { MutableRefObject } from 'react';
 import { ReadyState } from './constants';
 
 export interface QueryParams {
@@ -32,7 +33,7 @@ export type SendJsonMessage = (jsonMessage: any) => void;
 export type Subscriber<T = WebSocketEventMap['message']> = {
   setLastMessage: (message: T) => void,
   setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
-  options: Options,
+  optionsRef: MutableRefObject<Options>,
   reconnect: () => void;
 }
 
@@ -41,6 +42,6 @@ export interface UseWebSocketReturnValue<T = WebSocketEventMap['message']> {
   sendJsonMessage: SendJsonMessage;
   lastMessage: T;
   lastJsonMessage: any;
-  readyStateFromUrl: ReadyState;
+  readyState: ReadyState;
   getWebSocket: () => WebSocket;
 }

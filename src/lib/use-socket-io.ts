@@ -50,7 +50,7 @@ export const useSocketIO = (
     sendMessage,
     sendJsonMessage,
     lastMessage,
-    readyStateFromUrl,
+    readyState,
     getWebSocket,
   } = useWebSocket(
     url,
@@ -66,7 +66,7 @@ export const useSocketIO = (
     sendJsonMessage,
     lastMessage: socketIOLastMessage,
     lastJsonMessage: socketIOLastMessage,
-    readyStateFromUrl,
+    readyState,
     getWebSocket,
   };
 }
