@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useWebSocket } from './use-websocket'
-import { DEFAULT_OPTIONS, ReadyState } from './constants'
-import { Options, SendMessage } from './types';
+import { DEFAULT_OPTIONS } from './constants'
+import { Options, UseWebSocketReturnValue } from './types';
 
 export interface SocketIOMessageData {
   type: string,
@@ -39,21 +39,34 @@ const getSocketData = (event: WebSocketEventMap['message']): SocketIOMessageData
 export const useSocketIO = (
   url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
-): [SendMessage, SocketIOMessageData, ReadyState, () => WebSocket] => {
+  connect: boolean,
+): UseWebSocketReturnValue<SocketIOMessageData> => {
   const optionsWithSocketIO = useMemo(() => ({
     ...options,
     fromSocketIO: true,
   }), [])
 
-  const [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ] = useWebSocket(
-    url,
-    optionsWithSocketIO,
-  )
-
-  return [
+  const {
     sendMessage,
-    useMemo(() => getSocketData(lastMessage), [lastMessage]),
+    sendJsonMessage,
+    lastMessage,
     readyStateFromUrl,
     getWebSocket,
-  ]
+  } = useWebSocket(
+    url,
+    optionsWithSocketIO,
+    connect,
+  );
+
+  const socketIOLastMessage = useMemo(() =>
+    getSocketData(lastMessage), [lastMessage]);
+
+  return {
+    sendMessage,
+    sendJsonMessage,
+    lastMessage: socketIOLastMessage,
+    lastJsonMessage: socketIOLastMessage,
+    readyStateFromUrl,
+    getWebSocket,
+  };
 }

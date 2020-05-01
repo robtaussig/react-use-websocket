@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { attachListeners } from './attach-listener';
-import { DEFAULT_OPTIONS, ReadyState } from './constants';
+import { DEFAULT_OPTIONS, ReadyState, UNPARSABLE_JSON_OBJECT } from './constants';
 import { createOrJoinSocket } from './create-or-join';
 import { getUrl } from './get-url';
 import websocketWrapper from './proxy';
@@ -8,14 +8,27 @@ import {
   Options,
   ReadyStateState,
   SendMessage,
+  SendJsonMessage,
   WebSocketMessage,
+  UseWebSocketReturnValue,
 } from './types';
 
 export const useWebSocket = (
   url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
-): [SendMessage, WebSocketEventMap['message'], ReadyState, () => WebSocket] => {
+  connect: boolean = true,
+): UseWebSocketReturnValue => {
   const [ lastMessage, setLastMessage ] = useState<WebSocketEventMap['message']>(null);
+  const lastJsonMessage = useMemo(() => {
+    if (lastMessage) {
+      try {
+        return JSON.parse(lastMessage.data);
+      } catch (e) {
+        return UNPARSABLE_JSON_OBJECT;
+      }
+    }
+    return null;
+  },[lastMessage]);
   const [ readyState, setReadyState ] = useState<ReadyStateState>({});
   const convertedUrl = useRef<string>(null);
   const webSocketRef = useRef<WebSocket>(null);
@@ -40,6 +53,10 @@ export const useWebSocket = (
       messageQueue.current.push(message);
     }
   }, []);
+
+  const sendJsonMessage: SendJsonMessage = useCallback(message => {
+    sendMessage(JSON.stringify(message));
+  }, [sendMessage]);
   
   const getWebSocket = useCallback(() => {
     if (options.share !== true) {
@@ -54,7 +71,7 @@ export const useWebSocket = (
   }, [options.share]);
 
   useEffect(() => {
-    if (url !== null) {
+    if (url !== null && connect === true) {
       let removeListeners: () => void;
 
       const start = async () => {
@@ -66,7 +83,7 @@ export const useWebSocket = (
         removeListeners = attachListeners(webSocketRef.current, convertedUrl.current, {
           setLastMessage,
           setReadyState,
-        }, options, startRef.current, reconnectCount, expectClose, sendMessage);
+        }, options, startRef.current, reconnectCount, expectClose);
       };
 
       startRef.current = () => {
@@ -83,7 +100,7 @@ export const useWebSocket = (
         removeListeners?.();
       };
     }
-  }, [url, sendMessage]);
+  }, [url, connect, sendMessage]);
 
   useEffect(() => {
     if (
@@ -103,5 +120,12 @@ export const useWebSocket = (
     }
   }, [readyStateFromUrl]);
 
-  return [ sendMessage, lastMessage, readyStateFromUrl, getWebSocket ];
+  return {
+    sendMessage,
+    sendJsonMessage,
+    lastMessage,
+    lastJsonMessage,
+    readyStateFromUrl,
+    getWebSocket,
+  };
 };

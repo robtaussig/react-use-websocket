@@ -8,10 +8,7 @@ export interface Options {
   fromSocketIO?: boolean;
   queryParams?: QueryParams;
   share?: boolean;
-  onOpen?: (
-    event: WebSocketEventMap['open'],
-    sendMessage: SendMessage,
-  ) => void;
+  onOpen?: (event: WebSocketEventMap['open']) => void;
   onClose?: (event: WebSocketEventMap['close']) => void;
   onMessage?: (event: WebSocketEventMap['message']) => void;
   onError?: (event: WebSocketEventMap['error']) => void;
@@ -30,10 +27,20 @@ export type ReadyStateState = {
 export type WebSocketMessage = string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView;
 
 export type SendMessage = (message: WebSocketMessage) => void;
+export type SendJsonMessage = (jsonMessage: any) => void;
 
-export type Subscriber = {
-  setLastMessage: (message: WebSocketEventMap['message']) => void,
+export type Subscriber<T = WebSocketEventMap['message']> = {
+  setLastMessage: (message: T) => void,
   setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
   options: Options,
   reconnect: () => void;
+}
+
+export interface UseWebSocketReturnValue<T = WebSocketEventMap['message']> {
+  sendMessage: SendMessage;
+  sendJsonMessage: SendJsonMessage;
+  lastMessage: T;
+  lastJsonMessage: any;
+  readyStateFromUrl: ReadyState;
+  getWebSocket: () => WebSocket;
 }

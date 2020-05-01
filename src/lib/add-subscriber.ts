@@ -18,7 +18,6 @@ export const addSubscriber = (
   reconnect: () => void,
   reconnectCount: MutableRefObject<number>,
   expectClose: MutableRefObject<boolean>,
-  sendMessage: SendMessage,
 ) => {
   const { setLastMessage, setReadyState } = setters;
   let reconnectTimeout: NodeJS.Timer;
@@ -88,7 +87,7 @@ export const addSubscriber = (
           subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
         }
         if (subscriber.options.onOpen) {
-          subscriber.options.onOpen(event, sendMessage);
+          subscriber.options.onOpen(event);
         }
       });
     };

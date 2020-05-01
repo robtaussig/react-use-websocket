@@ -17,7 +17,6 @@ export const attachListeners = (
     reconnect: () => void,
     reconnectCount: MutableRefObject<number>,
     expectClose: MutableRefObject<boolean>,
-    sendMessage: SendMessage,
   ): (() => void) => {
   const { setLastMessage, setReadyState } = setters;
 
@@ -32,7 +31,7 @@ export const attachListeners = (
     const removeSubscriber = addSubscriber(webSocketInstance, url, {
       setLastMessage,
       setReadyState,
-    }, options, reconnect, reconnectCount, expectClose, sendMessage);
+    }, options, reconnect, reconnectCount, expectClose);
 
     return removeSubscriber;
   }
@@ -47,7 +46,7 @@ export const attachListeners = (
     }
   };
   webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
-    options.onOpen && options.onOpen(event, sendMessage);
+    options.onOpen && options.onOpen(event);
     reconnectCount.current = 0;
     if (expectClose.current === false) {
       setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
