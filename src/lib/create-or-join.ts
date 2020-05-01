@@ -1,15 +1,15 @@
 import { MutableRefObject } from 'react';
 import { sharedWebSockets } from './globals';
-import { ReadyStateState, Options } from './use-websocket';
+import { ReadyStateState, Options } from './types';
 import { ReadyState } from './constants';
 
 export const createOrJoinSocket = (
   webSocketRef: MutableRefObject<WebSocket>,
   url: string,
   setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
-  options: Options
+  optionsRef: MutableRefObject<Options>
 ) => {
-  if (options.share) {
+  if (optionsRef.current.share) {
     if (sharedWebSockets[url] === undefined) {
       setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CONNECTING }));
       sharedWebSockets[url] = new WebSocket(url);

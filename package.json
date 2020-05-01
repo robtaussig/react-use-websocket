@@ -1,6 +1,6 @@
 {
   "name": "react-use-websocket",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "description": "React Hook for WebSocket communication",
   "main": "./dist/index.js",
   "files": [
@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "test": "node_modules/.bin/jest --verbose",
-    "compile": "node_modules/.bin/tsc -p .",
+    "compile": "rm -rf dist/ && node_modules/.bin/tsc -p .",
     "push": "npm run compile && git push && npm publish"
   },
   "repository": {

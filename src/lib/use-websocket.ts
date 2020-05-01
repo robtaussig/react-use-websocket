@@ -1,34 +1,17 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { parseSocketIOUrl, appendQueryParams, QueryParams } from './socket-io';
 import { attachListeners } from './attach-listener';
-import { DEFAULT_OPTIONS, ReadyState } from './constants';
+import { DEFAULT_OPTIONS, ReadyState, UNPARSABLE_JSON_OBJECT } from './constants';
 import { createOrJoinSocket } from './create-or-join';
+import { getUrl } from './get-url';
 import websocketWrapper from './proxy';
-
-export interface Options {
-  fromSocketIO?: boolean;
-  queryParams?: QueryParams;
-  share?: boolean;
-  onOpen?: (event: WebSocketEventMap['open']) => void;
-  onClose?: (event: WebSocketEventMap['close']) => void;
-  onMessage?: (event: WebSocketEventMap['message']) => void;
-  onError?: (event: WebSocketEventMap['error']) => void;
-  shouldReconnect?: (event: WebSocketEventMap['close']) => boolean;
-  reconnectInterval?: number;
-  reconnectAttempts?: number;
-  filter?: (message: WebSocketEventMap['message']) => boolean;
-  retryOnError?: boolean;
-  enforceStaticOptions?: boolean;
-}
-
-export type ReadyStateState = {
-  [url: string]: ReadyState,
-}
-
-export type SendMessage = (
-  message: string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView
-) => void;
-// export type WebSocketProxy = <typeof ProxyWebSocket>;
+import {
+  Options,
+  ReadyStateState,
+  SendMessage,
+  SendJsonMessage,
+  WebSocketMessage,
+  UseWebSocketReturnValue,
+} from './types';
 
 export type WebSocketHook = {
   sendMessage: SendMessage,
@@ -38,88 +21,118 @@ export type WebSocketHook = {
 }
 
 export const useWebSocket = (
-  url: string,
+  url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
+  connect: boolean = true,
 ): WebSocketHook => {
   const [lastMessage, setLastMessage] = useState<WebSocketEventMap['message']>(null);
   const [readyState, setReadyState] = useState<ReadyStateState>({});
+  const lastJsonMessage = useMemo(() => {
+    if (lastMessage) {
+      try {
+        return JSON.parse(lastMessage.data);
+      } catch (e) {
+        return UNPARSABLE_JSON_OBJECT;
+      }
+    }
+    return null;
+  },[lastMessage]);
+  const convertedUrl = useRef<string>(null);
   const webSocketRef = useRef<WebSocket>(null);
   const startRef = useRef<() => void>(null);
   const reconnectCount = useRef<number>(0);
+  const messageQueue = useRef<WebSocketMessage[]>([]);
   const expectClose = useRef<boolean>(false);
-  const webSocketProxy = useRef<WebSocket>(null);
-  const staticOptionsCheck = useRef<boolean>(false);
+  const webSocketProxy = useRef<WebSocket>(null)
+  const optionsCache = useRef<Options>(null);
+  optionsCache.current = options;
 
-  const convertedUrl = useMemo(() => {
-    const converted = options.fromSocketIO ? parseSocketIOUrl(url) : url;
-    const alreadyHasQueryParams = options.fromSocketIO;
-
-    return options.queryParams
-      ? appendQueryParams(converted, options.queryParams, alreadyHasQueryParams)
-      : converted;
-  }, [url]);
+  const readyStateFromUrl =
+    convertedUrl.current && readyState[convertedUrl.current] !== undefined ?
+      readyState[convertedUrl.current] :
+      url !== null && connect === true ?
+        ReadyState.CONNECTING :
+        ReadyState.UNINSTANTIATED;
 
   const sendMessage: SendMessage = useCallback(message => {
-    webSocketRef.current && webSocketRef.current.send(message);
+    if (webSocketRef.current && webSocketRef.current.readyState === ReadyState.OPEN) {
+      webSocketRef.current.send(message);
+    } else {
+      messageQueue.current.push(message);
+    }
   }, []);
 
+  const sendJsonMessage: SendJsonMessage = useCallback(message => {
+    sendMessage(JSON.stringify(message));
+  }, [sendMessage]);
+  
   const getWebSocket = useCallback(() => {
+    if (optionsCache.current.share !== true) {
+      return webSocketRef.current;
+    }
+
     if (webSocketProxy.current === null) {
       webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef);
     }
 
     return webSocketProxy.current;
-  }, []);
+  }, [optionsCache]);
 
   useEffect(() => {
-    let removeListeners: () => void;
+    if (url !== null && connect === true) {
+      let removeListeners: () => void;
 
-    const start = (): void => {
-      expectClose.current = false;
+      const start = async () => {
+        expectClose.current = false;
+        convertedUrl.current = await getUrl(url, optionsCache);
 
-      createOrJoinSocket(webSocketRef, convertedUrl, setReadyState, options);
+        createOrJoinSocket(webSocketRef, convertedUrl.current, setReadyState, optionsCache);
 
-      removeListeners = attachListeners(
-        webSocketRef.current,
-        convertedUrl,
-        {
-          setLastMessage,
-          setReadyState
-        },
-        options,
-        startRef.current,
-        reconnectCount,
-        expectClose
-      );
-    };
+        removeListeners = attachListeners(
+          webSocketRef.current,
+          convertedUrl.current,
+          {
+            setLastMessage,
+            setReadyState
+          },
+          optionsCache,
+          startRef.current,
+          reconnectCount,
+          expectClose
+        );
+      };
 
-    startRef.current = () => {
-      expectClose.current = true;
-      if (webSocketProxy.current) webSocketProxy.current = null;
-      removeListeners();
+      startRef.current = () => {
+        expectClose.current = true;
+        if (webSocketProxy.current) webSocketProxy.current = null;
+        removeListeners?.();
+        start();
+      };
+    
       start();
-    };
-
-    start();
-    return () => {
-      expectClose.current = true;
-      if (webSocketProxy.current) webSocketProxy.current = null;
-      removeListeners();
-    };
-  }, [convertedUrl]);
+        
+      return () => {
+        expectClose.current = true;
+        if (webSocketProxy.current) webSocketProxy.current = null;
+        removeListeners?.();
+      };
+    }
+  }, [url, connect, optionsCache, sendMessage]);
 
   useEffect(() => {
-    if (options.enforceStaticOptions !== false && staticOptionsCheck.current) {
-      throw new Error('The options object you pass must be static');
+    if (readyStateFromUrl === ReadyState.OPEN) {
+      messageQueue.current.splice(0).forEach(message => {
+        sendMessage(message);
+      });
     }
+  }, [readyStateFromUrl]);
 
-    staticOptionsCheck.current = true;
-  }, [options]);
-
-  const readyStateFromUrl =
-    readyState[convertedUrl] !== undefined
-      ? readyState[convertedUrl]
-      : ReadyState.CONNECTING;
-
-  return { sendMessage, lastMessage, readyStateFromUrl, getWebSocket };
+  return {
+    sendMessage,
+    sendJsonMessage,
+    lastMessage,
+    lastJsonMessage,
+    readyState: readyStateFromUrl,
+    getWebSocket,
+  };
 };

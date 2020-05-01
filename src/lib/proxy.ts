@@ -8,7 +8,10 @@ type WritableKeys<T> = {
   [P in keyof T]-?: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P>
 }[keyof T];
 
-export const websocketWrapper = (webSocket: WebSocket, start: MutableRefObject<() => void>): WebSocket => {
+export const websocketWrapper = (
+  webSocket: WebSocket,
+  start: MutableRefObject<() => void>,
+): WebSocket => {
 
   return new Proxy<WebSocket>(webSocket, {
     get: (obj, key: keyof WebSocket) => {
