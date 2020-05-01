@@ -10,15 +10,8 @@ import {
   SendMessage,
   SendJsonMessage,
   WebSocketMessage,
-  UseWebSocketReturnValue,
+  WebSocketHook,
 } from './types';
-
-export type WebSocketHook = {
-  sendMessage: SendMessage,
-  lastMessage: WebSocketEventMap['message'],
-  readyStateFromUrl: ReadyState,
-  getWebSocket: () => WebSocket,
-}
 
 export const useWebSocket = (
   url: string | (() => string | Promise<string>) | null,
@@ -47,7 +40,7 @@ export const useWebSocket = (
   const optionsCache = useRef<Options>(null);
   optionsCache.current = options;
 
-  const readyStateFromUrl =
+  const readyStateFromUrl: ReadyState =
     convertedUrl.current && readyState[convertedUrl.current] !== undefined ?
       readyState[convertedUrl.current] :
       url !== null && connect === true ?

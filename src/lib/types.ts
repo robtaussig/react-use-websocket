@@ -36,11 +36,11 @@ export type Subscriber<T = WebSocketEventMap['message']> = {
   reconnect: () => void;
 }
 
-export interface UseWebSocketReturnValue<T = WebSocketEventMap['message']> {
-  sendMessage: SendMessage;
-  sendJsonMessage: SendJsonMessage;
-  lastMessage: T;
-  lastJsonMessage: any;
-  readyState: ReadyState;
-  getWebSocket: () => WebSocket;
+export type WebSocketHook<T = WebSocketEventMap['message']> = {
+  sendMessage: SendMessage,
+  sendJsonMessage: SendJsonMessage,
+  lastMessage: T,
+  lastJsonMessage: any,
+  readyState: ReadyState,
+  getWebSocket: () => WebSocket,
 }
