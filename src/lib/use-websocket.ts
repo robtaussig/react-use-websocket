@@ -43,7 +43,7 @@ export const useWebSocket = (
   const readyStateFromUrl =
     convertedUrl.current && readyState[convertedUrl.current] !== undefined ?
       readyState[convertedUrl.current] :
-      url !== null ?
+      url !== null && connect === true ?
         ReadyState.CONNECTING :
         ReadyState.UNINSTANTIATED;
 

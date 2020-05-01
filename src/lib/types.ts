@@ -18,7 +18,6 @@ export interface Options {
   reconnectAttempts?: number;
   filter?: (message: WebSocketEventMap['message']) => boolean;
   retryOnError?: boolean;
-  enforceStaticOptions?: boolean;
 }
 
 export type ReadyStateState = {

@@ -76,6 +76,7 @@ export const attachListeners = (
 
     if (optionsRef.current.retryOnError) {
       if (reconnectCount.current < (optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT)) {
+        expectClose.current = true;
         reconnectTimeout = setTimeout(() => {
           reconnectCount.current++;
           reconnect();
