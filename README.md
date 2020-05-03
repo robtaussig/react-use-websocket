@@ -18,7 +18,7 @@ Pull requests welcomed!
 ## Example Implementation
 
 ```js
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 export const WebSocketDemo = () => {
@@ -46,6 +46,7 @@ export const WebSocketDemo = () => {
     [ReadyState.OPEN]: 'Open',
     [ReadyState.CLOSING]: 'Closing',
     [ReadyState.CLOSED]: 'Closed',
+    [ReadyState.UNINSTANTIATED]: 'Uninstantiated',
   }[readyState];
 
   return (
