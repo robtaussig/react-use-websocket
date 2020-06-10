@@ -24,7 +24,7 @@ export const getUrl = async (
       optionsRef.current.queryParams,
       optionsRef.current.fromSocketIO,
     ) :
-    convertedUrl;
+    parsedUrl;
 
   return parsedWithQueryParams;
 };
