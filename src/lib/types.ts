@@ -33,7 +33,9 @@ export type Subscriber<T = WebSocketEventMap['message']> = {
   setLastMessage: (message: T) => void,
   setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
   optionsRef: MutableRefObject<Options>,
-  reconnect: () => void;
+  reconnectCount: MutableRefObject<number>,
+  reconnect: MutableRefObject<() => void>,
+  expectClose: MutableRefObject<boolean>,
 }
 
 export type WebSocketHook<T = WebSocketEventMap['message']> = {

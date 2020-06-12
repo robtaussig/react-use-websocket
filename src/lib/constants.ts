@@ -1,7 +1,6 @@
 const MILLISECONDS = 1;
 const SECONDS = 1000 * MILLISECONDS;
 
-export const sharedWebSockets = {};
 export const DEFAULT_OPTIONS = {};
 export const SOCKET_IO_PING_INTERVAL = 25 * SECONDS;
 export const SOCKET_IO_PATH = '/socket.io/?EIO=3&transport=websocket';

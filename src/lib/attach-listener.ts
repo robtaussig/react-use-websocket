@@ -1,8 +1,7 @@
 import { MutableRefObject } from 'react';
 import { setUpSocketIOPing } from './socket-io';
 import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
-import { addSubscriber } from './add-subscriber';
-import { ReadyStateState, Options, SendMessage } from './types';
+import { ReadyStateState, Options } from './types';
 
 export interface Setters {
   setLastMessage: (message: WebSocketEventMap['message']) => void;
@@ -27,15 +26,6 @@ export const attachListeners = (
     interval = setUpSocketIOPing(webSocketInstance);
   }
 
-  if (optionsRef.current.share) {
-    const removeSubscriber = addSubscriber(webSocketInstance, url, {
-      setLastMessage,
-      setReadyState,
-    }, optionsRef, reconnect, reconnectCount, expectClose);
-
-    return removeSubscriber;
-  }
-  
   webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
     optionsRef.current.onMessage && optionsRef.current.onMessage(message);
     if (typeof optionsRef.current.filter === 'function' && optionsRef.current.filter(message) !== true) {

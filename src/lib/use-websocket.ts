@@ -79,19 +79,15 @@ export const useWebSocket = (
         expectClose.current = false;
         convertedUrl.current = await getUrl(url, optionsCache);
 
-        createOrJoinSocket(webSocketRef, convertedUrl.current, setReadyState, optionsCache);
-
-        removeListeners = attachListeners(
-          webSocketRef.current,
+        removeListeners = createOrJoinSocket(
+          webSocketRef,
           convertedUrl.current,
-          {
-            setLastMessage,
-            setReadyState
-          },
+          setReadyState,
           optionsCache,
-          startRef.current,
+          setLastMessage,
+          startRef,
           reconnectCount,
-          expectClose
+          expectClose,
         );
       };
 
@@ -103,7 +99,6 @@ export const useWebSocket = (
       };
     
       start();
-        
       return () => {
         expectClose.current = true;
         if (webSocketProxy.current) webSocketProxy.current = null;
