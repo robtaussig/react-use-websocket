@@ -8,9 +8,9 @@
     "dist"
   ],
   "scripts": {
-    "test": "node_modules/.bin/jest --verbose",
-    "compile": "rm -rf dist/ && node_modules/.bin/tsc -p .",
-    "push": "npm run compile && git push && npm publish"
+    "test": "cross-env node_modules/.bin/jest --verbose",
+    "compile": "cross-env rm -rf dist/ && node_modules/.bin/tsc -p .",
+    "push": "cross-env npm run compile && git push && npm publish"
   },
   "repository": {
     "type": "git",
@@ -31,6 +31,7 @@
     "babel-eslint": "^10.0.1",
     "babel-jest": "^24.8.0",
     "babel-loader": "^8.0.5",
+    "cross-env": "^7.0.2",
     "jest": "^24.8.0",
     "source-map-loader": "^0.2.4",
     "typescript": "^3.7.2"
