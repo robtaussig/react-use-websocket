@@ -19,7 +19,7 @@ export const createOrJoinSocket = (
   if (optionsRef.current.share) {
     if (sharedWebSockets[url] === undefined) {
       setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CONNECTING }));
-      sharedWebSockets[url] = new WebSocket(url);
+      sharedWebSockets[url] = new WebSocket(url, optionsRef.current.protocols);
       attachSharedListeners(sharedWebSockets[url], url);
     } else {
       setReadyState(prev => Object.assign({}, prev, {[url]: sharedWebSockets[url].readyState }));
@@ -51,7 +51,7 @@ export const createOrJoinSocket = (
     };
   } else {
     setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CONNECTING }));
-    webSocketRef.current = new WebSocket(url);
+    webSocketRef.current = new WebSocket(url, optionsRef.current.protocols);
 
     return attachListeners(
       webSocketRef.current,
