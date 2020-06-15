@@ -262,6 +262,7 @@ interface Options {
   queryParams?: {
     [key: string]: string | number;
   };
+  protocols?: string | string[]
 }
 ```
 ### shouldReconnect

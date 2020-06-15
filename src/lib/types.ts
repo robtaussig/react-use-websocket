@@ -8,6 +8,7 @@ export interface QueryParams {
 export interface Options {
   fromSocketIO?: boolean;
   queryParams?: QueryParams;
+  protocols?: string | string[];
   share?: boolean;
   onOpen?: (event: WebSocketEventMap['open']) => void;
   onClose?: (event: WebSocketEventMap['close']) => void;
