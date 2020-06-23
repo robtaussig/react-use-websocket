@@ -18,7 +18,7 @@ Pull requests welcomed!
 ## Example Implementation
 
 ```js
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 export const WebSocketDemo = () => {
