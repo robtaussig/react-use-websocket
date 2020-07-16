@@ -14,7 +14,6 @@ export const attachSharedListeners = (
       }
 
       if (
-        subscriber.expectClose.current === true ||
         typeof subscriber.optionsRef.current.filter === 'function' &&
         subscriber.optionsRef.current.filter(message) !== true
       ) {
@@ -31,9 +30,7 @@ export const attachSharedListeners = (
         subscriber.optionsRef.current.onClose(event);
       }
 
-      if (subscriber.expectClose.current === false) {
-        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CLOSED}));
-      }
+      subscriber.setReadyState(ReadyState.CLOSED);
     });
     
     sharedWebSockets[url] = undefined;
@@ -46,14 +43,10 @@ export const attachSharedListeners = (
         const reconnectAttempts = subscriber.optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
         if (subscriber.reconnectCount.current < reconnectAttempts) {
           if (subscriber.reconnectCount.current++ === 0) {
-            if (subscriber.expectClose.current === false) {
-              subscriber.reconnect.current();
-            }
+            subscriber.reconnect.current();
           } else {
             setTimeout(() => {
-              if (subscriber.expectClose.current === false) {
-                subscriber.reconnect.current();
-              }
+              subscriber.reconnect.current();
             }, subscriber.optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
           }
         } else {
@@ -78,9 +71,7 @@ export const attachSharedListeners = (
         subscriber.optionsRef.current.onOpen(event);
       }
 
-      if (subscriber.expectClose.current === false) {
-        subscriber.setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.OPEN}));
-      }
+      subscriber.setReadyState(ReadyState.OPEN);
     });
   };
 };
