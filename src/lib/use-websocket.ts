@@ -105,6 +105,7 @@ export const useWebSocket = (
         expectClose.current = true;
         if (webSocketProxy.current) webSocketProxy.current = null;
         removeListeners?.();
+        setLastMessage(null);
       };
     }
   }, [url, connect, stringifiedQueryParams, optionsCache, sendMessage]);
