@@ -47,6 +47,8 @@ export const useWebSocket = (
         ReadyState.CONNECTING :
         ReadyState.UNINSTANTIATED;
 
+  const stringifiedQueryParams = options.queryParams ? JSON.stringify(options.queryParams) : null;
+
   const sendMessage: SendMessage = useCallback(message => {
     if (webSocketRef.current && webSocketRef.current.readyState === ReadyState.OPEN) {
       webSocketRef.current.send(message);
@@ -105,7 +107,7 @@ export const useWebSocket = (
         removeListeners?.();
       };
     }
-  }, [url, connect, optionsCache, sendMessage]);
+  }, [url, connect, stringifiedQueryParams, optionsCache, sendMessage]);
 
   useEffect(() => {
     if (readyStateFromUrl === ReadyState.OPEN) {
