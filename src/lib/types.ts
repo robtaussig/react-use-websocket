@@ -32,11 +32,10 @@ export type SendJsonMessage = (jsonMessage: any) => void;
 
 export type Subscriber<T = WebSocketEventMap['message']> = {
   setLastMessage: (message: T) => void,
-  setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
+  setReadyState: (readyState: ReadyState) => void,
   optionsRef: MutableRefObject<Options>,
   reconnectCount: MutableRefObject<number>,
   reconnect: MutableRefObject<() => void>,
-  expectClose: MutableRefObject<boolean>,
 }
 
 export type WebSocketHook<T = WebSocketEventMap['message']> = {

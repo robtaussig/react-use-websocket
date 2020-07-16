@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
 import { sharedWebSockets } from './globals';
-import { ReadyStateState, Options } from './types';
+import { Options } from './types';
 import { ReadyState } from './constants';
 import { attachListeners } from './attach-listener';
 import { attachSharedListeners } from './attach-shared-listeners';
@@ -9,20 +9,19 @@ import { addSubscriber, removeSubscriber, hasSubscribers } from './manage-subscr
 export const createOrJoinSocket = (
   webSocketRef: MutableRefObject<WebSocket>,
   url: string,
-  setReadyState: (callback: (prev: ReadyStateState) => ReadyStateState) => void,
+  setReadyState: (readyState: ReadyState) => void,
   optionsRef: MutableRefObject<Options>,
   setLastMessage: (message: WebSocketEventMap['message']) => void,
   startRef: MutableRefObject<() => void>,
   reconnectCount: MutableRefObject<number>,
-  expectClose: MutableRefObject<boolean>,
 ): (() => void) => {
   if (optionsRef.current.share) {
     if (sharedWebSockets[url] === undefined) {
-      setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CONNECTING }));
+      setReadyState(ReadyState.CONNECTING);
       sharedWebSockets[url] = new WebSocket(url, optionsRef.current.protocols);
       attachSharedListeners(sharedWebSockets[url], url);
     } else {
-      setReadyState(prev => Object.assign({}, prev, {[url]: sharedWebSockets[url].readyState }));
+      setReadyState(sharedWebSockets[url].readyState);
     }
 
     const subscriber = {
@@ -31,7 +30,6 @@ export const createOrJoinSocket = (
       optionsRef,
       reconnectCount,
       reconnect: startRef,
-      expectClose,
     };
   
     addSubscriber(url, subscriber);
@@ -50,12 +48,11 @@ export const createOrJoinSocket = (
       }
     };
   } else {
-    setReadyState(prev => Object.assign({}, prev, {[url]: ReadyState.CONNECTING }));
+    setReadyState(ReadyState.CONNECTING);
     webSocketRef.current = new WebSocket(url, optionsRef.current.protocols);
 
     return attachListeners(
       webSocketRef.current,
-      url,
       {
         setLastMessage,
         setReadyState
@@ -63,7 +60,6 @@ export const createOrJoinSocket = (
       optionsRef,
       startRef.current,
       reconnectCount,
-      expectClose
     );
   }
 };

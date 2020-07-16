@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
-import { attachListeners } from './attach-listener';
 import { DEFAULT_OPTIONS, ReadyState, UNPARSABLE_JSON_OBJECT } from './constants';
 import { createOrJoinSocket } from './create-or-join';
 import { getUrl } from './get-url';
@@ -35,7 +34,6 @@ export const useWebSocket = (
   const startRef = useRef<() => void>(null);
   const reconnectCount = useRef<number>(0);
   const messageQueue = useRef<WebSocketMessage[]>([]);
-  const expectClose = useRef<boolean>(false);
   const webSocketProxy = useRef<WebSocket>(null)
   const optionsCache = useRef<Options>(null);
   optionsCache.current = options;
@@ -76,33 +74,48 @@ export const useWebSocket = (
   useEffect(() => {
     if (url !== null && connect === true) {
       let removeListeners: () => void;
+      let expectClose = false;
 
       const start = async () => {
-        expectClose.current = false;
         convertedUrl.current = await getUrl(url, optionsCache);
+
+        const protectedSetLastMessage = (message: WebSocketEventMap['message']) => {
+          if (!expectClose) {
+            setLastMessage(message);
+          }
+        };
+  
+        const protectedSetReadyState = (state: ReadyState) => {
+          if (!expectClose) {
+            setReadyState(prev => ({
+              ...prev,
+              [convertedUrl.current]: state,
+            }));
+          }
+        };
 
         removeListeners = createOrJoinSocket(
           webSocketRef,
           convertedUrl.current,
-          setReadyState,
+          protectedSetReadyState,
           optionsCache,
-          setLastMessage,
+          protectedSetLastMessage,
           startRef,
           reconnectCount,
-          expectClose,
         );
       };
 
       startRef.current = () => {
-        expectClose.current = true;
-        if (webSocketProxy.current) webSocketProxy.current = null;
-        removeListeners?.();
-        start();
+        if (!expectClose) {
+          if (webSocketProxy.current) webSocketProxy.current = null;
+          removeListeners?.();
+          start();
+        }
       };
     
       start();
       return () => {
-        expectClose.current = true;
+        expectClose = true;
         if (webSocketProxy.current) webSocketProxy.current = null;
         removeListeners?.();
         setLastMessage(null);
