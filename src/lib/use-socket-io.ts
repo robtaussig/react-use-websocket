@@ -13,7 +13,7 @@ const emptyEvent: SocketIOMessageData = {
   payload: null,
 }
 
-const getSocketData = (event: WebSocketEventMap['message']): SocketIOMessageData => {
+const getSocketData = (event: WebSocketEventMap['message'] | null): SocketIOMessageData => {
   if (!event || !event.data) {
     return emptyEvent
   }
