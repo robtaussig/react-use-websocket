@@ -18,13 +18,18 @@ Pull requests welcomed!
 ## Example Implementation
 
 ```js
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
+
+const urls = [
+  'wss://echo.websocket.org',
+  'wss://demos.kaazing.com/echo',
+];
 
 export const WebSocketDemo = () => {
   //Public API that will echo messages sent to it back to the client
-  const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org');
-  const messageHistory = useRef([]);
+  const [socketUrl, setSocketUrl] = useState(urls[0]);
+  const [messageHistory, setMessageHistory] = useState([]);
 
   const {
     sendMessage,
@@ -32,11 +37,17 @@ export const WebSocketDemo = () => {
     readyState,
   } = useWebSocket(socketUrl);
 
-  messageHistory.current = useMemo(() =>
-    messageHistory.current.concat(lastMessage),[lastMessage]);
+  useEffect(
+    () => {
+      if (lastMessage) {
+        setMessageHistory((prevHistory) => [...prevHistory, lastMessage]);
+      }
+    },
+    [lastMessage],
+  );
 
-  const handleClickChangeSocketUrl = useCallback(() =>
-    setSocketUrl('wss://demos.kaazing.com/echo'), []);
+  const handleClickToggleSocketUrl = useCallback(() =>
+    setSocketUrl((prevUrl) => prevUrl === urls[0] ? urls[1] : urls[0]), []);
 
   const handleClickSendMessage = useCallback(() =>
     sendMessage('Hello'), []);
@@ -51,22 +62,24 @@ export const WebSocketDemo = () => {
 
   return (
     <div>
-      <button
-        onClick={handleClickChangeSocketUrl}
-      >
-        Click Me to change Socket Url
-      </button>
-      <button
-        onClick={handleClickSendMessage}
-        disabled={readyState !== ReadyState.OPEN}
-      >
-        Click Me to send 'Hello'
-      </button>
-      <span>The WebSocket is currently {connectionStatus}</span>
-      {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
+      <p>
+        <button
+          onClick={handleClickToggleSocketUrl}
+        >
+          Click Me to toggle Socket URL
+        </button>
+        <button
+          onClick={handleClickSendMessage}
+          disabled={readyState !== ReadyState.OPEN}
+        >
+          Click Me to send 'Hello'
+        </button>
+      </p>
+      <p>Socket URL: {socketUrl}</p>
+      <p>The WebSocket is currently {connectionStatus}</p>
+      {Boolean(lastMessage) && <p>Last message: {lastMessage.data}</p>}
       <ul>
-        {messageHistory.current
-          .map((message, idx) => <span key={idx}>{message.data}</span>)}
+        {messageHistory.map((message, idx) => <li key={idx}>{message.data}</li>)}
       </ul>
     </div>
   );
