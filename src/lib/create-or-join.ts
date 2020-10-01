@@ -39,7 +39,12 @@ export const createOrJoinSocket = (
       removeSubscriber(url, subscriber);
       if (!hasSubscribers(url)) {
         try {
-          sharedWebSockets[url].onclose = () => {};
+          sharedWebSockets[url].onclose = (event: WebSocketEventMap['close']) => {
+            if (optionsRef.current.onClose) {
+              optionsRef.current.onClose(event);
+            }
+            setReadyState(ReadyState.CLOSED);
+          };
           sharedWebSockets[url].close();
         } catch (e) {
 

@@ -120,6 +120,11 @@ export const useWebSocket = (
         removeListeners?.();
         setLastMessage(null);
       };
+    } else if (url === null || connect === false) {
+      setReadyState(prev => ({
+        ...prev,
+        ...(convertedUrl.current && {[convertedUrl.current]: ReadyState.CLOSED}),
+      }));
     }
   }, [url, connect, stringifiedQueryParams, sendMessage]);
 
