@@ -2,13 +2,13 @@
   "compilerOptions": {
       "outDir": "./dist/",
       "sourceMap": true,
-      "noImplicitAny": true,
       "module": "commonjs",
       "target": "es5",
       "jsx": "react",
       "skipLibCheck": true,
       "lib": ["es2017", "dom"],
       "types" : ["node", "websocket"],
+      "strict": true,
       "declaration": true 
   },
   "baseUrl": ".",

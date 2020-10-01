@@ -41,8 +41,8 @@ export type Subscriber<T = WebSocketEventMap['message']> = {
 export type WebSocketHook<T = WebSocketEventMap['message']> = {
   sendMessage: SendMessage,
   sendJsonMessage: SendJsonMessage,
-  lastMessage: T,
+  lastMessage: T | null,
   lastJsonMessage: any,
   readyState: ReadyState,
-  getWebSocket: () => WebSocket,
+  getWebSocket: () => (WebSocket | null),
 }

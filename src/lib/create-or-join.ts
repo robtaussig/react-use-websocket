@@ -7,7 +7,7 @@ import { attachSharedListeners } from './attach-shared-listeners';
 import { addSubscriber, removeSubscriber, hasSubscribers } from './manage-subscribers';
 
 export const createOrJoinSocket = (
-  webSocketRef: MutableRefObject<WebSocket>,
+  webSocketRef: MutableRefObject<WebSocket | null>,
   url: string,
   setReadyState: (readyState: ReadyState) => void,
   optionsRef: MutableRefObject<Options>,

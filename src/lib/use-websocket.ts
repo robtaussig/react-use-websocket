@@ -17,7 +17,7 @@ export const useWebSocket = (
   options: Options = DEFAULT_OPTIONS,
   connect: boolean = true,
 ): WebSocketHook => {
-  const [lastMessage, setLastMessage] = useState<WebSocketEventMap['message']>(null);
+  const [lastMessage, setLastMessage] = useState<WebSocketEventMap['message'] | null>(null);
   const [readyState, setReadyState] = useState<ReadyStateState>({});
   const lastJsonMessage = useMemo(() => {
     if (lastMessage) {
@@ -29,13 +29,13 @@ export const useWebSocket = (
     }
     return null;
   },[lastMessage]);
-  const convertedUrl = useRef<string>(null);
-  const webSocketRef = useRef<WebSocket>(null);
-  const startRef = useRef<() => void>(null);
+  const convertedUrl = useRef<string | null>(null);
+  const webSocketRef = useRef<WebSocket | null>(null);
+  const startRef = useRef<() => void>(() => void 0);
   const reconnectCount = useRef<number>(0);
   const messageQueue = useRef<WebSocketMessage[]>([]);
-  const webSocketProxy = useRef<WebSocket>(null)
-  const optionsCache = useRef<Options>(null);
+  const webSocketProxy = useRef<WebSocket | null>(null);
+  const optionsCache = useRef<Options>(options);
   optionsCache.current = options;
 
   const readyStateFromUrl: ReadyState =
@@ -64,12 +64,12 @@ export const useWebSocket = (
       return webSocketRef.current;
     }
 
-    if (webSocketProxy.current === null) {
+    if (webSocketProxy.current === null && webSocketRef.current) {
       webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef);
     }
 
     return webSocketProxy.current;
-  }, [optionsCache]);
+  }, []);
 
   useEffect(() => {
     if (url !== null && connect === true) {
@@ -89,7 +89,7 @@ export const useWebSocket = (
           if (!expectClose) {
             setReadyState(prev => ({
               ...prev,
-              [convertedUrl.current]: state,
+              ...(convertedUrl.current && {[convertedUrl.current]: state}),
             }));
           }
         };
@@ -121,7 +121,7 @@ export const useWebSocket = (
         setLastMessage(null);
       };
     }
-  }, [url, connect, stringifiedQueryParams, optionsCache, sendMessage]);
+  }, [url, connect, stringifiedQueryParams, sendMessage]);
 
   useEffect(() => {
     if (readyStateFromUrl === ReadyState.OPEN) {

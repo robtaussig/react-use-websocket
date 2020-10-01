@@ -33,7 +33,7 @@ export const attachSharedListeners = (
       subscriber.setReadyState(ReadyState.CLOSED);
     });
     
-    sharedWebSockets[url] = undefined;
+    delete sharedWebSockets[url];
 
     getSubscribers(url).forEach(subscriber => {
       if (
