@@ -1,6 +1,6 @@
 {
   "name": "react-use-websocket",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "React Hook for WebSocket communication",
   "main": "./dist/index.js",
   "files": [
