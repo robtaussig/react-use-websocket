@@ -21,8 +21,7 @@ export const getUrl = async (
   const parsedWithQueryParams = optionsRef.current.queryParams ?
     appendQueryParams(
       parsedUrl,
-      optionsRef.current.queryParams,
-      optionsRef.current.fromSocketIO,
+      optionsRef.current.queryParams
     ) :
     parsedUrl;
 

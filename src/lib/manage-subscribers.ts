@@ -5,13 +5,17 @@ export type Subscribers = {
 }
   
 const subscribers: Subscribers = {};
+const EMPTY_LIST: Subscriber[] = [];
 
 export const getSubscribers = (url: string): Subscriber[] => {
-    return Array.from(subscribers[url]);
+    if (hasSubscribers(url)) {
+        return Array.from(subscribers[url]);
+    }
+    return EMPTY_LIST;
 };
 
 export const hasSubscribers = (url: string): boolean => {
-    return subscribers[url].size > 0;
+    return subscribers[url]?.size > 0;
 };
 
 export const addSubscriber = (url: string, subscriber: Subscriber): void => {

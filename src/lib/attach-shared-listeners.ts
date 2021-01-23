@@ -2,11 +2,10 @@ import { sharedWebSockets } from './globals';
 import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
 import { getSubscribers } from './manage-subscribers';
 
-export const attachSharedListeners = (
+const bindMessageHandler = (
   webSocketInstance: WebSocket,
   url: string,
 ) => {
-  
   webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
     getSubscribers(url).forEach(subscriber => {
       if (subscriber.optionsRef.current.onMessage) {
@@ -23,7 +22,28 @@ export const attachSharedListeners = (
       subscriber.setLastMessage(message);
     });
   };
+};
 
+const bindOpenHandler = (
+  webSocketInstance: WebSocket,
+  url: string,
+) => {
+  webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
+    getSubscribers(url).forEach(subscriber => {
+      subscriber.reconnectCount.current = 0;
+      if (subscriber.optionsRef.current.onOpen) {
+        subscriber.optionsRef.current.onOpen(event);
+      }
+
+      subscriber.setReadyState(ReadyState.OPEN);
+    });
+  };
+};
+
+const bindCloseHandler = (
+  webSocketInstance: WebSocket,
+  url: string,
+) => {
   webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
     getSubscribers(url).forEach(subscriber => {
       if (subscriber.optionsRef.current.onClose) {
@@ -55,7 +75,12 @@ export const attachSharedListeners = (
       }
     });
   };
+};
 
+const bindErrorHandler = (
+  webSocketInstance: WebSocket,
+  url: string,
+) => {
   webSocketInstance.onerror = (error: WebSocketEventMap['error']) => {
     getSubscribers(url).forEach(subscriber => {
       if (subscriber.optionsRef.current.onError) {
@@ -63,15 +88,15 @@ export const attachSharedListeners = (
       }
     });
   };
+};
 
-  webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
-    getSubscribers(url).forEach(subscriber => {
-      subscriber.reconnectCount.current = 0;
-      if (subscriber.optionsRef.current.onOpen) {
-        subscriber.optionsRef.current.onOpen(event);
-      }
-
-      subscriber.setReadyState(ReadyState.OPEN);
-    });
-  };
+export const attachSharedListeners = (
+  webSocketInstance: WebSocket,
+  url: string,
+) => {
+  
+  bindMessageHandler(webSocketInstance, url);
+  bindCloseHandler(webSocketInstance, url);
+  bindOpenHandler(webSocketInstance, url);
+  bindErrorHandler(webSocketInstance, url);
 };

@@ -11,21 +11,29 @@
     "test": "cross-env node_modules/.bin/jest --verbose",
     "clear-dist": "cross-env rm -rf dist/",
     "compile": "cross-env node_modules/.bin/tsc -p .",
-    "push": "cross-env npm run clear-dist && npm run compile && npm publish"
+    "push": "cross-env npm run test && npm run clear-dist && npm run compile && npm publish"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/robtaussig/react-use-websocket.git"
   },
   "dependencies": {},
+  "peerDependencies": {
+    "react": "~16.8.0",
+    "react-dom": "~16.8.0"
+  },
   "devDependencies": {
     "@babel/cli": "^7.4.3",
     "@babel/core": "^7.4.3",
     "@babel/preset-env": "^7.4.3",
     "@babel/preset-react": "^7.0.0",
+    "@testing-library/jest-dom": "^5.11.9",
+    "@testing-library/react": "^11.2.3",
+    "@testing-library/react-hooks": "^5.0.0",
+    "@types/jest": "^26.0.20",
     "@types/node": "^12.12.30",
-    "@types/react": "^16.8.23",
-    "@types/react-dom": "^16.8.5",
+    "@types/react": "^16.9.0",
+    "@types/react-dom": "^16.9.0",
     "@types/websocket": "0.0.40",
     "awesome-typescript-loader": "^5.2.1",
     "babel-core": "^7.0.0-bridge.0",
@@ -34,8 +42,22 @@
     "babel-loader": "^8.0.5",
     "cross-env": "^7.0.2",
     "jest": "^24.8.0",
+    "jest-environment-jsdom-sixteen": "^1.0.3",
+    "jest-websocket-mock": "^2.2.0",
+    "mock-socket": "^9.0.3",
+    "react": "16.9.0",
+    "react-test-renderer": "16.9.0",
     "source-map-loader": "^0.2.4",
+    "ts-jest": "^26.4.4",
     "typescript": "^3.7.2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "clearMocks": true,
+    "coverageDirectory": "coverage",
+    "testMatch": [
+      "<rootDir>/src/lib/**/*.test.(ts|tsx)"
+    ]
   },
   "babel": {
     "presets": [

@@ -7,12 +7,20 @@
       "jsx": "react",
       "skipLibCheck": true,
       "lib": ["es2017", "dom"],
-      "types" : ["node", "websocket"],
+      "types" : ["node", "websocket", "jest"],
       "strict": true,
-      "declaration": true 
+      "declaration": true,
+      "baseUrl": ".",
+      "paths": {
+        "@lib/*": [
+            "src/lib/*"
+        ]
+    }
   },
-  "baseUrl": ".",
   "files": [
     "./src/index.ts"
+  ],
+  "include": [
+    "src/*"
   ]
 }

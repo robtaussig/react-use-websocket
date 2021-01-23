@@ -20,7 +20,10 @@ export const parseSocketIOUrl = (url: string) => {
   return url;
 };
 
-export const appendQueryParams = (url: string, params: QueryParams = {}, alreadyHasParams: boolean = false): string => {
+export const appendQueryParams = (url: string, params: QueryParams = {}): string => {
+  const hasParamsRegex = /\?([\w]+=[\w]+)/;
+  const alreadyHasParams = hasParamsRegex.test(url);
+
   const stringified = `${Object.entries(params).reduce((next, [key, value]) => {
     return next + `${key}=${value}&`;
   }, '').slice(0, -1)}`;
@@ -28,8 +31,8 @@ export const appendQueryParams = (url: string, params: QueryParams = {}, already
   return `${url}${alreadyHasParams ? '&' : '?'}${stringified}`;
 };
 
-export const setUpSocketIOPing = (socketInstance: WebSocket) => {
+export const setUpSocketIOPing = (socketInstance: WebSocket, interval = SOCKET_IO_PING_INTERVAL): any => {
   const ping = () => socketInstance.send(SOCKET_IO_PING_CODE);
 
-  return setInterval(ping, SOCKET_IO_PING_INTERVAL);
+  return setInterval(ping, interval);
 };
