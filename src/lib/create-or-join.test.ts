@@ -5,7 +5,7 @@ import { Options } from './types';
 import { removeSubscriber, getSubscribers, hasSubscribers } from './manage-subscribers';
 
 let server: WS;
-let URL = 'ws://localhost:1234';
+const URL = 'ws://localhost:1234';
 
 const noop = () => { };
 const DEFAULT_OPTIONS: Options = { share: true };
@@ -18,7 +18,7 @@ beforeEach(async () => {
   server = new WS(URL);
   clientRef = { current: new WebSocket(URL) };
   reconnectCountRef = { current: 0 };
-  optionRef = { current: DEFAULT_OPTIONS };
+  optionRef = { current: { ...DEFAULT_OPTIONS } };
   noopRef = { current: noop };
   if (hasSubscribers(URL)) {
     getSubscribers(URL).forEach(sub => removeSubscriber(URL, sub))

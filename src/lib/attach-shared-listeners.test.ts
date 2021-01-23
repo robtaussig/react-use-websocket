@@ -7,7 +7,7 @@ import { sharedWebSockets } from './globals';
 import { addSubscriber, removeSubscriber, getSubscribers, hasSubscribers } from './manage-subscribers';
 
 let server: WS;
-let URL = 'ws://localhost:1234';
+const URL = 'ws://localhost:1234';
 
 const noop = () => { };
 const DEFAULT_OPTIONS: Options = {};
@@ -21,7 +21,7 @@ beforeEach(async () => {
   server = new WS(URL);
   client = new WebSocket(URL);
   reconnectCountRef = { current: 0 };
-  optionRef = { current: DEFAULT_OPTIONS };
+  optionRef = { current: { ...DEFAULT_OPTIONS } };
   if (hasSubscribers(URL)) {
     removeSubscriber(URL, subscriber1);
     removeSubscriber(URL, subscriber2);

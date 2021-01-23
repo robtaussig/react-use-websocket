@@ -70,7 +70,8 @@ const bindCloseHandler = (
             }, subscriber.optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
           }
         } else {
-          console.error(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
+          subscriber.optionsRef.current.onReconnectStop && subscriber.optionsRef.current.onReconnectStop(subscriber.optionsRef.current.reconnectAttempts as number);
+          console.warn(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
         }
       }
     });

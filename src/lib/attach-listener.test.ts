@@ -17,7 +17,7 @@ beforeEach(async () => {
     server = new WS('ws://localhost:1234');
     client = new WebSocket('ws://localhost:1234');
     reconnectCountRef = { current: 0 };
-    optionRef = { current: DEFAULT_OPTIONS };
+    optionRef = { current: { ...DEFAULT_OPTIONS } };
 });
 
 afterEach(() => {

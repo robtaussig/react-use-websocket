@@ -2,7 +2,7 @@ import { websocketWrapper } from './proxy';
 import WS from "jest-websocket-mock";
 
 let server: WS;
-let URL = 'ws://localhost:1234';
+const URL = 'ws://localhost:1234';
 const noop = () => {};
 const noopRef = { current: noop };
 let client: WebSocket;

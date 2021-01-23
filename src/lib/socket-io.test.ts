@@ -7,7 +7,7 @@ import { SOCKET_IO_PING_CODE } from './constants';
 import WS from "jest-websocket-mock";
 
 let server: WS;
-let URL = 'ws://localhost:1234';
+const URL = 'ws://localhost:1234';
 let client: WebSocket;
 const sleep = (duration: number): Promise<void> => new Promise(resolve => setTimeout(() => resolve(), duration));
 const TEST_PING_INTERVAL = 500;

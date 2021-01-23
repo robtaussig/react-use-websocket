@@ -55,7 +55,8 @@ const bindCloseHandler = (
           reconnect();
         }, optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
       } else {
-        console.error(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
+        optionsRef.current.onReconnectStop && optionsRef.current.onReconnectStop(reconnectAttempts);
+        console.warn(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
       }
     }
   };
@@ -80,6 +81,9 @@ const bindErrorHandler = (
           reconnectCount.current++;
           reconnect();
         }, optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+      } else {
+        optionsRef.current.onReconnectStop && optionsRef.current.onReconnectStop(optionsRef.current.reconnectAttempts as number);
+        console.warn(`Max reconnect attempts of ${optionsRef.current.reconnectAttempts} exceeded`);
       }
     }
   };

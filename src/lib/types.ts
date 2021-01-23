@@ -14,6 +14,7 @@ export interface Options {
   onClose?: (event: WebSocketEventMap['close']) => void;
   onMessage?: (event: WebSocketEventMap['message']) => void;
   onError?: (event: WebSocketEventMap['error']) => void;
+  onReconnectStop?: (numAttempts: number) => void;
   shouldReconnect?: (event: WebSocketEventMap['close']) => boolean;
   reconnectInterval?: number;
   reconnectAttempts?: number;
