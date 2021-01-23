@@ -1,5 +1,4 @@
 import { MutableRefObject } from 'react';
-import { renderHook, act } from '@testing-library/react-hooks'
 import { attachListeners } from './attach-listener';
 import WS from "jest-websocket-mock";
 import { Options } from './types';

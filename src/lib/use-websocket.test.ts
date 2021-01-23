@@ -1,17 +1,12 @@
-import { renderHook, act } from '@testing-library/react-hooks';
+import { renderHook } from '@testing-library/react-hooks';
 import { useWebSocket } from './use-websocket';
-import { MutableRefObject } from 'react';
-import { createOrJoinSocket } from './create-or-join';
 import WS from "jest-websocket-mock";
-import { Options, Subscriber, WebSocketHook } from './types';
+import { Options } from './types';
 import { ReadyState } from './constants';
-import { sharedWebSockets } from './globals';
-import { addSubscriber, removeSubscriber, getSubscribers, hasSubscribers } from './manage-subscribers';
 
 let server: WS;
 let URL = 'ws://localhost:1234';
 const noop = () => {};
-const noopRef = { current: noop };
 const DEFAULT_OPTIONS: Options = {};
 let options: Options;
 const sleep = (duration: number): Promise<void> => new Promise(resolve => setTimeout(() => resolve(), duration));

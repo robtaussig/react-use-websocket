@@ -1,5 +1,4 @@
 import { MutableRefObject } from 'react';
-import { renderHook, act } from '@testing-library/react-hooks'
 import { attachSharedListeners } from './attach-shared-listeners';
 import WS from "jest-websocket-mock";
 import { Options, Subscriber } from './types';
@@ -17,7 +16,6 @@ let subscriber1: Subscriber;
 let subscriber2: Subscriber;
 let reconnectCountRef: MutableRefObject<number>;
 let optionRef: MutableRefObject<Options>;
-const sleep = (duration: number): Promise<void> => new Promise(resolve => setTimeout(() => resolve(), duration));
 
 beforeEach(async () => {
   server = new WS(URL);

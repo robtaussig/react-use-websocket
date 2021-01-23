@@ -1,11 +1,8 @@
 import { MutableRefObject } from 'react';
-import { renderHook, act } from '@testing-library/react-hooks'
 import { createOrJoinSocket } from './create-or-join';
 import WS from "jest-websocket-mock";
-import { Options, Subscriber } from './types';
-import { ReadyState } from './constants';
-import { sharedWebSockets } from './globals';
-import { addSubscriber, removeSubscriber, getSubscribers, hasSubscribers } from './manage-subscribers';
+import { Options } from './types';
+import { removeSubscriber, getSubscribers, hasSubscribers } from './manage-subscribers';
 
 let server: WS;
 let URL = 'ws://localhost:1234';
