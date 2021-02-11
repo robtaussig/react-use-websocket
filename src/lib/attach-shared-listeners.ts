@@ -62,13 +62,10 @@ const bindCloseHandler = (
       ) {
         const reconnectAttempts = subscriber.optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
         if (subscriber.reconnectCount.current < reconnectAttempts) {
-          if (subscriber.reconnectCount.current++ === 0) {
+          setTimeout(() => {
+            subscriber.reconnectCount.current++;
             subscriber.reconnect.current();
-          } else {
-            setTimeout(() => {
-              subscriber.reconnect.current();
-            }, subscriber.optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
-          }
+          }, subscriber.optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
         } else {
           subscriber.optionsRef.current.onReconnectStop && subscriber.optionsRef.current.onReconnectStop(subscriber.optionsRef.current.reconnectAttempts as number);
           console.warn(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
