@@ -102,6 +102,7 @@ export const useWebSocket = (
           protectedSetLastMessage,
           startRef,
           reconnectCount,
+          sendMessage,
         );
       };
 

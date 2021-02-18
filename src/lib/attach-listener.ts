@@ -1,7 +1,7 @@
 import { MutableRefObject } from 'react';
 import { setUpSocketIOPing } from './socket-io';
 import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
-import { Options } from './types';
+import { Options, SendMessage } from './types';
 
 export interface Setters {
   setLastMessage: (message: WebSocketEventMap['message']) => void;
@@ -97,6 +97,7 @@ export const attachListeners = (
     optionsRef: MutableRefObject<Options>,
     reconnect: () => void,
     reconnectCount: MutableRefObject<number>,
+    sendMessage: SendMessage,
   ): (() => void) => {
   const { setLastMessage, setReadyState } = setters;
 
@@ -105,7 +106,7 @@ export const attachListeners = (
   let cancelReconnectOnError: () => void;
 
   if (optionsRef.current.fromSocketIO) {
-    interval = setUpSocketIOPing(webSocketInstance);
+    interval = setUpSocketIOPing(sendMessage);
   }
 
   bindMessageHandler(

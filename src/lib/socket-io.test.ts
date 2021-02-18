@@ -53,8 +53,7 @@ test('appendQueryParams properly adds query params to a url that already contain
 test('setUpSocketIOPing sets up an interval that sends a keep-alive message from the client to socket-io server', async (done) => {
   const sendFn = jest.fn();
 
-  client.send = sendFn;
-  const interval = setUpSocketIOPing(client, TEST_PING_INTERVAL);
+  const interval = setUpSocketIOPing(sendFn, TEST_PING_INTERVAL);
   await sleep((TEST_PING_INTERVAL * 5) + TEST_PING_BUFFER);
 
   window.clearInterval(interval);
@@ -65,8 +64,7 @@ test('setUpSocketIOPing sets up an interval that sends a keep-alive message from
 test('setUpSocketIOPing sends the proper ping code', async (done) => {
   const sendFn = jest.fn();
 
-  client.send = sendFn;
-  const interval = setUpSocketIOPing(client, TEST_PING_INTERVAL);
+  const interval = setUpSocketIOPing(sendFn, TEST_PING_INTERVAL);
   await sleep((TEST_PING_INTERVAL * 1) + TEST_PING_BUFFER);
 
   window.clearInterval(interval);

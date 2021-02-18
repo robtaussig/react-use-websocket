@@ -32,7 +32,8 @@ test('It returns a cleanup function that closes the websocket', () => {
         { setLastMessage: noop, setReadyState: noop },
         optionRef,
         noop,
-        reconnectCountRef
+        reconnectCountRef,
+        noop,
     );
 
     cleanupFn();
@@ -48,7 +49,8 @@ test('Messages received by the webwsocket are passed to the lastMessageSetter', 
         { setLastMessage, setReadyState: noop },
         optionRef,
         noop,
-        reconnectCountRef
+        reconnectCountRef,
+        noop,
     );
 
     server.send('hello');
@@ -64,7 +66,8 @@ test('The readyState setter is called when the websocket connection is open', ()
         { setLastMessage: noop, setReadyState },
         optionRef,
         noop,
-        reconnectCountRef
+        reconnectCountRef,
+        noop,
     );
 
     server.close();
@@ -80,7 +83,8 @@ test('It attempts to reconnect up to specified reconnect attempts', async (done)
             { setLastMessage: noop, setReadyState: noop },
             optionRef,
             reconnect,
-            reconnectCountRef
+            reconnectCountRef,
+            noop,
         );
     });
     optionRef.current.shouldReconnect = () => true;
@@ -92,7 +96,8 @@ test('It attempts to reconnect up to specified reconnect attempts', async (done)
         { setLastMessage: noop, setReadyState: noop },
         optionRef,
         reconnect,
-        reconnectCountRef
+        reconnectCountRef,
+        noop,
     );
 
     await sleep(1000);
@@ -111,7 +116,8 @@ test('When server closes the websocket, readyState transitions immediately to CL
         { setLastMessage: noop, setReadyState: setReadyStateFn },
         optionRef,
         noop,
-        reconnectCountRef
+        reconnectCountRef,
+        noop,
     );
     await sleep(1000);
     server.close();
@@ -130,7 +136,8 @@ test('When client closes the websocket using the provided cleanup function, read
         { setLastMessage: noop, setReadyState: setReadyStateFn },
         optionRef,
         noop,
-        reconnectCountRef
+        reconnectCountRef,
+        noop,
     );
 
     await sleep(1000);

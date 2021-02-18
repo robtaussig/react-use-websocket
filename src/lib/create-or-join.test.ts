@@ -41,6 +41,7 @@ test('It only creates 1 websocket per URL and closes websocket when no subscribe
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   const cleanup2 = createOrJoinSocket(
     clientRef,
@@ -50,6 +51,7 @@ test('It only creates 1 websocket per URL and closes websocket when no subscribe
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   const cleanup3 = createOrJoinSocket(
     clientRef,
@@ -59,6 +61,7 @@ test('It only creates 1 websocket per URL and closes websocket when no subscribe
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
 
   clientRef.current.close = closeFn;
@@ -91,6 +94,7 @@ test('All subscriber option-based onClose callbacks are invoked per close event'
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -101,6 +105,7 @@ test('All subscriber option-based onClose callbacks are invoked per close event'
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -111,6 +116,7 @@ test('All subscriber option-based onClose callbacks are invoked per close event'
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
 
   expect(onCloseFn).toHaveBeenCalledTimes(0);
@@ -135,6 +141,7 @@ test('All subscriber option-based onError callbacks are not invoked on close eve
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -145,6 +152,7 @@ test('All subscriber option-based onError callbacks are not invoked on close eve
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -155,6 +163,7 @@ test('All subscriber option-based onError callbacks are not invoked on close eve
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
 
 
@@ -178,6 +187,7 @@ test('All subscriber option-based onMessage callbacks are invoked per message ev
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -188,6 +198,7 @@ test('All subscriber option-based onMessage callbacks are invoked per message ev
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -198,6 +209,7 @@ test('All subscriber option-based onMessage callbacks are invoked per message ev
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
 
   expect(onMessageFn).toHaveBeenCalledTimes(0);
@@ -225,6 +237,7 @@ test('All subscriber option-based onError callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -235,6 +248,7 @@ test('All subscriber option-based onError callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -245,6 +259,7 @@ test('All subscriber option-based onError callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
 
   expect(onErrorFn).toHaveBeenCalledTimes(0);
@@ -271,6 +286,7 @@ test('All subscriber option-based onClose callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -281,6 +297,7 @@ test('All subscriber option-based onClose callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
   
   createOrJoinSocket(
@@ -291,6 +308,7 @@ test('All subscriber option-based onClose callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    noop,
   );
 
   expect(onErrorFn).toHaveBeenCalledTimes(0);

@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
 import { sharedWebSockets } from './globals';
-import { Options, Subscriber } from './types';
+import { Options, SendMessage, Subscriber } from './types';
 import { ReadyState } from './constants';
 import { attachListeners } from './attach-listener';
 import { attachSharedListeners } from './attach-shared-listeners';
@@ -13,6 +13,7 @@ const cleanSubscribers = (
   subscriber: Subscriber,
   optionsRef: MutableRefObject<Options>,
   setReadyState: (readyState: ReadyState) => void,
+  clearSocketIoPingInterval: (() => void) | null,
 ) => {
   return () => {
     removeSubscriber(url, subscriber);
@@ -28,6 +29,8 @@ const cleanSubscribers = (
       } catch (e) {
 
       }
+      if (clearSocketIoPingInterval) clearSocketIoPingInterval();
+
       delete sharedWebSockets[url];
     }
   }
@@ -41,12 +44,19 @@ export const createOrJoinSocket = (
   setLastMessage: (message: WebSocketEventMap['message']) => void,
   startRef: MutableRefObject<() => void>,
   reconnectCount: MutableRefObject<number>,
+  sendMessage: SendMessage,
 ): (() => void) => {
   if (optionsRef.current.share) {
+    let clearSocketIoPingInterval: ((() => void) | null) = null;
     if (sharedWebSockets[url] === undefined) {
       setReadyState(ReadyState.CONNECTING);
       sharedWebSockets[url] = new WebSocket(url, optionsRef.current.protocols);
-      attachSharedListeners(sharedWebSockets[url], url);
+      clearSocketIoPingInterval = attachSharedListeners(
+        sharedWebSockets[url],
+        url,
+        optionsRef,
+        sendMessage,
+      );
     } else {
       setReadyState(sharedWebSockets[url].readyState);
     }
@@ -67,6 +77,7 @@ export const createOrJoinSocket = (
       subscriber,
       optionsRef,
       setReadyState,
+      clearSocketIoPingInterval,
     );
   } else {
     setReadyState(ReadyState.CONNECTING);
@@ -81,6 +92,7 @@ export const createOrJoinSocket = (
       optionsRef,
       startRef.current,
       reconnectCount,
+      sendMessage,
     );
   }
 };

@@ -1,6 +1,9 @@
 import { sharedWebSockets } from './globals';
 import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
 import { getSubscribers } from './manage-subscribers';
+import { MutableRefObject } from 'react';
+import { Options, SendMessage } from './types';
+import { setUpSocketIOPing } from './socket-io';
 
 const bindMessageHandler = (
   webSocketInstance: WebSocket,
@@ -91,10 +94,21 @@ const bindErrorHandler = (
 export const attachSharedListeners = (
   webSocketInstance: WebSocket,
   url: string,
+  optionsRef: MutableRefObject<Options>,
+  sendMessage: SendMessage,
 ) => {
-  
+  let interval: number;
+
+  if (optionsRef.current.fromSocketIO) {
+    interval = setUpSocketIOPing(sendMessage);
+  }
+
   bindMessageHandler(webSocketInstance, url);
   bindCloseHandler(webSocketInstance, url);
   bindOpenHandler(webSocketInstance, url);
   bindErrorHandler(webSocketInstance, url);
+
+  return () => {
+    if (interval) clearInterval(interval);
+  };
 };

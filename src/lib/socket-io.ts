@@ -1,5 +1,5 @@
 import { SOCKET_IO_PING_INTERVAL, SOCKET_IO_PATH, SOCKET_IO_PING_CODE } from './constants';
-import { QueryParams } from './types';
+import { QueryParams, SendMessage } from './types';
 
 export const parseSocketIOUrl = (url: string) => {
   if (url) {
@@ -31,8 +31,8 @@ export const appendQueryParams = (url: string, params: QueryParams = {}): string
   return `${url}${alreadyHasParams ? '&' : '?'}${stringified}`;
 };
 
-export const setUpSocketIOPing = (socketInstance: WebSocket, interval = SOCKET_IO_PING_INTERVAL): any => {
-  const ping = () => socketInstance.send(SOCKET_IO_PING_CODE);
+export const setUpSocketIOPing = (sendMessage: SendMessage, interval = SOCKET_IO_PING_INTERVAL): any => {
+  const ping = () => sendMessage(SOCKET_IO_PING_CODE);
 
   return setInterval(ping, interval);
 };

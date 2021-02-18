@@ -63,7 +63,9 @@ test('It attaches handlers to the websocket that updates all subscribers on mess
 
   attachSharedListeners(
     client,
-    URL
+    URL,
+    optionRef,
+    noop,
   );
 
   server.send('hello');
@@ -81,7 +83,9 @@ test('It attaches handlers to the websocket that updates all subscribers on read
 
   attachSharedListeners(
     client,
-    URL
+    URL,
+    optionRef,
+    noop,
   );
 
   server.close();
