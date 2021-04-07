@@ -2,11 +2,11 @@ import { sharedWebSockets } from './globals';
 import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
 import { getSubscribers } from './manage-subscribers';
 import { MutableRefObject } from 'react';
-import { Options, SendMessage } from './types';
+import { Options, SendMessage, WebSocketLike } from './types';
 import { setUpSocketIOPing } from './socket-io';
 
 const bindMessageHandler = (
-  webSocketInstance: WebSocket,
+  webSocketInstance: WebSocketLike,
   url: string,
 ) => {
   webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
@@ -28,7 +28,7 @@ const bindMessageHandler = (
 };
 
 const bindOpenHandler = (
-  webSocketInstance: WebSocket,
+  webSocketInstance: WebSocketLike,
   url: string,
 ) => {
   webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
@@ -44,42 +44,44 @@ const bindOpenHandler = (
 };
 
 const bindCloseHandler = (
-  webSocketInstance: WebSocket,
+  webSocketInstance: WebSocketLike,
   url: string,
 ) => {
-  webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
-    getSubscribers(url).forEach(subscriber => {
-      if (subscriber.optionsRef.current.onClose) {
-        subscriber.optionsRef.current.onClose(event);
-      }
-
-      subscriber.setReadyState(ReadyState.CLOSED);
-    });
-    
-    delete sharedWebSockets[url];
-
-    getSubscribers(url).forEach(subscriber => {
-      if (
-        subscriber.optionsRef.current.shouldReconnect &&
-        subscriber.optionsRef.current.shouldReconnect(event)
-      ) {
-        const reconnectAttempts = subscriber.optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
-        if (subscriber.reconnectCount.current < reconnectAttempts) {
-          setTimeout(() => {
-            subscriber.reconnectCount.current++;
-            subscriber.reconnect.current();
-          }, subscriber.optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
-        } else {
-          subscriber.optionsRef.current.onReconnectStop && subscriber.optionsRef.current.onReconnectStop(subscriber.optionsRef.current.reconnectAttempts as number);
-          console.warn(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
+  if (webSocketInstance instanceof WebSocket) {
+    webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
+      getSubscribers(url).forEach(subscriber => {
+        if (subscriber.optionsRef.current.onClose) {
+          subscriber.optionsRef.current.onClose(event);
         }
-      }
-    });
-  };
+  
+        subscriber.setReadyState(ReadyState.CLOSED);
+      });
+      
+      delete sharedWebSockets[url];
+  
+      getSubscribers(url).forEach(subscriber => {
+        if (
+          subscriber.optionsRef.current.shouldReconnect &&
+          subscriber.optionsRef.current.shouldReconnect(event)
+        ) {
+          const reconnectAttempts = subscriber.optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
+          if (subscriber.reconnectCount.current < reconnectAttempts) {
+            setTimeout(() => {
+              subscriber.reconnectCount.current++;
+              subscriber.reconnect.current();
+            }, subscriber.optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+          } else {
+            subscriber.optionsRef.current.onReconnectStop && subscriber.optionsRef.current.onReconnectStop(subscriber.optionsRef.current.reconnectAttempts as number);
+            console.warn(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
+          }
+        }
+      });
+    };
+  }
 };
 
 const bindErrorHandler = (
-  webSocketInstance: WebSocket,
+  webSocketInstance: WebSocketLike,
   url: string,
 ) => {
   webSocketInstance.onerror = (error: WebSocketEventMap['error']) => {
@@ -87,12 +89,25 @@ const bindErrorHandler = (
       if (subscriber.optionsRef.current.onError) {
         subscriber.optionsRef.current.onError(error);
       }
+      if (webSocketInstance instanceof EventSource) {
+        subscriber.optionsRef.current.onClose && subscriber.optionsRef.current.onClose({
+          ...error,
+          code: 1006,
+          reason: `An error occurred with the EventSource: ${error}`,
+          wasClean: false,
+        });
+  
+        subscriber.setReadyState(ReadyState.CLOSED);
+      }
     });
+    if (webSocketInstance instanceof EventSource) {
+      webSocketInstance.close();
+    }
   };
 };
 
 export const attachSharedListeners = (
-  webSocketInstance: WebSocket,
+  webSocketInstance: WebSocketLike,
   url: string,
   optionsRef: MutableRefObject<Options>,
   sendMessage: SendMessage,

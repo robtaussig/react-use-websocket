@@ -20,6 +20,7 @@ export interface Options {
   reconnectAttempts?: number;
   filter?: (message: WebSocketEventMap['message']) => boolean;
   retryOnError?: boolean;
+  eventSourceOptions?: EventSourceInit;
 }
 
 export type ReadyStateState = {
@@ -45,5 +46,7 @@ export type WebSocketHook<T = WebSocketEventMap['message']> = {
   lastMessage: T | null,
   lastJsonMessage: any,
   readyState: ReadyState,
-  getWebSocket: () => (WebSocket | null),
+  getWebSocket: () => (WebSocketLike | null),
 }
+
+export type WebSocketLike = WebSocket | EventSource;
