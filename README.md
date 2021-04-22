@@ -322,7 +322,7 @@ If a function is provided with the key `filter`, incoming messages will be passe
 ```js
 import { useEventSource } from 'react-use-websocket';
 
-//Only the follow three properties are provided
+//Only the following three properties are provided
 const {
   lastEvent,
   getEventSource,
