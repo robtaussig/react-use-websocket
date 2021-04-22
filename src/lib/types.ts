@@ -63,7 +63,7 @@ export type EventSourceHook = Omit<
   WebSocketHook<EventSourceEventMap['message']>,
   'sendMessage' | 'sendJsonMessage' | 'lastMessage' | 'lastJsonMessage' | 'getWebSocket'
 > & {
-  lastEvent: EventSourceEventMap['message'],
+  lastEvent: EventSourceEventMap['message'] | null,
   getEventSource: () => (WebSocketLike | null),
 }
 

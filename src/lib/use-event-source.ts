@@ -14,8 +14,10 @@ export const useEventSource = (
         withCredentials,
       }
   };
-  const eventsRef = useRef<EventSourceEventHandlers>(null);
-  eventsRef.current = events ?? EMPTY_EVENT_HANDLERS;
+  const eventsRef = useRef<EventSourceEventHandlers>(EMPTY_EVENT_HANDLERS);
+  if (events) {
+    eventsRef.current = events
+  }
 
   const {
     lastMessage,
