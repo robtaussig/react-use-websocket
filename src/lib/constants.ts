@@ -1,7 +1,14 @@
+import { EventSourceOptions } from "./types";
+
 const MILLISECONDS = 1;
 const SECONDS = 1000 * MILLISECONDS;
 
 export const DEFAULT_OPTIONS = {};
+export const EMPTY_EVENT_HANDLERS: EventSourceOptions['events'] = {};
+export const DEFAULT_EVENT_SOURCE_OPTIONS: EventSourceOptions = {
+  withCredentials: false,
+  events: EMPTY_EVENT_HANDLERS,
+};
 export const SOCKET_IO_PING_INTERVAL = 25 * SECONDS;
 export const SOCKET_IO_PATH = '/socket.io/?EIO=3&transport=websocket';
 export const SOCKET_IO_PING_CODE = '2';
