@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
 import { sharedWebSockets } from './globals';
-import { Options, SendMessage, Subscriber } from './types';
+import { Options, SendMessage, Subscriber, WebSocketLike } from './types';
 import { ReadyState } from './constants';
 import { attachListeners } from './attach-listener';
 import { attachSharedListeners } from './attach-shared-listeners';
@@ -19,13 +19,16 @@ const cleanSubscribers = (
     removeSubscriber(url, subscriber);
     if (!hasSubscribers(url)) {
       try {
-        sharedWebSockets[url].onclose = (event: WebSocketEventMap['close']) => {
-          if (optionsRef.current.onClose) {
-            optionsRef.current.onClose(event);
-          }
-          setReadyState(ReadyState.CLOSED);
-        };
-        sharedWebSockets[url].close();
+        const socketLike = sharedWebSockets[url];
+        if (socketLike instanceof WebSocket) {
+          socketLike.onclose = (event: WebSocketEventMap['close']) => {
+            if (optionsRef.current.onClose) {
+              optionsRef.current.onClose(event);
+            }
+            setReadyState(ReadyState.CLOSED);
+          };
+        }
+        socketLike.close();
       } catch (e) {
 
       }
@@ -37,7 +40,7 @@ const cleanSubscribers = (
 };
 
 export const createOrJoinSocket = (
-  webSocketRef: MutableRefObject<WebSocket | null>,
+  webSocketRef: MutableRefObject<WebSocketLike | null>,
   url: string,
   setReadyState: (readyState: ReadyState) => void,
   optionsRef: MutableRefObject<Options>,
@@ -50,7 +53,9 @@ export const createOrJoinSocket = (
     let clearSocketIoPingInterval: ((() => void) | null) = null;
     if (sharedWebSockets[url] === undefined) {
       setReadyState(ReadyState.CONNECTING);
-      sharedWebSockets[url] = new WebSocket(url, optionsRef.current.protocols);
+      sharedWebSockets[url] = optionsRef.current.eventSourceOptions ?
+        new EventSource(url, optionsRef.current.eventSourceOptions) :
+        new WebSocket(url, optionsRef.current.protocols);
       clearSocketIoPingInterval = attachSharedListeners(
         sharedWebSockets[url],
         url,
@@ -81,7 +86,13 @@ export const createOrJoinSocket = (
     );
   } else {
     setReadyState(ReadyState.CONNECTING);
-    webSocketRef.current = new WebSocket(url, optionsRef.current.protocols);
+    webSocketRef.current = optionsRef.current.eventSourceOptions ?
+      new EventSource(url, optionsRef.current.eventSourceOptions) :
+      new WebSocket(url, optionsRef.current.protocols);
+
+    if (!webSocketRef.current) {
+      throw new Error('WebSocket failed to be created');
+    }
 
     return attachListeners(
       webSocketRef.current,

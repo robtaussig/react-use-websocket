@@ -10,6 +10,7 @@ import {
   SendJsonMessage,
   WebSocketMessage,
   WebSocketHook,
+  WebSocketLike,
 } from './types';
 
 export const useWebSocket = (
@@ -30,11 +31,11 @@ export const useWebSocket = (
     return null;
   },[lastMessage]);
   const convertedUrl = useRef<string | null>(null);
-  const webSocketRef = useRef<WebSocket | null>(null);
+  const webSocketRef = useRef<WebSocketLike | null>(null);
   const startRef = useRef<() => void>(() => void 0);
   const reconnectCount = useRef<number>(0);
   const messageQueue = useRef<WebSocketMessage[]>([]);
-  const webSocketProxy = useRef<WebSocket | null>(null);
+  const webSocketProxy = useRef<WebSocketLike | null>(null);
   const optionsCache = useRef<Options>(options);
   optionsCache.current = options;
 
@@ -48,6 +49,11 @@ export const useWebSocket = (
   const stringifiedQueryParams = options.queryParams ? JSON.stringify(options.queryParams) : null;
 
   const sendMessage: SendMessage = useCallback(message => {
+    if (webSocketRef.current instanceof EventSource) {
+      console.warn('Unable to send a message from an eventSource');
+      return;
+    }
+  
     if (webSocketRef.current && webSocketRef.current.readyState === ReadyState.OPEN) {
       webSocketRef.current.send(message);
     } else {
@@ -60,7 +66,7 @@ export const useWebSocket = (
   }, [sendMessage]);
   
   const getWebSocket = useCallback(() => {
-    if (optionsCache.current.share !== true) {
+    if (optionsCache.current.share !== true || webSocketRef.current instanceof EventSource) {
       return webSocketRef.current;
     }
 

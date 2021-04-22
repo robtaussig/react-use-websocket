@@ -312,7 +312,9 @@ test('Options#protocols pass the value on to the instantiated WebSocket', async 
 
   await waitForNextUpdate();
   const ws = result.current.getWebSocket();
-  expect(ws?.protocol).toEqual('chat');
+  if (ws instanceof WebSocket) {
+    expect(ws?.protocol).toEqual('chat');
+  }
   
   done();
 });
@@ -481,6 +483,20 @@ test('Options#retryOnError controls whether a websocket should attempt to reconn
   server.error();
   await sleep(1600);
   expect(onReconnectStopFn2).toHaveBeenCalled();
+  done();
+});
+
+test('Options#eventSourceOptions, if provided, instantiates an EventSource instead of a WebSocket', async (done) => {
+  options.eventSourceOptions = { withCredentials: true };
+
+  const {
+    result,
+    waitForNextUpdate
+  } = renderHook(() => useWebSocket(URL, options));
+  await waitForNextUpdate();
+
+  expect(result.current.getWebSocket() instanceof EventSource).toBe(true);
+
   done();
 });
 

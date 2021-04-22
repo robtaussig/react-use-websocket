@@ -1,7 +1,7 @@
 import { MutableRefObject } from 'react';
 import { setUpSocketIOPing } from './socket-io';
 import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
-import { Options, SendMessage } from './types';
+import { Options, SendMessage, WebSocketLike } from './types';
 
 export interface Setters {
   setLastMessage: (message: WebSocketEventMap['message']) => void;
@@ -9,7 +9,7 @@ export interface Setters {
 }
 
 const bindMessageHandler = (
-  webSocketInstance: WebSocket,
+  webSocketInstance: WebSocketLike,
   optionsRef: MutableRefObject<Options>,
   setLastMessage: Setters['setLastMessage'],
 ) => {
@@ -23,7 +23,7 @@ const bindMessageHandler = (
 };
 
 const bindOpenHandler = (
-  webSocketInstance: WebSocket,
+  webSocketInstance: WebSocketLike,
   optionsRef: MutableRefObject<Options>,
   setReadyState: Setters['setReadyState'],
   reconnectCount: MutableRefObject<number>,
@@ -36,12 +36,14 @@ const bindOpenHandler = (
 };
 
 const bindCloseHandler = (
-  webSocketInstance: WebSocket,
+  webSocketInstance: WebSocketLike,
   optionsRef: MutableRefObject<Options>,
   setReadyState: Setters['setReadyState'],
   reconnect: () => void,
   reconnectCount: MutableRefObject<number>,
 ) => {
+  if (webSocketInstance instanceof EventSource) return () => {};
+
   let reconnectTimeout: number;
 
   webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
@@ -65,8 +67,9 @@ const bindCloseHandler = (
 };
 
 const bindErrorHandler = (
-  webSocketInstance: WebSocket,
+  webSocketInstance: WebSocketLike,
   optionsRef: MutableRefObject<Options>,
+  setReadyState: Setters['setReadyState'],
   reconnect: () => void,
   reconnectCount: MutableRefObject<number>,
 ) => {
@@ -74,7 +77,18 @@ const bindErrorHandler = (
 
   webSocketInstance.onerror = (error: WebSocketEventMap['error']) => {
     optionsRef.current.onError && optionsRef.current.onError(error);
+    if (webSocketInstance instanceof EventSource) {
+      optionsRef.current.onClose && optionsRef.current.onClose({
+        ...error,
+        code: 1006,
+        reason: `An error occurred with the EventSource: ${error}`,
+        wasClean: false,
+      });
 
+      setReadyState(ReadyState.CLOSED);
+      webSocketInstance.close();
+    }
+    
     if (optionsRef.current.retryOnError) {
       if (reconnectCount.current < (optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT)) {
         reconnectTimeout = window.setTimeout(() => {
@@ -92,7 +106,7 @@ const bindErrorHandler = (
 };
 
 export const attachListeners = (
-    webSocketInstance: WebSocket,
+    webSocketInstance: WebSocketLike,
     setters: Setters,
     optionsRef: MutableRefObject<Options>,
     reconnect: () => void,
@@ -133,6 +147,7 @@ export const attachListeners = (
   cancelReconnectOnError = bindErrorHandler(
     webSocketInstance,
     optionsRef,
+    setReadyState,
     reconnect,
     reconnectCount,
   );

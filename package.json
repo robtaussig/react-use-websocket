@@ -1,6 +1,6 @@
 {
   "name": "react-use-websocket",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "description": "React Hook for WebSocket communication",
   "main": "./dist/index.js",
   "files": [
@@ -30,6 +30,7 @@
     "@testing-library/jest-dom": "^5.11.9",
     "@testing-library/react": "^11.2.3",
     "@testing-library/react-hooks": "^5.0.0",
+    "@types/eventsource": "^1.1.5",
     "@types/jest": "^26.0.20",
     "@types/node": "^12.12.30",
     "@types/react": "^16.9.0",
@@ -41,6 +42,7 @@
     "babel-jest": "^24.8.0",
     "babel-loader": "^8.0.5",
     "cross-env": "^7.0.2",
+    "eventsourcemock": "^2.0.0",
     "jest": "^24.8.0",
     "jest-environment-jsdom-sixteen": "^1.0.3",
     "jest-websocket-mock": "^2.2.0",
@@ -57,6 +59,9 @@
     "coverageDirectory": "coverage",
     "testMatch": [
       "<rootDir>/src/lib/**/*.test.(ts|tsx)"
+    ],
+    "setupFiles": [
+      "./__test__/configJSDom.ts"
     ]
   },
   "babel": {

@@ -85,6 +85,7 @@ A demo of this can be found [here](https://robtaussig.com/socket/). Each compone
 - Socket.io support
 - No more waiting for the WebSocket to open before messages can be sent. Pre-connection messages are queued up and sent on connection
 - Provides direct access to unshared WebSockets, while proxying shared WebSockets. Proxied WebSockets provide subscribers controlled access to the underlying (shared) WebSocket, without allowing unsafe behavior
+- Seamlessly works with server-sent-events and the [EventSource API](https://developer.mozilla.org/en-US/docs/Web/API/EventSource)
 
 ## Getting Started
 
@@ -263,7 +264,8 @@ interface Options {
   queryParams?: {
     [key: string]: string | number;
   };
-  protocols?: string | string[]
+  protocols?: string | string[];
+  eventSourceOptions?: EventSourceInit;
 }
 ```
 ### shouldReconnect
@@ -313,5 +315,34 @@ const {
 ```
 It is important to note that `lastMessage` will not be a `MessageEvent`, but instead an object with two keys: `type` and `payload`.
 
-### Filter: Callback
+### filter: Callback
 If a function is provided with the key `filter`, incoming messages will be passed through the function, and only if it returns `true` will the hook pass along the `lastMessage` and update your component.
+
+## useEventSource
+```js
+import { useEventSource } from 'react-use-websocket';
+
+//Only the follow three properties are provided
+const {
+  lastEvent,
+  getEventSource,
+  readyState
+} = useEventSource('http://localhost:3000/', {
+  withCredentials: true,
+  events: {
+    message: (messageEvent) => {
+      console.log('This has type "message": ', messageEvent);
+    },
+    update: (messageEvent) => {
+      console.log('This has type "update": ', messageEvent);
+    }
+  }
+});
+```
+If used, an [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) will be instantiated instead of a WebSocket. Although it shares a very similar API with a WebSocket, there are a few differences:
+
+- There is no onclose event, nor is there an event for readyState changes -- as such, this library can only 'track' the first two readyStates: CONNECTING (0) and OPEN (1). The `EventSource` will close when your component unmounts.
+- Currently, the library will set the readyState to CLOSED on the underlying `EventSource`'s onerror callback, and will also trigger `Options#onClose`, if provided. In this case, reconnect logic is driven by `Options#retryOnError`, instead of `Options#shouldReconnect`.
+- There is no 'CLOSING' readyState for `EventSource`, and as such, the CLOSED readyState is `2` for an `EventSource`, whereas it is `3` for a WebSocket. For purposes of internal consistency, the `readyState` returned by `useWebSocket` will follow the `WebSocket` enumeration and use `3` for the CLOSED event for both instance types.
+- `getEventSource` will return the underlying EventSource, even if `Options#share` is used -- as opposed to the `WebSocket` equivalent which returns a `Proxy`.
+- There is no concept of sending messages from the client, and as such `sendMessage` will not be provided.
