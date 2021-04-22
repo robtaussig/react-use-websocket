@@ -30,7 +30,7 @@ export interface EventSourceEventHandlers {
 }
 
 export interface EventSourceOptions extends EventSourceOnly {
-  events: EventSourceEventHandlers;
+  events?: EventSourceEventHandlers;
 }
 
 export type ReadyStateState = {
