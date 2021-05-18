@@ -1,7 +1,13 @@
 import { MutableRefObject } from 'react';
 import { setUpSocketIOPing } from './socket-io';
-import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
+import {
+  DEFAULT_RECONNECT_LIMIT,
+  DEFAULT_RECONNECT_INTERVAL_MS,
+  ReadyState,
+  isEventSourceSupported,
+} from './constants';
 import { Options, SendMessage, WebSocketLike } from './types';
+import { assertIsWebSocket } from './util';
 
 export interface Setters {
   setLastMessage: (message: WebSocketEventMap['message']) => void;
@@ -42,8 +48,10 @@ const bindCloseHandler = (
   reconnect: () => void,
   reconnectCount: MutableRefObject<number>,
 ) => {
-  if (webSocketInstance instanceof EventSource) return () => {};
-
+  if (isEventSourceSupported && webSocketInstance instanceof EventSource) {
+    return () => {};
+  }
+  assertIsWebSocket(webSocketInstance);
   let reconnectTimeout: number;
 
   webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {
@@ -77,7 +85,7 @@ const bindErrorHandler = (
 
   webSocketInstance.onerror = (error: WebSocketEventMap['error']) => {
     optionsRef.current.onError && optionsRef.current.onError(error);
-    if (webSocketInstance instanceof EventSource) {
+    if (isEventSourceSupported && webSocketInstance instanceof EventSource) {
       optionsRef.current.onClose && optionsRef.current.onClose({
         ...error,
         code: 1006,

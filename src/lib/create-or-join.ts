@@ -1,7 +1,7 @@
 import { MutableRefObject } from 'react';
 import { sharedWebSockets } from './globals';
 import { Options, SendMessage, Subscriber, WebSocketLike } from './types';
-import { ReadyState } from './constants';
+import { isEventSourceSupported, ReadyState, isReactNative } from './constants';
 import { attachListeners } from './attach-listener';
 import { attachSharedListeners } from './attach-shared-listeners';
 import { addSubscriber, removeSubscriber, hasSubscribers } from './manage-subscribers';
@@ -49,6 +49,14 @@ export const createOrJoinSocket = (
   reconnectCount: MutableRefObject<number>,
   sendMessage: SendMessage,
 ): (() => void) => {
+  if (!isEventSourceSupported && optionsRef.current.eventSourceOptions) {
+    if (isReactNative) {
+      throw new Error('EventSource is not supported in ReactNative');
+    } else {
+      throw new Error('EventSource is not supported');
+    }
+  }
+
   if (optionsRef.current.share) {
     let clearSocketIoPingInterval: ((() => void) | null) = null;
     if (sharedWebSockets[url] === undefined) {

@@ -23,3 +23,6 @@ export enum ReadyState {
   CLOSING = 2,
   CLOSED = 3,
 }
+
+export const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+export const isEventSourceSupported = !isReactNative && 'EventSource' in window;

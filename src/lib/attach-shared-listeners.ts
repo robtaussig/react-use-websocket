@@ -1,5 +1,5 @@
 import { sharedWebSockets } from './globals';
-import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState } from './constants';
+import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState, isEventSourceSupported } from './constants';
 import { getSubscribers } from './manage-subscribers';
 import { MutableRefObject } from 'react';
 import { Options, SendMessage, WebSocketLike } from './types';
@@ -89,7 +89,7 @@ const bindErrorHandler = (
       if (subscriber.optionsRef.current.onError) {
         subscriber.optionsRef.current.onError(error);
       }
-      if (webSocketInstance instanceof EventSource) {
+      if (isEventSourceSupported && webSocketInstance instanceof EventSource) {
         subscriber.optionsRef.current.onClose && subscriber.optionsRef.current.onClose({
           ...error,
           code: 1006,
@@ -100,7 +100,7 @@ const bindErrorHandler = (
         subscriber.setReadyState(ReadyState.CLOSED);
       }
     });
-    if (webSocketInstance instanceof EventSource) {
+    if (isEventSourceSupported && webSocketInstance instanceof EventSource) {
       webSocketInstance.close();
     }
   };
