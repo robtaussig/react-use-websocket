@@ -24,5 +24,13 @@ export enum ReadyState {
   CLOSED = 3,
 }
 
+const eventSourceSupported = () => {
+  try {
+    return 'EventSource' in globalThis;
+  } catch (e) {
+    return false;
+  }
+}
+
 export const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
-export const isEventSourceSupported = !isReactNative && 'EventSource' in window;
+export const isEventSourceSupported = !isReactNative && eventSourceSupported();
