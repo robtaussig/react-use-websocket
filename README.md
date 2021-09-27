@@ -66,7 +66,7 @@ export const WebSocketDemo = () => {
       {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
       <ul>
         {messageHistory.current
-          .map((message, idx) => <span key={idx}>{message.data}</span>)}
+          .map((message, idx) => <span key={idx}>{message ? message.data : null}</span>)}
       </ul>
     </div>
   );
