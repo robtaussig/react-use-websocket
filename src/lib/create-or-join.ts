@@ -59,6 +59,8 @@ export const createOrJoinSocket = (
 
   if (optionsRef.current.share) {
     let clearSocketIoPingInterval: ((() => void) | null) = null;
+    webSocketRef.current = sharedWebSockets[url];
+
     if (sharedWebSockets[url] === undefined) {
       setReadyState(ReadyState.CONNECTING);
       sharedWebSockets[url] = optionsRef.current.eventSourceOptions ?
@@ -83,7 +85,6 @@ export const createOrJoinSocket = (
     };
   
     addSubscriber(url, subscriber);
-    webSocketRef.current = sharedWebSockets[url];
 
     return cleanSubscribers(
       url,
