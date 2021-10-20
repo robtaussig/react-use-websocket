@@ -139,9 +139,9 @@ type UseWebSocket = (
   } = {},
   shouldConnect: boolean = true,
 ): {
-  sendMessage: (message: string) => void,
+  sendMessage: (message: string, keep = boolean = true) => void,
   //jsonMessage must be JSON-parsable
-  sendJsonMessage: (jsonMessage: any) => void,
+  sendJsonMessage: (jsonMessage: any, keep = boolean = true) => void,
   //null before first received message
   lastMessage: WebSocketEventMap['message'] | null, 
   //null before first received message. If message.data is not JSON parsable, then this will be a static empty object
@@ -184,13 +184,13 @@ const {
 
 ### sendMessage
 ```ts
-type sendMessage = (message: string) => void;
+type sendMessage = (message: string, keep: boolean = true) => void;
 ```
-The argument sent through sendMessage will be passed directly to WebSocket#`send`. `sendMessage` will be static, and thus can be passed down through children components without triggering prop changes. Messages sent before the WebSocket is open will be queued up and sent on connection.
+The argument sent through sendMessage will be passed directly to WebSocket#`send`. `sendMessage` will be static, and thus can be passed down through children components without triggering prop changes. Messages sent before the WebSocket is open will be queued up and sent on connection. If you don't want to use messages queue for a particular message you should use a 'keep' parameter.
 
 ### sendJsonMessage
 ```ts
-type sendJsonMessage = (message: any) => void;
+type sendJsonMessage = (message: any, keep: boolean = true) => void;
 ```
 Message will first be passed through `JSON.stringify`.
 
