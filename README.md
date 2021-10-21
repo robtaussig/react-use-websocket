@@ -18,13 +18,13 @@ Pull requests welcomed!
 ## Example Implementation
 
 ```js
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import useWebSocket, { ReadyState } from 'react-use-websocket';
 
 export const WebSocketDemo = () => {
   //Public API that will echo messages sent to it back to the client
   const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org');
-  const messageHistory = useRef([]);
+  const [messageHistory, setMessageHistory] = useState([]);
 
   const {
     sendMessage,
@@ -32,8 +32,11 @@ export const WebSocketDemo = () => {
     readyState,
   } = useWebSocket(socketUrl);
 
-  messageHistory.current = useMemo(() =>
-    messageHistory.current.concat(lastMessage),[lastMessage]);
+  useEffect(() => {
+    if (lastMessage !== null) {
+      setMessageHistory(prev => prev.concat(lastMessage));
+    }
+  }, [lastMessage, setMessageHistory]);
 
   const handleClickChangeSocketUrl = useCallback(() =>
     setSocketUrl('wss://demos.kaazing.com/echo'), []);
@@ -65,7 +68,7 @@ export const WebSocketDemo = () => {
       <span>The WebSocket is currently {connectionStatus}</span>
       {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
       <ul>
-        {messageHistory.current
+        {messageHistory
           .map((message, idx) => <span key={idx}>{message ? message.data : null}</span>)}
       </ul>
     </div>
