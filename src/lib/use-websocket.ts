@@ -55,7 +55,7 @@ export const useWebSocket = (
       return;
     }
   
-    if (webSocketRef.current && webSocketRef.current.readyState === ReadyState.OPEN) {
+    if (webSocketRef.current?.readyState === ReadyState.OPEN) {
       assertIsWebSocket(webSocketRef.current);
       webSocketRef.current.send(message);
     } else if (keep) {

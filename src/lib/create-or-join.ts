@@ -59,13 +59,12 @@ export const createOrJoinSocket = (
 
   if (optionsRef.current.share) {
     let clearSocketIoPingInterval: ((() => void) | null) = null;
-    webSocketRef.current = sharedWebSockets[url];
-
     if (sharedWebSockets[url] === undefined) {
-      setReadyState(ReadyState.CONNECTING);
       sharedWebSockets[url] = optionsRef.current.eventSourceOptions ?
         new EventSource(url, optionsRef.current.eventSourceOptions) :
         new WebSocket(url, optionsRef.current.protocols);
+      webSocketRef.current = sharedWebSockets[url];
+      setReadyState(ReadyState.CONNECTING);
       clearSocketIoPingInterval = attachSharedListeners(
         sharedWebSockets[url],
         url,
@@ -73,6 +72,7 @@ export const createOrJoinSocket = (
         sendMessage,
       );
     } else {
+      webSocketRef.current = sharedWebSockets[url];
       setReadyState(sharedWebSockets[url].readyState);
     }
 
@@ -94,11 +94,10 @@ export const createOrJoinSocket = (
       clearSocketIoPingInterval,
     );
   } else {
-    setReadyState(ReadyState.CONNECTING);
     webSocketRef.current = optionsRef.current.eventSourceOptions ?
       new EventSource(url, optionsRef.current.eventSourceOptions) :
       new WebSocket(url, optionsRef.current.protocols);
-
+    setReadyState(ReadyState.CONNECTING);
     if (!webSocketRef.current) {
       throw new Error('WebSocket failed to be created');
     }
