@@ -40,7 +40,7 @@ export type ReadyStateState = {
 export type WebSocketMessage = string | ArrayBuffer | SharedArrayBuffer | Blob | ArrayBufferView;
 
 export type SendMessage = (message: WebSocketMessage, keep?: boolean) => void;
-export type SendJsonMessage = (jsonMessage: any) => void;
+export type SendJsonMessage = (jsonMessage: any, keep?: boolean) => void;
 
 export type Subscriber<T = WebSocketEventMap['message']> = {
   setLastMessage: (message: T) => void,
