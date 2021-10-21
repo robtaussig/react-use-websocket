@@ -49,7 +49,7 @@ export const useWebSocket = (
 
   const stringifiedQueryParams = options.queryParams ? JSON.stringify(options.queryParams) : null;
 
-  const sendMessage: SendMessage = useCallback(message => {
+  const sendMessage: SendMessage = useCallback((message, keep = true) => {
     if (isEventSourceSupported && webSocketRef.current instanceof EventSource) {
       console.warn('Unable to send a message from an eventSource');
       return;
@@ -58,13 +58,13 @@ export const useWebSocket = (
     if (webSocketRef.current && webSocketRef.current.readyState === ReadyState.OPEN) {
       assertIsWebSocket(webSocketRef.current);
       webSocketRef.current.send(message);
-    } else {
+    } else if (keep) {
       messageQueue.current.push(message);
     }
   }, []);
 
-  const sendJsonMessage: SendJsonMessage = useCallback(message => {
-    sendMessage(JSON.stringify(message));
+  const sendJsonMessage: SendJsonMessage = useCallback((message, keep = true) => {
+    sendMessage(JSON.stringify(message), keep);
   }, [sendMessage]);
   
   const getWebSocket = useCallback(() => {
