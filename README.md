@@ -142,9 +142,9 @@ type UseWebSocket = (
   } = {},
   shouldConnect: boolean = true,
 ): {
-  sendMessage: (message: string, keep = boolean = true) => void,
+  sendMessage: (message: string, keep: boolean = true) => void,
   //jsonMessage must be JSON-parsable
-  sendJsonMessage: (jsonMessage: any, keep = boolean = true) => void,
+  sendJsonMessage: (jsonMessage: any, keep: boolean = true) => void,
   //null before first received message
   lastMessage: WebSocketEventMap['message'] | null, 
   //null before first received message. If message.data is not JSON parsable, then this will be a static empty object
