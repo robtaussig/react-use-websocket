@@ -131,6 +131,9 @@ export const useWebSocket = (
         setLastMessage(null);
       };
     } else if (url === null || connect === false) {
+      if (webSocketRef.current?.readyState === ReadyState.OPEN) {
+        webSocketRef.current.close()
+      }
       reconnectCount.current = 0; // reset reconnection attempts
       setReadyState(prev => ({
         ...prev,
