@@ -272,7 +272,44 @@ test('shared websockets each have callbacks invoked as if unshared', async (done
   done();
 })
 
-test('Options#fromSocketIO changes the WS url to support socket.io\'s required query params', async (done) => {
+
+test('shared websockets have their onClose callbacks invoked when all subscriber components disconnect', async (done) => {
+  const initialProps = { initialValue: true };
+  const onCloseFn1 = jest.fn();
+  const onCloseFn2 = jest.fn();
+  const onCloseFn3 = jest.fn();
+
+  const { rerender: rerender1 } = renderHook(
+    ({ initialValue }) => useWebSocket(URL, { share: true, onClose: onCloseFn1 }, initialValue),
+    { initialProps }
+  );
+  await server.connected;
+
+  const { rerender: rerender2 } = renderHook(
+    ({ initialValue }) => useWebSocket(URL, { share: true, onClose: onCloseFn2 }, initialValue),
+    { initialProps }
+  );
+  await server.connected;
+
+  const { rerender: rerender3 } = renderHook(
+    ({ initialValue }) => useWebSocket(URL, { share: true, onClose: onCloseFn3 }, initialValue),
+    { initialProps }
+  );
+  await server.connected;
+
+  rerender1({ initialValue: false });
+  rerender2({ initialValue: false });
+  rerender3({ initialValue: false });
+
+  await sleep(500);
+
+  expect(onCloseFn1).toHaveBeenCalledTimes(1);
+  expect(onCloseFn2).toHaveBeenCalledTimes(1);
+  expect(onCloseFn3).toHaveBeenCalledTimes(1);
+  done();
+});
+
+test("Options#fromSocketIO changes the WS url to support socket.io's required query params", async (done) => {
   options.fromSocketIO = true;
 
   const {
