@@ -17,17 +17,21 @@ const cleanSubscribers = (
 ) => {
   return () => {
     removeSubscriber(url, subscriber);
+
+    const socketLike = sharedWebSockets[url];
+
+    if (socketLike instanceof WebSocket) {
+      socketLike.addEventListener('close', (event: WebSocketEventMap['close']) => {
+        if (optionsRef.current.onClose) {
+          optionsRef.current.onClose(event);
+        }
+
+        subscriber.setReadyState(ReadyState.CLOSED);
+      });
+    }
+
     if (!hasSubscribers(url)) {
       try {
-        const socketLike = sharedWebSockets[url];
-        if (socketLike instanceof WebSocket) {
-          socketLike.onclose = (event: WebSocketEventMap['close']) => {
-            if (optionsRef.current.onClose) {
-              optionsRef.current.onClose(event);
-            }
-            setReadyState(ReadyState.CLOSED);
-          };
-        }
         socketLike.close();
       } catch (e) {
 
@@ -83,7 +87,7 @@ export const createOrJoinSocket = (
       reconnectCount,
       reconnect: startRef,
     };
-  
+
     addSubscriber(url, subscriber);
 
     return cleanSubscribers(
