@@ -391,7 +391,7 @@ If used, an [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/Event
 ### Reset Global State
 There are some cases when the global state of the library won't reset with the page. The main behavior relies on the fact that a single page application operates only in one window, but some scenarios allow us to make a new window via `window.open` and inject code there. In that case, child window will be closed, but the global state of the library remains the same in the main window. This happens because react does not finish components lifecycle on window close.
 
-To avoid troubles with the new initialization of components related to some URL, you can reset the global state for a specific connection based on your own logic.
+To avoid troubles with the new initialization of components related to the same URL, you can reset the global state for a specific connection based on your own logic.
 
 ```js
 import React, { useEffect } from 'react';
