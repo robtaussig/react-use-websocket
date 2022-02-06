@@ -1,5 +1,4 @@
 import { Subscriber } from './types';
-import {sharedWebSockets} from "@lib/globals";
 
 export type Subscribers = {
     [url: string]: Set<Subscriber>,

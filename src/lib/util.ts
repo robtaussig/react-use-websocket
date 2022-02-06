@@ -1,6 +1,6 @@
 import { WebSocketLike } from './types';
-import {resetWebSockets} from './globals';
-import {resetSubscribers} from './manage-subscribers';
+import { resetWebSockets } from './globals';
+import { resetSubscribers } from './manage-subscribers';
 
 export function assertIsWebSocket (
     webSocketInstance: WebSocketLike,
