@@ -3,10 +3,12 @@ import {
     hasSubscribers,
     addSubscriber,
     removeSubscriber,
+    resetSubscribers,
 } from './manage-subscribers';
 import { Subscriber } from './types';
 
 const URL = 'ws://localhost:1234';
+const SECOND_URL = 'ws://localhost:4321'
 const noop = () => {};
 
 const subscriber1: Subscriber = {
@@ -65,4 +67,34 @@ test('removeSubscriber removes a subscriber from a url subscription', () => {
     removeSubscriber(URL, subscriber1);
     removeSubscriber(URL, subscriber2);
     expect(getSubscribers(URL)).toHaveLength(0);
+});
+
+test('resetSubscribers removes subscribers only for a specific URL', () => {
+    addSubscriber(URL, subscriber1);
+    addSubscriber(URL, subscriber2);
+    expect(getSubscribers(URL)).toHaveLength(2);
+
+    addSubscriber(SECOND_URL, subscriber1);
+    addSubscriber(SECOND_URL, subscriber2);
+    expect(getSubscribers(SECOND_URL)).toHaveLength(2);
+
+    resetSubscribers(URL);
+
+    expect(getSubscribers(URL)).toHaveLength(0);
+    expect(getSubscribers(SECOND_URL)).toHaveLength(2);
+});
+
+test('resetSubscribers removes all subscribers when URL is not set', () => {
+    addSubscriber(URL, subscriber1);
+    addSubscriber(URL, subscriber2);
+    expect(getSubscribers(URL)).toHaveLength(2);
+
+    addSubscriber(SECOND_URL, subscriber1);
+    addSubscriber(SECOND_URL, subscriber2);
+    expect(getSubscribers(SECOND_URL)).toHaveLength(2);
+
+    resetSubscribers();
+
+    expect(getSubscribers(URL)).toHaveLength(0);
+    expect(getSubscribers(SECOND_URL)).toHaveLength(0);
 });
