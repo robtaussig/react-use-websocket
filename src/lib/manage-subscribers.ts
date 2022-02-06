@@ -1,4 +1,5 @@
 import { Subscriber } from './types';
+import {sharedWebSockets} from "@lib/globals";
 
 export type Subscribers = {
     [url: string]: Set<Subscriber>,
@@ -26,3 +27,15 @@ export const addSubscriber = (url: string, subscriber: Subscriber): void => {
 export const removeSubscriber = (url: string, subscriber: Subscriber): void => {
     subscribers[url].delete(subscriber);
 };
+
+export const resetSubscribers = (url?: string): void => {
+    if (url && subscribers.hasOwnProperty(url)) {
+        delete subscribers[url];
+    } else {
+        for (let url in subscribers){
+            if (subscribers.hasOwnProperty(url)){
+                delete subscribers[url];
+            }
+        }
+    }
+}

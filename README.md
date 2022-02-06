@@ -387,3 +387,22 @@ If used, an [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/Event
 - There is no 'CLOSING' readyState for `EventSource`, and as such, the CLOSED readyState is `2` for an `EventSource`, whereas it is `3` for a WebSocket. For purposes of internal consistency, the `readyState` returned by `useWebSocket` will follow the `WebSocket` enumeration and use `3` for the CLOSED event for both instance types.
 - `getEventSource` will return the underlying EventSource, even if `Options#share` is used -- as opposed to the `WebSocket` equivalent which returns a `Proxy`.
 - There is no concept of sending messages from the client, and as such `sendMessage` will not be provided.
+
+### Reset Global State
+There are some cases when the global state of the library won't reset with the page. The main behavior relies on the fact that a single page application operates only in one window, but some scenarios allow us to make a new window via `window.open` and inject code there. In that case, child window will be closed, but the global state of the library remains the same in the main window. This happens because react does not finish components lifecycle on window close.
+
+To avoid troubles with the new initialization of components related to the same URL, you can reset the global state for a specific connection based on your own logic.
+
+```js
+import React, { useEffect } from 'react';
+import { resetGlobalState } from 'react-use-websocket';
+
+// insside second window opened via window.open
+export const ChildWindow = () => {
+    useEffect(() => {
+        window.addEventListener("unload", () => {
+            resetGlobalState('wss://echo.websocket.org');
+        });
+    }, []);
+}
+```
