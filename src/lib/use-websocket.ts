@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { flushSync } from 'react-dom';
 import { DEFAULT_OPTIONS, isEventSourceSupported, ReadyState, UNPARSABLE_JSON_OBJECT } from './constants';
 import { createOrJoinSocket } from './create-or-join';
 import { getUrl } from './get-url';
@@ -90,16 +91,16 @@ export const useWebSocket = (
 
         const protectedSetLastMessage = (message: WebSocketEventMap['message']) => {
           if (!expectClose) {
-            setLastMessage(message);
+            flushSync(() => setLastMessage(message));
           }
         };
   
         const protectedSetReadyState = (state: ReadyState) => {
           if (!expectClose) {
-            setReadyState(prev => ({
+            flushSync(() => setReadyState(prev => ({
               ...prev,
               ...(convertedUrl.current && {[convertedUrl.current]: state}),
-            }));
+            })));
           }
         };
 

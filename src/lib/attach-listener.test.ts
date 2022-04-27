@@ -75,7 +75,7 @@ test('The readyState setter is called when the websocket connection is open', ()
     expect(setReadyState).toHaveBeenCalled();
 })
 
-test('It attempts to reconnect up to specified reconnect attempts', async (done) => {
+test('It attempts to reconnect up to specified reconnect attempts', async () => {
     const reconnect = jest.fn(() => {
         client = new WebSocket('ws://localhost:1234');
         attachListeners(
@@ -105,10 +105,9 @@ test('It attempts to reconnect up to specified reconnect attempts', async (done)
     await sleep(1000);
 
     expect(reconnect).toHaveBeenCalledTimes(5);
-    done();
 })
 
-test('When server closes the websocket, readyState transitions immediately to CLOSED', async (done) => {
+test('When server closes the websocket, readyState transitions immediately to CLOSED', async () => {
     const setReadyStateFn = jest.fn((readyState: ReadyState) => {});
 
     attachListeners(
@@ -125,10 +124,9 @@ test('When server closes the websocket, readyState transitions immediately to CL
     expect(setReadyStateFn.mock.calls[0][0]).toEqual(ReadyState.OPEN);
     expect(setReadyStateFn.mock.calls[1][0]).toEqual(ReadyState.CLOSED);
     expect(setReadyStateFn).toHaveBeenCalledTimes(2);
-    done();
 })
 
-test('When client closes the websocket using the provided cleanup function, readyState transitions to CLOSING and then to CLOSED', async (done) => {
+test('When client closes the websocket using the provided cleanup function, readyState transitions to CLOSING and then to CLOSED', async () => {
     const setReadyStateFn = jest.fn((readyState: ReadyState) => {});
     
     const cleanup = attachListeners(
@@ -147,6 +145,4 @@ test('When client closes the websocket using the provided cleanup function, read
     expect(setReadyStateFn.mock.calls[1][0]).toEqual(ReadyState.CLOSING);
     expect(setReadyStateFn.mock.calls[2][0]).toEqual(ReadyState.CLOSED);
     expect(setReadyStateFn).toHaveBeenCalledTimes(3);
-    
-    done();
 })

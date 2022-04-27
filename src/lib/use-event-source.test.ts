@@ -20,13 +20,11 @@ afterEach(() => {
   WS.clean();
 });
 
-test('Options#eventSourceOptions, if provided, instantiates an EventSource instead of a WebSocket', async (done) => {
+test('Options#eventSourceOptions, if provided, instantiates an EventSource instead of a WebSocket', async () => {
   const {
     result,
-    waitForNextUpdate
+    waitFor
   } = renderHook(() => useEventSource(URL, options));
-  await waitForNextUpdate();
 
-  expect(result.current.getEventSource() instanceof EventSource).toBe(true);
-  done();
+  await waitFor(() => expect(result.current.getEventSource() instanceof EventSource).toBe(true));
 });

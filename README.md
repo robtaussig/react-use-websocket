@@ -1,4 +1,4 @@
-# React useWebSocket v2
+# React useWebSocket
 
 [Live Demo](https://robtaussig.com/socket/)
 
@@ -10,7 +10,19 @@ React Hook designed to provide robust WebSocket integrations to your React Compo
 
 Pull requests welcomed!
 
-## New in v2
+## New in 4.0.0
+
+- `react-use-websocket` now supports (and depends on) React 18. If you are not ready to upgrade to React 18, please install version `3.0.0`:
+
+```
+npm install --save react-use-websocket@3.0.0
+
+//or
+
+yarn add react-use-websocket@3.0.0
+```
+
+## New in 2.0.0
 
 - `useWebSocket` now returns an object instead of an array. This allows you to pick out specific features/properties to suit your use-case as well as removing mental overhead of keeping track of item order.
 - `lastJsonMessage` and `sendJsonMessage` added to return value to reduce need to stringify and parse outgoing and incoming messages at the component level.

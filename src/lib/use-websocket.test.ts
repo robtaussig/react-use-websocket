@@ -29,11 +29,10 @@ test('useWebsocket should work with just a url provided', () => {
   }).not.toThrow();
 })
 
-test('readyState changes across readyState transitions', async (done) => {
+test('readyState changes across readyState transitions', async () => {
   const {
     result,
     rerender,
-    waitForNextUpdate,
   } = renderHook(({ initialValue }) => useWebSocket(URL, options, initialValue), {
     initialProps: { initialValue: false }
   })
@@ -45,17 +44,11 @@ test('readyState changes across readyState transitions', async (done) => {
   await server.connected;
   expect(result.current.readyState).toEqual(ReadyState.OPEN);
 
-  
-  waitForNextUpdate()
-    .then(() => {
-      expect(result.current.readyState).toEqual(ReadyState.CLOSED);
-      done();
-    })
-
   server.close();
+  await expect(result.current.readyState).toEqual(ReadyState.CLOSED);
 })
 
-test('a function-promise based url works the same as a string-based url', async (done) => {
+test('a function-promise based url works the same as a string-based url', async () => {
   const getUrl = () => {
     return new Promise<string>(resolve => {
       setTimeout(() => resolve(URL), 1000);
@@ -65,7 +58,6 @@ test('a function-promise based url works the same as a string-based url', async 
   const {
     result,
     rerender,
-    waitForNextUpdate,
   } = renderHook(({ initialValue }) => useWebSocket(getUrl, options, initialValue), {
     initialProps: { initialValue: false }
   })
@@ -77,17 +69,11 @@ test('a function-promise based url works the same as a string-based url', async 
   await server.connected;
   expect(result.current.readyState).toEqual(ReadyState.OPEN);
 
-  
-  waitForNextUpdate()
-    .then(() => {
-      expect(result.current.readyState).toEqual(ReadyState.CLOSED);
-      done();
-    })
-
   server.close();
+  await expect(result.current.readyState).toEqual(ReadyState.CLOSED);
 })
 
-test('lastMessage updates when websocket receives a message', async (done) => {
+test('lastMessage updates when websocket receives a message', async () => {
   const {
     result,
   } = renderHook(() => useWebSocket(URL, options))
@@ -98,10 +84,9 @@ test('lastMessage updates when websocket receives a message', async (done) => {
   server.send('There');
   server.send('Friend');
   expect(result.current.lastMessage?.data).toBe('Friend');
-  done();
 })
 
-test('lastJsonMessage updates with a json object when websocket receives a message', async (done) => {
+test('lastJsonMessage updates with a json object when websocket receives a message', async () => {
   const {
     result,
   } = renderHook(() => useWebSocket(URL, options))
@@ -110,33 +95,27 @@ test('lastJsonMessage updates with a json object when websocket receives a messa
 
   server.send(JSON.stringify({ name: 'Bob' }));
   expect(result.current.lastJsonMessage.name).toBe('Bob');
-
-  done();
 })
 
-test('sendMessage passes message to websocket and sends to server', async (done) => {
+test('sendMessage passes message to websocket and sends to server', async () => {
   const {
     result,
   } = renderHook(() => useWebSocket(URL, options))
   await server.connected;
   result.current.sendMessage("Hello");
   await expect(server).toReceiveMessage("Hello");
-  
-  done();
 })
 
-test('if sendMessage is called before the websocket opens, the message will be queued and sent when the websocket opens', async (done) => {
+test('if sendMessage is called before the websocket opens, the message will be queued and sent when the websocket opens', async () => {
   const {
     result,
   } = renderHook(() => useWebSocket(URL, options))
   expect(result.current.readyState).not.toEqual(ReadyState.OPEN);
   result.current.sendMessage("Hello");
   await expect(server).toReceiveMessage("Hello");
-  
-  done();
 })
 
-test('sendJsonMessage allows component to pass a json object which is serialized and sent to server', async (done) => {
+test('sendJsonMessage allows component to pass a json object which is serialized and sent to server', async () => {
   const {
     result,
   } = renderHook(() => useWebSocket(URL, options))
@@ -144,56 +123,35 @@ test('sendJsonMessage allows component to pass a json object which is serialized
   result.current.sendJsonMessage({ name: 'Bob'  });
 
   await expect(server).toReceiveMessage(JSON.stringify({ name: 'Bob'  }));
-  
-  done();
 })
 
-test('getWebSocket returns the underlying websocket if unshared', async (done) => {
+test('getWebSocket returns the underlying websocket if unshared', async () => {
   const {
     result,
-    waitForNextUpdate,
+    waitFor
   } = renderHook(() => useWebSocket(URL, options))
   await server.connected;
   const ws = result.current.getWebSocket();
 
   expect(ws instanceof WebSocket).toBe(true);
-  
-  Promise.race([
-    waitForNextUpdate(),
-    sleep(500),
-  ])
-    .then(() => {
-      expect(result.current.readyState).toBe(ReadyState.CLOSED);
-
-      done();
-    })
 
   ws?.close();
+  await waitFor(() => expect(result.current.readyState).toBe(ReadyState.CLOSED));
 })
 
-test('getWebSocket returns a protected websocket when shared', async (done) => {
+test('getWebSocket returns a protected websocket when shared', async () => {
   options.share = true;
   const {
     result,
-    waitForNextUpdate,
   } = renderHook(() => useWebSocket(URL, options))
   await server.connected;
   const ws = result.current.getWebSocket();
-  
-  Promise.race([
-    waitForNextUpdate(),
-    sleep(500),
-  ])
-    .then(() => {
-      expect(result.current.readyState).toBe(ReadyState.OPEN);
-
-      done();
-    })
 
   ws?.close();
+  await expect(result.current.readyState).toBe(ReadyState.OPEN);
 })
 
-test('websocket is closed when the component unmounts', async (done) => {
+test('websocket is closed when the component unmounts', async () => {
   const {
     result,
     unmount,
@@ -205,10 +163,9 @@ test('websocket is closed when the component unmounts', async (done) => {
   expect(ws?.readyState).toBe(ReadyState.CLOSING);
   await sleep(500);
   expect(ws?.readyState).toBe(ReadyState.CLOSED);
-  done();
 })
 
-test('shared websockets receive updates as if unshared', async (done) => {
+test('shared websockets receive updates as if unshared', async () => {
   const {
     result: component1,
   } = renderHook(() => useWebSocket(URL, options))
@@ -230,10 +187,9 @@ test('shared websockets receive updates as if unshared', async (done) => {
   expect(component1.current.lastMessage?.data).toBe('Hello all');
   expect(component2.current.lastMessage?.data).toBe('Hello all');
   expect(component3.current.lastMessage?.data).toBe('Hello all');
-  done();
 })
 
-test('shared websockets each have callbacks invoked as if unshared', async (done) => {
+test('shared websockets each have callbacks invoked as if unshared', async () => {
   const component1OnClose = jest.fn(() => {});
   renderHook(() => useWebSocket(URL, {
     ...options,
@@ -268,58 +224,53 @@ test('shared websockets each have callbacks invoked as if unshared', async (done
   expect(component1OnClose).toHaveBeenCalledTimes(1);
   expect(component2OnClose).toHaveBeenCalledTimes(1);
   expect(component3OnClose).toHaveBeenCalledTimes(1);
-
-  done();
 })
 
-test('Options#fromSocketIO changes the WS url to support socket.io\'s required query params', async (done) => {
+test('Options#fromSocketIO changes the WS url to support socket.io\'s required query params', async () => {
   options.fromSocketIO = true;
 
   const {
     result,
-    waitForNextUpdate,
+    waitFor
   } = renderHook(() => useWebSocket(URL, options));
 
-  await waitForNextUpdate();
-  const ws = result.current.getWebSocket();
-  expect(ws?.url).toEqual(SOCKET_IO_URL);
-
-  done();
+  await waitFor(() => {
+    const ws = result.current.getWebSocket();
+    expect(ws?.url).toEqual(SOCKET_IO_URL);
+  });
 });
 
-test('Options#queryParams append object-based params as string to url', async (done) => {
+test('Options#queryParams append object-based params as string to url', async () => {
   options.queryParams = { type: 'user', id: 5 };
 
   const {
     result,
-    waitForNextUpdate,
+    waitFor,
   } = renderHook(() => useWebSocket(URL, options));
 
-  await waitForNextUpdate();
-  const ws = result.current.getWebSocket();
-  expect(ws?.url).toEqual(`${URL}/?type=user&id=5`);
-  
-  done();
+  await waitFor(() => {
+    const ws = result.current.getWebSocket();
+    expect(ws?.url).toEqual(`${URL}/?type=user&id=5`);
+  });
 });
 
-test('Options#protocols pass the value on to the instantiated WebSocket', async (done) => {
+test('Options#protocols pass the value on to the instantiated WebSocket', async () => {
   options.protocols = 'chat';
 
   const {
     result,
-    waitForNextUpdate,
+    waitFor,
   } = renderHook(() => useWebSocket(URL, options));
 
-  await waitForNextUpdate();
-  const ws = result.current.getWebSocket();
-  if (ws instanceof WebSocket) {
-    expect(ws?.protocol).toEqual('chat');
-  }
-  
-  done();
+  await waitFor(() => {
+    const ws = result.current.getWebSocket();
+    if (ws instanceof WebSocket) {
+      expect(ws?.protocol).toEqual('chat');
+    }
+  });
 });
 
-test('Options#share subscribes multiple components to a single WebSocket, so long as the URL is the same', async (done) => {
+test('Options#share subscribes multiple components to a single WebSocket, so long as the URL is the same', async () => {
   options.share = true;
   
   const onConnectionFn = jest.fn();
@@ -332,11 +283,9 @@ test('Options#share subscribes multiple components to a single WebSocket, so lon
   await sleep(500);
 
   expect(onConnectionFn).toHaveBeenCalledTimes(1);
-
-  done();
 });
 
-test('if Options#share is not true, multiple websockets will be opened for the same url', async (done) => {
+test('if Options#share is not true, multiple websockets will be opened for the same url', async () => {
   const onConnectionFn = jest.fn();
   server.on('connection', onConnectionFn);
 
@@ -347,11 +296,9 @@ test('if Options#share is not true, multiple websockets will be opened for the s
   await sleep(500);
 
   expect(onConnectionFn).toHaveBeenCalledTimes(3);
-
-  done();
 });
 
-test('Options#onOpen is called with the open event when the websocket connection opens', async (done) => {
+test('Options#onOpen is called with the open event when the websocket connection opens', async () => {
   const onOpenFn = jest.fn();
   options.onOpen = onOpenFn;
 
@@ -359,55 +306,53 @@ test('Options#onOpen is called with the open event when the websocket connection
   await server.connected;
   expect(onOpenFn).toHaveBeenCalledTimes(1);
   expect(onOpenFn.mock.calls[0][0].constructor.name).toBe('Event');
-  done();
 });
 
-test('Options#onClose is called with the close event when the websocket connection closes', async (done) => {
+test('Options#onClose is called with the close event when the websocket connection closes', async () => {
   const onCloseFn = jest.fn();
   options.onClose = onCloseFn;
 
-  const { waitForNextUpdate } = renderHook(() => useWebSocket(URL, options));
+  const { waitFor } = renderHook(() => useWebSocket(URL, options));
   await server.connected;
-  waitForNextUpdate()
-    .then(() => {
-      expect(onCloseFn).toHaveBeenCalledTimes(1);
-      expect(onCloseFn.mock.calls[0][0].constructor.name).toBe('CloseEvent');
-      done();
-    })
+
   server.close();
+  await waitFor(() => {
+    expect(onCloseFn).toHaveBeenCalledTimes(1);
+    expect(onCloseFn.mock.calls[0][0].constructor.name).toBe('CloseEvent');
+  });
 });
 
-test('Options#onMessage is called with the MessageEvent when the websocket receives a message', async (done) => {
+test('Options#onMessage is called with the MessageEvent when the websocket receives a message', async () => {
   const onMessageFn = jest.fn();
   options.onMessage = onMessageFn;
 
-  const { waitForNextUpdate } = renderHook(() => useWebSocket(URL, options));
+  const { waitFor } = renderHook(() => useWebSocket(URL, options));
   await server.connected;
-  waitForNextUpdate()
-    .then(() => {
-      expect(onMessageFn).toHaveBeenCalledTimes(1);
-      expect(onMessageFn.mock.calls[0][0].constructor.name).toBe('MessageEvent');
-      done();
-    })
+  
   server.send('Hello');
+
+  await waitFor(() => {
+    expect(onMessageFn).toHaveBeenCalledTimes(1);
+    expect(onMessageFn.mock.calls[0][0].constructor.name).toBe('MessageEvent');
+  });
 });
 
-test('Options#onError is called when the websocket connection errors out', async (done) => {
+test('Options#onError is called when the websocket connection errors out', async () => {
   const onErrorFn = jest.fn();
   options.onError = onErrorFn;
 
-  const { waitForNextUpdate } = renderHook(() => useWebSocket(URL, options));
+  const { waitFor } = renderHook(() => useWebSocket(URL, options));
   await server.connected;
-  waitForNextUpdate()
-    .then(() => {
-      expect(onErrorFn).toHaveBeenCalledTimes(1);
-      expect(onErrorFn.mock.calls[0][0].constructor.name).toBe('MessageEvent');
-      done();
-    })
+  
   server.error();
+
+  await waitFor(() => {
+    expect(onErrorFn).toHaveBeenCalledTimes(1);
+    expect(onErrorFn.mock.calls[0][0].constructor.name).toBe('MessageEvent');
+  });
 });
 
-test('Options#shouldReconnect controls whether a closed websocket should attempt to reconnect', async (done) => {
+test('Options#shouldReconnect controls whether a closed websocket should attempt to reconnect', async () => {
   options.shouldReconnect = () => false;
   options.reconnectInterval = 500; //Default interval is too long for tests
 
@@ -424,11 +369,9 @@ test('Options#shouldReconnect controls whether a closed websocket should attempt
   renderHook(() => useWebSocket(URL, options));
   await sleep(600);
   expect(onConnectionFn).toHaveBeenCalledTimes(3);
-
-  done();
 });
 
-test('Options#onReconnectStop is called when the websocket exceeds maximum reconnect attempts provided in options, or 20 by default', async (done) => {
+test('Options#onReconnectStop is called when the websocket exceeds maximum reconnect attempts provided in options, or 20 by default', async () => {
   options.shouldReconnect = () => true;
   options.reconnectAttempts = 3;
   options.reconnectInterval = 500; //Default interval is too long for tests
@@ -444,10 +387,9 @@ test('Options#onReconnectStop is called when the websocket exceeds maximum recon
   
   expect(onReconnectStopFn).toHaveBeenCalled();
   expect(onReconnectStopFn.mock.calls[0][0]).toBe(3);
-  done();
 });
 
-test('Options#filter accepts all incoming messages, but only where it returns true will the message update a component', async (done) => {
+test('Options#filter accepts all incoming messages, but only where it returns true will the message update a component', async () => {
   options.filter = () => false;
 
   const { result } = renderHook(() => useWebSocket(URL, options));
@@ -456,10 +398,9 @@ test('Options#filter accepts all incoming messages, but only where it returns tr
   await sleep(500);
 
   expect(result.current.lastMessage).toBeNull();
-  done();
 });
 
-test('Options#retryOnError controls whether a websocket should attempt to reconnect after an error event', async (done) => {
+test('Options#retryOnError controls whether a websocket should attempt to reconnect after an error event', async () => {
   options.retryOnError = false;
   options.reconnectAttempts = 3;
   options.reconnectInterval = 500;
@@ -483,10 +424,9 @@ test('Options#retryOnError controls whether a websocket should attempt to reconn
   server.error();
   await sleep(1600);
   expect(onReconnectStopFn2).toHaveBeenCalled();
-  done();
 });
 
-test('Options#eventSourceOptions, if provided, instantiates an EventSource instead of a WebSocket', async (done) => {
+test('Options#eventSourceOptions, if provided, instantiates an EventSource instead of a WebSocket', async () => {
   options.eventSourceOptions = { withCredentials: true };
 
   const {
@@ -496,8 +436,6 @@ test('Options#eventSourceOptions, if provided, instantiates an EventSource inste
   await waitForNextUpdate();
 
   expect(result.current.getWebSocket() instanceof EventSource).toBe(true);
-
-  done();
 });
 
-//TODO: Write companion tests for useSocketIO
+// //TODO: Write companion tests for useSocketIO

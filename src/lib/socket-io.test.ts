@@ -50,7 +50,7 @@ test('appendQueryParams properly adds query params to a url that already contain
   expect(wsUrl).toEqual(`${URL}?type=user&id=5&name=bob`);
 })
 
-test('setUpSocketIOPing sets up an interval that sends a keep-alive message from the client to socket-io server', async (done) => {
+test('setUpSocketIOPing sets up an interval that sends a keep-alive message from the client to socket-io server', async () => {
   const sendFn = jest.fn();
 
   const interval = setUpSocketIOPing(sendFn, TEST_PING_INTERVAL);
@@ -58,10 +58,9 @@ test('setUpSocketIOPing sets up an interval that sends a keep-alive message from
 
   window.clearInterval(interval);
   expect(sendFn).toHaveBeenCalledTimes(5);
-  done();
 });
 
-test('setUpSocketIOPing sends the proper ping code', async (done) => {
+test('setUpSocketIOPing sends the proper ping code', async () => {
   const sendFn = jest.fn();
 
   const interval = setUpSocketIOPing(sendFn, TEST_PING_INTERVAL);
@@ -69,5 +68,4 @@ test('setUpSocketIOPing sends the proper ping code', async (done) => {
 
   window.clearInterval(interval);
   expect(sendFn.mock.calls[0][0]).toEqual(SOCKET_IO_PING_CODE);
-  done();
 });
