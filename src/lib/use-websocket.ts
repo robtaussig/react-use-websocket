@@ -85,6 +85,7 @@ export const useWebSocket = (
     if (url !== null && connect === true) {
       let removeListeners: () => void;
       let expectClose = false;
+      let createOrJoin = true;
 
       const start = async () => {
         convertedUrl.current = await getUrl(url, optionsCache);
@@ -104,16 +105,18 @@ export const useWebSocket = (
           }
         };
 
-        removeListeners = createOrJoinSocket(
-          webSocketRef,
-          convertedUrl.current,
-          protectedSetReadyState,
-          optionsCache,
-          protectedSetLastMessage,
-          startRef,
-          reconnectCount,
-          sendMessage,
-        );
+        if(createOrJoin) {
+          removeListeners = createOrJoinSocket(
+            webSocketRef,
+            convertedUrl.current,
+            protectedSetReadyState,
+            optionsCache,
+            protectedSetLastMessage,
+            startRef,
+            reconnectCount,
+            sendMessage,
+          );
+        }
       };
 
       startRef.current = () => {
@@ -127,6 +130,7 @@ export const useWebSocket = (
       start();
       return () => {
         expectClose = true;
+        createOrJoin = false;
         if (webSocketProxy.current) webSocketProxy.current = null;
         removeListeners?.();
         setLastMessage(null);
