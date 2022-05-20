@@ -26,7 +26,7 @@ export const websocketWrapper = (
         return val;
       }
     },
-    set: (obj: WebSocket, key:WritableKeys<WebSocket>, val: any) => {
+    set: <T extends WritableKeys<WebSocket>>(obj: WebSocket, key: T, val: WebSocket[T]) => {
       if (/^on/.test(key)) {
         console.warn('The websocket\'s event handlers should be defined through the options object passed into useWebSocket.')
         return false;

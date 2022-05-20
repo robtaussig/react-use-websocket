@@ -94,7 +94,7 @@ test('lastJsonMessage updates with a json object when websocket receives a messa
   expect(result.current.lastJsonMessage).toBe(null);
 
   server.send(JSON.stringify({ name: 'Bob' }));
-  expect(result.current.lastJsonMessage.name).toBe('Bob');
+  expect(!Array.isArray(result.current.lastJsonMessage) && result.current.lastJsonMessage.name).toBe('Bob');
 })
 
 test('sendMessage passes message to websocket and sends to server', async () => {

@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import { useWebSocket } from './use-websocket'
 import { DEFAULT_OPTIONS } from './constants'
-import { Options, WebSocketHook } from './types';
+import { JsonValue, Options, WebSocketHook } from './types';
 
 export interface SocketIOMessageData {
   type: string,
-  payload: any,
+  payload: JsonValue | null,
 }
 
 const emptyEvent: SocketIOMessageData = {
@@ -40,7 +40,7 @@ export const useSocketIO = (
   url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
   connect: boolean = true,
-): WebSocketHook<SocketIOMessageData> => {
+): WebSocketHook<SocketIOMessageData, SocketIOMessageData> => {
   const optionsWithSocketIO = useMemo(() => ({
     ...options,
     fromSocketIO: true,

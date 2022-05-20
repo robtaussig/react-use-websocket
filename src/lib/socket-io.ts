@@ -31,8 +31,8 @@ export const appendQueryParams = (url: string, params: QueryParams = {}): string
   return `${url}${alreadyHasParams ? '&' : '?'}${stringified}`;
 };
 
-export const setUpSocketIOPing = (sendMessage: SendMessage, interval = SOCKET_IO_PING_INTERVAL): any => {
+export const setUpSocketIOPing = (sendMessage: SendMessage, interval = SOCKET_IO_PING_INTERVAL) => {
   const ping = () => sendMessage(SOCKET_IO_PING_CODE);
 
-  return setInterval(ping, interval);
+  return window.setInterval(ping, interval);
 };
