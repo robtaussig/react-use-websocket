@@ -51,7 +51,7 @@ const bindCloseHandler = (
   if (isEventSourceSupported && webSocketInstance instanceof EventSource) {
     return () => {};
   }
-  assertIsWebSocket(webSocketInstance);
+  assertIsWebSocket(webSocketInstance, optionsRef.current.skipAssert);
   let reconnectTimeout: number;
 
   webSocketInstance.onclose = (event: WebSocketEventMap['close']) => {

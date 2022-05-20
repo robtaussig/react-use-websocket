@@ -57,7 +57,7 @@ export const useWebSocket = (
     }
   
     if (webSocketRef.current?.readyState === ReadyState.OPEN) {
-      assertIsWebSocket(webSocketRef.current);
+      assertIsWebSocket(webSocketRef.current, optionsCache.current.skipAssert);
       webSocketRef.current.send(message);
     } else if (keep) {
       messageQueue.current.push(message);
@@ -74,7 +74,7 @@ export const useWebSocket = (
     }
 
     if (webSocketProxy.current === null && webSocketRef.current) {
-      assertIsWebSocket(webSocketRef.current);
+      assertIsWebSocket(webSocketRef.current, optionsCache.current.skipAssert);
       webSocketProxy.current = websocketWrapper(webSocketRef.current, startRef);
     }
 

@@ -21,6 +21,7 @@ export interface Options {
   filter?: (message: WebSocketEventMap['message']) => boolean;
   retryOnError?: boolean;
   eventSourceOptions?: EventSourceOnly;
+  skipAssert?: boolean;
 }
 
 export type EventSourceOnly = Omit<Options, 'eventSourceOptions'> & EventSourceInit;
