@@ -51,11 +51,11 @@ export type Subscriber<T = WebSocketEventMap['message']> = {
   reconnect: MutableRefObject<() => void>,
 }
 
-export type WebSocketHook<T = WebSocketEventMap['message'], P = JsonValue> = {
+export type WebSocketHook<T = JsonValue, P = WebSocketEventMap['message'] | null> = {
   sendMessage: SendMessage,
   sendJsonMessage: SendJsonMessage,
-  lastMessage: T | null,
-  lastJsonMessage: P,
+  lastMessage: P,
+  lastJsonMessage: T,
   readyState: ReadyState,
   getWebSocket: () => (WebSocketLike | null),
 }

@@ -12,17 +12,18 @@ import {
   WebSocketMessage,
   WebSocketHook,
   WebSocketLike,
+  JsonValue,
 } from './types';
 import { assertIsWebSocket } from './util';
 
-export const useWebSocket = (
+export const useWebSocket = <T extends JsonValue | null = JsonValue | null>(
   url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
   connect: boolean = true,
-): WebSocketHook => {
+): WebSocketHook<T> => {
   const [lastMessage, setLastMessage] = useState<WebSocketEventMap['message'] | null>(null);
   const [readyState, setReadyState] = useState<ReadyStateState>({});
-  const lastJsonMessage = useMemo(() => {
+  const lastJsonMessage: T = useMemo(() => {
     if (lastMessage) {
       try {
         return JSON.parse(lastMessage.data);
@@ -30,7 +31,7 @@ export const useWebSocket = (
         return UNPARSABLE_JSON_OBJECT;
       }
     }
-    return null;
+    return null; 
   },[lastMessage]);
   const convertedUrl = useRef<string | null>(null);
   const webSocketRef = useRef<WebSocketLike | null>(null);
