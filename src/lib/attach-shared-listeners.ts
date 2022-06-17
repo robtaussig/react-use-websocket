@@ -115,7 +115,7 @@ export const attachSharedListeners = (
   let interval: number;
 
   if (optionsRef.current.fromSocketIO) {
-    interval = setUpSocketIOPing(sendMessage);
+    interval = setUpSocketIOPing(sendMessage, optionsRef.current.socketIOPingInterval);
   }
 
   bindMessageHandler(webSocketInstance, url);
