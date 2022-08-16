@@ -163,7 +163,7 @@ type UseWebSocket = (
   // -1 if uninstantiated, otherwise follows WebSocket readyState mapping: 0: 'Connecting', 1 'OPEN', 2: 'CLOSING', 3: 'CLOSED'
   readyState: number,
   // If using a shared websocket, return value will be a proxy-wrapped websocket, with certain properties/methods protected
-  getWebSocket: () => (WebSocket | null),
+  getWebSocket: () => (WebSocketLike | null),
 }
 ```
 
@@ -245,7 +245,7 @@ Will be an integer representing the `readyState` of the WebSocket. `-1` is not a
 ### getWebSocket
 
 ```ts
-type getWebSocket = () => WebSocket | Proxy<WebSocket>;
+type getWebSocket = () => WebSocketLike | Proxy<WebSocketLike>;
 ```
 
 If the WebSocket is shared, calling this function will lazily instantiate a `Proxy` instance that wraps the underlying WebSocket. You can get and set properties on the return value that will directly interact with the WebSocket, however certain properties/methods are protected (cannot invoke `close` or `send`, and cannot redefine any of the event handlers like `onmessage`, `onclose`, `onopen` and `onerror`. An example of using this:
