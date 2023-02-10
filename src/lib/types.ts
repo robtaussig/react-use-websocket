@@ -100,7 +100,7 @@ export type JsonObject = {[Key in string]?: JsonValue | JsonPrimitive };
 Matches a JSON array.
 @category JSON
 */
-export type JsonArray = JsonValue[];
+export type JsonArray = JsonValue[] | JsonPrimitive[];
 
 /**
 Matches any valid JSON value.
