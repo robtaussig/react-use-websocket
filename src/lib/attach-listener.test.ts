@@ -107,6 +107,39 @@ test('It attempts to reconnect up to specified reconnect attempts', async () => 
     expect(reconnect).toHaveBeenCalledTimes(5);
 })
 
+test('It accepts a function for reconnectInterval to customize the timing of reconnect attempts', async () => {
+    const reconnect = jest.fn(() => {
+        client = new WebSocket('ws://localhost:1234');
+        attachListeners(
+            client,
+            { setLastMessage: noop, setReadyState: noop },
+            optionRef,
+            reconnect,
+            reconnectCountRef,
+            noop,
+        );
+    });
+    optionRef.current.shouldReconnect = () => true;
+    optionRef.current.reconnectAttempts = 5;
+    optionRef.current.reconnectInterval = (attemptCount: number) => Math.pow(attemptCount, 2) * 100;
+
+    attachListeners(
+        client,
+        { setLastMessage: noop, setReadyState: noop },
+        optionRef,
+        reconnect,
+        reconnectCountRef,
+        noop,
+    );
+
+    await sleep(1000);
+    server.close();
+    await sleep(1000);
+    
+    //100 + 200 + 400 = 700 -- a 4th attempt would take 800ms, totalling 1500ms which would exceed the 1000ms since the server closed
+    expect(reconnect).toHaveBeenCalledTimes(3);
+})
+
 test('When server closes the websocket, readyState transitions immediately to CLOSED', async () => {
     const setReadyStateFn = jest.fn((readyState: ReadyState) => {});
 

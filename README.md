@@ -145,7 +145,7 @@ type UseWebSocket = (
     onError?: (event: WebSocketEventMap['error']) => void;
     onReconnectStop?: (numAttempts: number) => void;
     shouldReconnect?: (event: WebSocketEventMap['close']) => boolean;
-    reconnectInterval?: number;
+    reconnectInterval?: number | ((lastAttemptNumber: number) => number);
     reconnectAttempts?: number;
     filter?: (message: WebSocketEventMap['message']) => boolean;
     retryOnError?: boolean;
@@ -312,13 +312,28 @@ useEffect(() => {
 }, []);
 ```
 
+Alternatively, you can provide a function for `Options#reconnectInterval` that accepts as a parameter the nth last attempt and returns a number, which represents how long the next interval should be. This should enable a higher degree of control if you wish to employ more advanced reconnect strategies (such as [Exponential Backoff](https://en.wikipedia.org/wiki/Exponential_backoff)):
+
+```js
+const [sendMessage, lastMessage, readyState] = useWebSocket(
+  'wss://echo.websocket.org',
+  {
+    shouldReconnect: (closeEvent) => true,
+    reconnectAttempts: 10,
+    //attemptNumber will be 0 the first time it attempts to reconnect, so this equation results in a reconnect pattern of 1 second, 2 seconds, 4 seconds, 8 seconds, and then caps at 10 seconds until the maximum number of attempts is reached
+    reconnectInterval: (attemptNumber) =>
+      Math.min(Math.pow(2, attemptNumber) * 1000, 10000),
+  }
+);
+```
+
 ## Options
 
 ```ts
 interface Options {
   share?: boolean;
   shouldReconnect?: (event: WebSocketEventMap['close']) => boolean;
-  reconnectInterval?: number;
+  reconnectInterval?: number | ((lastAttemptNumber: number) => number);
   reconnectAttempts?: number;
   filter?: (message: WebSocketEventMap['message']) => boolean;
   retryOnError?: boolean;
@@ -342,7 +357,7 @@ See section on [Reconnecting](#Reconnecting).
 
 ### reconnectInterval
 
-Number of milliseconds to wait until it attempts to reconnect. Default is 5000.
+Number of milliseconds to wait until it attempts to reconnect. Default is 5000. Can also be defined as a function that takes the last attemptCount and returns the amount of time for the next interval. See [Reconnecting](#Reconnecting) for an example of this being used.
 
 ### Event Handlers: Callback
 

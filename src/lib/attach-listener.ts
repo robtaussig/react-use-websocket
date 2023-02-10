@@ -60,10 +60,14 @@ const bindCloseHandler = (
     if (optionsRef.current.shouldReconnect && optionsRef.current.shouldReconnect(event)) {
       const reconnectAttempts = optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
       if (reconnectCount.current < reconnectAttempts) {
+        const nextReconnectInterval = typeof optionsRef.current.reconnectInterval === 'function' ?
+          optionsRef.current.reconnectInterval(reconnectCount.current) :
+          optionsRef.current.reconnectInterval;
+
         reconnectTimeout = window.setTimeout(() => {
           reconnectCount.current++;
           reconnect();
-        }, optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+        }, nextReconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
       } else {
         optionsRef.current.onReconnectStop && optionsRef.current.onReconnectStop(reconnectAttempts);
         console.warn(`Max reconnect attempts of ${reconnectAttempts} exceeded`);
@@ -99,10 +103,14 @@ const bindErrorHandler = (
     
     if (optionsRef.current.retryOnError) {
       if (reconnectCount.current < (optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT)) {
+        const nextReconnectInterval = typeof optionsRef.current.reconnectInterval === 'function' ?
+          optionsRef.current.reconnectInterval(reconnectCount.current) :
+          optionsRef.current.reconnectInterval;
+
         reconnectTimeout = window.setTimeout(() => {
           reconnectCount.current++;
           reconnect();
-        }, optionsRef.current.reconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
+        }, nextReconnectInterval ?? DEFAULT_RECONNECT_INTERVAL_MS);
       } else {
         optionsRef.current.onReconnectStop && optionsRef.current.onReconnectStop(optionsRef.current.reconnectAttempts as number);
         console.warn(`Max reconnect attempts of ${optionsRef.current.reconnectAttempts} exceeded`);
