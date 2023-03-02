@@ -53,19 +53,20 @@ const bindCloseHandler = (
         if (subscriber.optionsRef.current.onClose) {
           subscriber.optionsRef.current.onClose(event);
         }
-  
+
         subscriber.setReadyState(ReadyState.CLOSED);
       });
-      
+
       delete sharedWebSockets[url];
-  
+
       getSubscribers(url).forEach(subscriber => {
         if (
           subscriber.optionsRef.current.shouldReconnect &&
           subscriber.optionsRef.current.shouldReconnect(event)
         ) {
           const reconnectAttempts = subscriber.optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT;
-          if (subscriber.reconnectCount.current < reconnectAttempts) {
+          // Check if reconnectAttempts is still belof the current number of reconnects, or if its -1 (infinite)
+          if (subscriber.reconnectCount.current < reconnectAttempts || reconnectAttempts === -1) {
             const nextReconnectInterval = typeof subscriber.optionsRef.current.reconnectInterval === 'function' ?
               subscriber.optionsRef.current.reconnectInterval(subscriber.reconnectCount.current) :
               subscriber.optionsRef.current.reconnectInterval;
@@ -100,7 +101,7 @@ const bindErrorHandler = (
           reason: `An error occurred with the EventSource: ${error}`,
           wasClean: false,
         });
-  
+
         subscriber.setReadyState(ReadyState.CLOSED);
       }
     });
