@@ -420,7 +420,7 @@ Example:
     // validate your message data
     if (isPingMessage(message.data)) {
       // do stuff or simply return false
-      updateHeartbeat(Date.now())
+      updateHeartbeat()
       return false
     } else {
       return true
