@@ -412,6 +412,24 @@ It is important to note that `lastMessage` will not be a `MessageEvent`, but ins
 
 If a function is provided with the key `filter`, incoming messages will be passed through the function, and only if it returns `true` will the hook pass along the `lastMessage` and update your component.
 
+
+Example: 
+
+```js
+  filter: (message) => {
+    // validate your message data
+    if (isPingMessage(message.data)) {
+      // do stuff or simply return false
+      updateHeartbeat(Date.now())
+      return false
+    } else {
+      return true
+    }
+  },
+```
+
+The component will rerender every time the WebSocket receives a message that does not match your conditional in this case `isPingMessage`, if the condition is true, you can do some stuff, for this example that is updating the heartbeat time, but you could just avoid unnecessary renders simply returning `false`.
+
 ## useEventSource
 
 ```js
