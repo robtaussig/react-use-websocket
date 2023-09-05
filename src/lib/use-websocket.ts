@@ -12,11 +12,10 @@ import {
   WebSocketMessage,
   WebSocketHook,
   WebSocketLike,
-  JsonValue,
 } from './types';
 import { assertIsWebSocket } from './util';
 
-export const useWebSocket = <T extends JsonValue | null = JsonValue | null>(
+export const useWebSocket = <T = unknown>(
   url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
   connect: boolean = true,
