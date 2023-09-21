@@ -96,6 +96,7 @@ A demo of this can be found [here](https://robtaussig.com/socket/). Each compone
 - Multiple components can (optionally) use a single WebSocket, which is closed and cleaned up when all subscribed components have unsubscribed/unmounted
 - Written in TypeScript
 - Socket.io support
+- Heartbeat support
 - No more waiting for the WebSocket to open before messages can be sent. Pre-connection messages are queued up and sent on connection
 - Provides direct access to unshared WebSockets, while proxying shared WebSockets. Proxied WebSockets provide subscribers controlled access to the underlying (shared) WebSocket, without allowing unsafe behavior
 - Seamlessly works with server-sent-events and the [EventSource API](https://developer.mozilla.org/en-US/docs/Web/API/EventSource)
@@ -150,6 +151,11 @@ type UseWebSocket<T = unknown> = (
     filter?: (message: WebSocketEventMap['message']) => boolean;
     retryOnError?: boolean;
     eventSourceOptions?: EventSourceInit;
+    heartbeat?: boolean | {
+      kind?: "ping" | "pong" | string;
+      timeout?: number;
+      interval?: number;
+    };
   } = {},
   shouldConnect: boolean = true,
 ): {
@@ -348,6 +354,11 @@ interface Options {
   };
   protocols?: string | string[];
   eventSourceOptions?: EventSourceInit;
+  heartbeat?: boolean | {
+    kind?: "ping" | "pong" | string;
+    timeout?: number;
+    interval?: number;
+  };
 }
 ```
 
@@ -407,6 +418,23 @@ const { sendMessage, lastMessage, readyState } = useSocketIO(
 ```
 
 It is important to note that `lastMessage` will not be a `MessageEvent`, but instead an object with two keys: `type` and `payload`.
+
+### heartbeat
+
+If set to `true` or it has options, the library will send a ping message every `interval` milliseconds. If no pong message is received within `timeout` milliseconds, the library will attempt to reconnect. The `kind` of the ping message can be changed to any string, but it must be the same on the server side.
+
+```js
+const { sendMessage, lastMessage, readyState } = useWebSocket(
+  'ws://localhost:3000',
+  {
+    heartbeat: {
+      kind: 'ping',
+      timeout: 10000,
+      interval: 25000,
+    },
+  }
+);
+```
 
 ### filter: Callback
 

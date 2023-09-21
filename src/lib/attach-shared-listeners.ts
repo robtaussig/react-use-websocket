@@ -4,6 +4,7 @@ import { getSubscribers } from './manage-subscribers';
 import { MutableRefObject } from 'react';
 import { Options, SendMessage, WebSocketLike } from './types';
 import { setUpSocketIOPing } from './socket-io';
+import { heartbeat } from './heartbeat';
 
 const bindMessageHandler = (
   webSocketInstance: WebSocketLike,
@@ -120,6 +121,14 @@ export const attachSharedListeners = (
 
   if (optionsRef.current.fromSocketIO) {
     interval = setUpSocketIOPing(sendMessage);
+  }
+
+  if (optionsRef.current.heartbeat && webSocketInstance instanceof WebSocket) {
+    const heartbeatOptions =
+      typeof optionsRef.current.heartbeat === "boolean"
+        ? undefined
+        : optionsRef.current.heartbeat;
+    heartbeat(webSocketInstance, heartbeatOptions);
   }
 
   bindMessageHandler(webSocketInstance, url);
