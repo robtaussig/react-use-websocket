@@ -438,4 +438,93 @@ test('Options#eventSourceOptions, if provided, instantiates an EventSource inste
   expect(result.current.getWebSocket() instanceof EventSource).toBe(true);
 });
 
+test.each([false, true])('Options#heartbeat, if provided, sends a message to the server at the specified interval and works when share is %s', async (shareOption) => {
+  options.heartbeat = {
+    kind: 'ping',
+    timeout: 10000,
+    interval: 500,
+  };
+  options.share = shareOption;
+
+  renderHook(() => useWebSocket(URL, options));
+
+  if (shareOption) {
+    renderHook(() => useWebSocket(URL, options));
+  }
+  await server.connected;
+  await sleep(1600);
+  await expect(server).toHaveReceivedMessages(["ping", "ping", "ping"]);
+});
+
+test.each([false, true])('Options#heartbeat, if provided, close websocket if no message is received from server within specified timeout and works when share is %s', async (shareOption) => {
+  options.heartbeat = {
+    kind: 'ping',
+    timeout: 1000,
+    interval: 500,
+  };
+  options.share = shareOption;
+
+  const {
+    result,
+  } = renderHook(() => useWebSocket(URL, options));
+
+  if (shareOption) {
+    renderHook(() => useWebSocket(URL, options));
+  }
+  await server.connected;
+  await sleep(1600);
+  expect(result.current.readyState).toBe(WebSocket.CLOSED);
+});
+
+test.each([false, true])('Options#heartbeat, if provided, do not close websocket if a message is received from server within specified timeout and works when share is %s', async (shareOption) => {
+  options.heartbeat = {
+    kind: 'ping',
+    timeout: 1000,
+    interval: 500,
+  };
+  options.share = shareOption;
+  
+  const {
+    result,
+  } = renderHook(() => useWebSocket(URL, options));
+
+  if (shareOption) {
+    renderHook(() => useWebSocket(URL, options));
+  }
+  
+  await server.connected;
+  server.send('ping')
+  await sleep(500);
+  server.send('ping')
+  await sleep(500);
+  server.send('ping')
+  await sleep(500);
+  server.send('ping')
+  await sleep(500);
+  expect(result.current.readyState).toBe(WebSocket.OPEN);
+});
+
+test.each([false, true])('Options#heartbeat, if provided, lastMessage is updated if server message matches the kind property of heartbeatOptions and works when share is %s', async (shareOption) => {
+  options.heartbeat = {
+    kind: 'ping',
+    timeout: 1000,
+    interval: 500,
+  };
+  options.share = shareOption;
+
+  const {
+    result,
+  } = renderHook(() => useWebSocket(URL, options));
+
+  if (shareOption) {
+    renderHook(() => useWebSocket(URL, options));
+  }
+  
+  await server.connected;
+  server.send('ping');
+  expect(result.current.lastMessage?.data).toBe(undefined);
+  server.send('pong');
+  expect(result.current.lastMessage?.data).toBe('pong');
+});
+
 // //TODO: Write companion tests for useSocketIO

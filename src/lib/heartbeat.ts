@@ -1,7 +1,7 @@
 import { DEFAULT_HEARTBEAT } from "./constants";
 import { HeartbeatOptions } from "./types";
 
-export function heartbeat(ws: WebSocket, options?: HeartbeatOptions): void {
+export function heartbeat(ws: WebSocket, options?: HeartbeatOptions): () => void {
   const {
     interval = DEFAULT_HEARTBEAT.interval,
     timeout = DEFAULT_HEARTBEAT.timeout,
@@ -9,10 +9,6 @@ export function heartbeat(ws: WebSocket, options?: HeartbeatOptions): void {
   } = options || {};
 
   let messageAccepted = false;
-
-  ws.addEventListener("message", () => {
-    messageAccepted = true;
-  });
 
   const pingTimer = setInterval(() => {
     try {
@@ -34,4 +30,8 @@ export function heartbeat(ws: WebSocket, options?: HeartbeatOptions): void {
     clearInterval(pingTimer);
     clearInterval(timeoutTimer);
   });
+
+  return () => {
+    messageAccepted = true;
+  };
 }

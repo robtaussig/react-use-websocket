@@ -20,11 +20,29 @@ const bindMessageHandler = (
   optionsRef: MutableRefObject<Options>,
   setLastMessage: Setters['setLastMessage'],
 ) => {
+  let heartbeatCb: () => void;
+
+  if (optionsRef.current.heartbeat && webSocketInstance instanceof WebSocket) {
+    const heartbeatOptions =
+      typeof optionsRef.current.heartbeat === "boolean"
+        ? undefined
+        : optionsRef.current.heartbeat;
+    heartbeatCb = heartbeat(webSocketInstance, heartbeatOptions);
+  }
+
   webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
+    heartbeatCb?.();
     optionsRef.current.onMessage && optionsRef.current.onMessage(message);
     if (typeof optionsRef.current.filter === 'function' && optionsRef.current.filter(message) !== true) {
       return;
     }
+    if (
+      optionsRef.current.heartbeat &&
+      typeof optionsRef.current.heartbeat !== "boolean" &&
+      optionsRef.current.heartbeat?.kind === message.data
+    )
+      return;
+
     setLastMessage(message);
   };
 };
@@ -138,14 +156,6 @@ export const attachListeners = (
 
   if (optionsRef.current.fromSocketIO) {
     interval = setUpSocketIOPing(sendMessage);
-  }
-
-  if (optionsRef.current.heartbeat && webSocketInstance instanceof WebSocket) {
-    const heartbeatOptions =
-      typeof optionsRef.current.heartbeat === "boolean"
-        ? undefined
-        : optionsRef.current.heartbeat;
-    heartbeat(webSocketInstance, heartbeatOptions);
   }
 
   bindMessageHandler(

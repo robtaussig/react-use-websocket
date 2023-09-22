@@ -33,7 +33,7 @@ describe("heartbeat", () => {
     expect(sendSpy).toHaveBeenCalledTimes(2);
   });
 
-  test("closes the WebSocket if no message is received within the specified timeout", () => {
+  test("closes the WebSocket if onMessageCb is not invoked within the specified timeout", () => {
     heartbeat(ws, { timeout: 100 });
     expect(closeSpy).not.toHaveBeenCalled();
     jest.advanceTimersByTime(99);
@@ -42,11 +42,11 @@ describe("heartbeat", () => {
     expect(closeSpy).toHaveBeenCalledTimes(1);
   });
 
-  test("does not close the WebSocket if a message is received within the specified timeout", () => {
-    heartbeat(ws, { timeout: 100 });
+  test("does not close the WebSocket if messageCallback is invoked within the specified timeout", () => {
+    const onMessageCb = heartbeat(ws, { timeout: 100 });
     expect(closeSpy).not.toHaveBeenCalled();
-    addEventListenerSpy.mock.calls[0][1]({ data: "pong" });
     jest.advanceTimersByTime(99);
+    onMessageCb();
     expect(closeSpy).not.toHaveBeenCalled();
     jest.advanceTimersByTime(1);
     expect(closeSpy).not.toHaveBeenCalled();
