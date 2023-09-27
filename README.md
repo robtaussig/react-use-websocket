@@ -432,8 +432,8 @@ const { sendMessage, lastMessage, readyState } = useWebSocket(
     heartbeat: {
       message: 'ping',
       returnMessage: 'pong',
-      timeout: 10000,
-      interval: 25000,
+      timeout: 60000, // 1 minute, if no response is received, the connection will be closed
+      interval: 25000, // every 25 seconds, a ping message will be sent
     },
   }
 );
