@@ -16,7 +16,7 @@ export const DEFAULT_RECONNECT_LIMIT = 20;
 export const DEFAULT_RECONNECT_INTERVAL_MS = 5000;
 export const UNPARSABLE_JSON_OBJECT = {};
 export const DEFAULT_HEARTBEAT = {
-  kind: 'ping',
+  message: 'ping',
   timeout: 10000,
   interval: 25000,
 };

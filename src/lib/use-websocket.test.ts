@@ -440,7 +440,7 @@ test('Options#eventSourceOptions, if provided, instantiates an EventSource inste
 
 test.each([false, true])('Options#heartbeat, if provided, sends a message to the server at the specified interval and works when share is %s', async (shareOption) => {
   options.heartbeat = {
-    kind: 'ping',
+    message: 'ping',
     timeout: 10000,
     interval: 500,
   };
@@ -458,7 +458,7 @@ test.each([false, true])('Options#heartbeat, if provided, sends a message to the
 
 test.each([false, true])('Options#heartbeat, if provided, close websocket if no message is received from server within specified timeout and works when share is %s', async (shareOption) => {
   options.heartbeat = {
-    kind: 'ping',
+    message: 'ping',
     timeout: 1000,
     interval: 500,
   };
@@ -478,7 +478,7 @@ test.each([false, true])('Options#heartbeat, if provided, close websocket if no 
 
 test.each([false, true])('Options#heartbeat, if provided, do not close websocket if a message is received from server within specified timeout and works when share is %s', async (shareOption) => {
   options.heartbeat = {
-    kind: 'ping',
+    message: 'ping',
     timeout: 1000,
     interval: 500,
   };
@@ -504,9 +504,10 @@ test.each([false, true])('Options#heartbeat, if provided, do not close websocket
   expect(result.current.readyState).toBe(WebSocket.OPEN);
 });
 
-test.each([false, true])('Options#heartbeat, if provided, lastMessage is updated if server message matches the kind property of heartbeatOptions and works when share is %s', async (shareOption) => {
+test.each([false, true])('Options#heartbeat, if provided, lastMessage is updated if server message does not matches the returnMessage property of heartbeatOptions and works when share is %s', async (shareOption) => {
   options.heartbeat = {
-    kind: 'ping',
+    message: 'ping',
+    returnMessage: 'pong',
     timeout: 1000,
     interval: 500,
   };
@@ -521,10 +522,10 @@ test.each([false, true])('Options#heartbeat, if provided, lastMessage is updated
   }
   
   await server.connected;
-  server.send('ping');
-  expect(result.current.lastMessage?.data).toBe(undefined);
   server.send('pong');
-  expect(result.current.lastMessage?.data).toBe('pong');
+  expect(result.current.lastMessage?.data).toBe(undefined);
+  server.send('ping');
+  expect(result.current.lastMessage?.data).toBe('ping');
 });
 
 // //TODO: Write companion tests for useSocketIO

@@ -152,7 +152,8 @@ type UseWebSocket<T = unknown> = (
     retryOnError?: boolean;
     eventSourceOptions?: EventSourceInit;
     heartbeat?: boolean | {
-      kind?: "ping" | "pong" | string;
+      message?: "ping" | "pong" | string;
+      returnMessage?: "ping" | "pong" | string;
       timeout?: number;
       interval?: number;
     };
@@ -355,7 +356,8 @@ interface Options {
   protocols?: string | string[];
   eventSourceOptions?: EventSourceInit;
   heartbeat?: boolean | {
-    kind?: "ping" | "pong" | string;
+    message?: "ping" | "pong" | string;
+    returnMessage?: "ping" | "pong" | string;
     timeout?: number;
     interval?: number;
   };
@@ -421,14 +423,15 @@ It is important to note that `lastMessage` will not be a `MessageEvent`, but ins
 
 ### heartbeat
 
-If set to `true` or it has options, the library will send a ping message every `interval` milliseconds. If no pong message is received within `timeout` milliseconds, the library will attempt to reconnect. The `kind` of the ping message can be changed to any string, but it must be the same on the server side.
+If the `heartbeat` option is set to `true` or has additional options, the library will send a 'ping' message to the server every `interval` milliseconds. If no response is received within `timeout` milliseconds, indicating a potential connection issue, the library will close the connection. You can customize the 'ping' message by changing the `message` property in the `heartbeat` object. If a `returnMessage` is defined, it will be ignored so that it won't be set as the `lastMessage`.
 
 ```js
 const { sendMessage, lastMessage, readyState } = useWebSocket(
   'ws://localhost:3000',
   {
     heartbeat: {
-      kind: 'ping',
+      message: 'ping',
+      returnMessage: 'pong',
       timeout: 10000,
       interval: 25000,
     },

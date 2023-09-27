@@ -39,7 +39,7 @@ const bindMessageHandler = (
     if (
       optionsRef.current.heartbeat &&
       typeof optionsRef.current.heartbeat !== "boolean" &&
-      optionsRef.current.heartbeat?.kind === message.data
+      optionsRef.current.heartbeat?.returnMessage === message.data
     )
       return;
 

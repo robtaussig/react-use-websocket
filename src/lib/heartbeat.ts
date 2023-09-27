@@ -5,14 +5,14 @@ export function heartbeat(ws: WebSocket, options?: HeartbeatOptions): () => void
   const {
     interval = DEFAULT_HEARTBEAT.interval,
     timeout = DEFAULT_HEARTBEAT.timeout,
-    kind = DEFAULT_HEARTBEAT.kind,
+    message = DEFAULT_HEARTBEAT.message,
   } = options || {};
 
   let messageAccepted = false;
 
   const pingTimer = setInterval(() => {
     try {
-      ws.send(kind);
+      ws.send(message);
     } catch (error) {
       // do nothing
     }

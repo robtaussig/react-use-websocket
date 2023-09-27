@@ -53,7 +53,7 @@ describe("heartbeat", () => {
   });
 
   test("sends the custom ping message", () => {
-    heartbeat(ws, { kind: "pong" });
+    heartbeat(ws, { message: "pong" });
     expect(sendSpy).not.toHaveBeenCalled();
     jest.advanceTimersByTime(25000);
     expect(sendSpy).toHaveBeenCalledWith("pong");
