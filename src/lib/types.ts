@@ -22,9 +22,17 @@ export interface Options {
   retryOnError?: boolean;
   eventSourceOptions?: EventSourceOnly;
   skipAssert?: boolean;
+  heartbeat?: boolean | HeartbeatOptions;
 }
 
 export type EventSourceOnly = Omit<Options, 'eventSourceOptions'> & EventSourceInit;
+
+export type HeartbeatOptions = {
+  message?: "ping" | "pong" | string;
+  returnMessage?: "ping" | "pong" | string;
+  timeout?: number;
+  interval?: number;
+};
 
 export interface EventSourceEventHandlers {
   [eventName: string]: (message: EventSourceEventMap['message']) => void;

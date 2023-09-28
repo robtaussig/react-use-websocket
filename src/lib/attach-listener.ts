@@ -1,5 +1,6 @@
 import { MutableRefObject } from 'react';
 import { setUpSocketIOPing } from './socket-io';
+import { heartbeat } from './heartbeat';
 import {
   DEFAULT_RECONNECT_LIMIT,
   DEFAULT_RECONNECT_INTERVAL_MS,
@@ -19,11 +20,29 @@ const bindMessageHandler = (
   optionsRef: MutableRefObject<Options>,
   setLastMessage: Setters['setLastMessage'],
 ) => {
+  let heartbeatCb: () => void;
+
+  if (optionsRef.current.heartbeat && webSocketInstance instanceof WebSocket) {
+    const heartbeatOptions =
+      typeof optionsRef.current.heartbeat === "boolean"
+        ? undefined
+        : optionsRef.current.heartbeat;
+    heartbeatCb = heartbeat(webSocketInstance, heartbeatOptions);
+  }
+
   webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
+    heartbeatCb?.();
     optionsRef.current.onMessage && optionsRef.current.onMessage(message);
     if (typeof optionsRef.current.filter === 'function' && optionsRef.current.filter(message) !== true) {
       return;
     }
+    if (
+      optionsRef.current.heartbeat &&
+      typeof optionsRef.current.heartbeat !== "boolean" &&
+      optionsRef.current.heartbeat?.returnMessage === message.data
+    )
+      return;
+
     setLastMessage(message);
   };
 };

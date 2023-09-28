@@ -96,6 +96,7 @@ A demo of this can be found [here](https://robtaussig.com/socket/). Each compone
 - Multiple components can (optionally) use a single WebSocket, which is closed and cleaned up when all subscribed components have unsubscribed/unmounted
 - Written in TypeScript
 - Socket.io support
+- Heartbeat support
 - No more waiting for the WebSocket to open before messages can be sent. Pre-connection messages are queued up and sent on connection
 - Provides direct access to unshared WebSockets, while proxying shared WebSockets. Proxied WebSockets provide subscribers controlled access to the underlying (shared) WebSocket, without allowing unsafe behavior
 - Seamlessly works with server-sent-events and the [EventSource API](https://developer.mozilla.org/en-US/docs/Web/API/EventSource)
@@ -150,6 +151,12 @@ type UseWebSocket<T = unknown> = (
     filter?: (message: WebSocketEventMap['message']) => boolean;
     retryOnError?: boolean;
     eventSourceOptions?: EventSourceInit;
+    heartbeat?: boolean | {
+      message?: "ping" | "pong" | string;
+      returnMessage?: "ping" | "pong" | string;
+      timeout?: number;
+      interval?: number;
+    };
   } = {},
   shouldConnect: boolean = true,
 ): {
@@ -348,6 +355,12 @@ interface Options {
   };
   protocols?: string | string[];
   eventSourceOptions?: EventSourceInit;
+  heartbeat?: boolean | {
+    message?: "ping" | "pong" | string;
+    returnMessage?: "ping" | "pong" | string;
+    timeout?: number;
+    interval?: number;
+  };
 }
 ```
 
@@ -407,6 +420,24 @@ const { sendMessage, lastMessage, readyState } = useSocketIO(
 ```
 
 It is important to note that `lastMessage` will not be a `MessageEvent`, but instead an object with two keys: `type` and `payload`.
+
+### heartbeat
+
+If the `heartbeat` option is set to `true` or has additional options, the library will send a 'ping' message to the server every `interval` milliseconds. If no response is received within `timeout` milliseconds, indicating a potential connection issue, the library will close the connection. You can customize the 'ping' message by changing the `message` property in the `heartbeat` object. If a `returnMessage` is defined, it will be ignored so that it won't be set as the `lastMessage`.
+
+```js
+const { sendMessage, lastMessage, readyState } = useWebSocket(
+  'ws://localhost:3000',
+  {
+    heartbeat: {
+      message: 'ping',
+      returnMessage: 'pong',
+      timeout: 60000, // 1 minute, if no response is received, the connection will be closed
+      interval: 25000, // every 25 seconds, a ping message will be sent
+    },
+  }
+);
+```
 
 ### filter: Callback
 

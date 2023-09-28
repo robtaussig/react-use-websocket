@@ -2,14 +2,23 @@ import { sharedWebSockets } from './globals';
 import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState, isEventSourceSupported } from './constants';
 import { getSubscribers } from './manage-subscribers';
 import { MutableRefObject } from 'react';
-import { Options, SendMessage, WebSocketLike } from './types';
+import { HeartbeatOptions, Options, SendMessage, WebSocketLike } from './types';
 import { setUpSocketIOPing } from './socket-io';
+import { heartbeat } from './heartbeat';
 
 const bindMessageHandler = (
   webSocketInstance: WebSocketLike,
   url: string,
+  heartbeatOptions?: boolean | HeartbeatOptions
 ) => {
+  let onMessageCb: () => void;
+
+  if (heartbeatOptions && webSocketInstance instanceof WebSocket) {
+    onMessageCb = heartbeat(webSocketInstance, typeof heartbeatOptions === 'boolean' ? undefined : heartbeatOptions);
+  }
+
   webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
+    onMessageCb?.();
     getSubscribers(url).forEach(subscriber => {
       if (subscriber.optionsRef.current.onMessage) {
         subscriber.optionsRef.current.onMessage(message);
@@ -21,6 +30,13 @@ const bindMessageHandler = (
       ) {
         return;
       }
+
+      if (
+        heartbeatOptions &&
+        typeof heartbeatOptions !== "boolean" &&
+        heartbeatOptions?.returnMessage === message.data
+      )
+        return;
 
       subscriber.setLastMessage(message);
     });
@@ -122,7 +138,7 @@ export const attachSharedListeners = (
     interval = setUpSocketIOPing(sendMessage);
   }
 
-  bindMessageHandler(webSocketInstance, url);
+  bindMessageHandler(webSocketInstance, url, optionsRef.current.heartbeat);
   bindCloseHandler(webSocketInstance, url);
   bindOpenHandler(webSocketInstance, url);
   bindErrorHandler(webSocketInstance, url);
