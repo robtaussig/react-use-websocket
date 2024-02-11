@@ -201,6 +201,8 @@ const { sendMessage, lastMessage, readyState, getWebSocket } = useWebSocket(
 );
 ```
 
+If `getSocketUrl` throws an error and `Options#retryOnError` is `true`, then `getSocketUrl` will be called at an interval consistent with the retry behavior defined by `Options#reconnectAttempts` and `Options#reconnectInterval`.
+
 ## API
 
 ### sendMessage

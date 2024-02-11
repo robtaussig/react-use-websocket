@@ -90,6 +90,17 @@ export const useWebSocket = <T = unknown>(
       const start = async () => {
         convertedUrl.current = await getUrl(url, optionsCache);
 
+        if (convertedUrl.current === null) {
+          console.error('Failed to get a valid URL. WebSocket connection aborted.');
+          convertedUrl.current = 'ABORTED';
+          flushSync(() => setReadyState(prev => ({
+            ...prev,
+            ABORTED: ReadyState.CLOSED,
+          })));
+
+          return;
+        }
+
         const protectedSetLastMessage = (message: WebSocketEventMap['message']) => {
           if (!expectClose) {
             flushSync(() => setLastMessage(message));

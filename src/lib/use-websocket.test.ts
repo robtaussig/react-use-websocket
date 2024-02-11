@@ -73,6 +73,110 @@ test('a function-promise based url works the same as a string-based url', async 
   await expect(result.current.readyState).toEqual(ReadyState.CLOSED);
 })
 
+test('a function-promise based url retries until it resolves if retryOnError is true', async () => {
+  let attemptsUntilSuccess = 2;
+  options.retryOnError = true;
+  options.reconnectAttempts = 3;
+  options.reconnectInterval = 500;
+  const onReconnectStopFn1 = jest.fn();
+  options.onReconnectStop = onReconnectStopFn1;
+
+  const getUrl = () => {
+    return new Promise<string>((resolve, reject) => {
+      if (attemptsUntilSuccess > 0) {
+        attemptsUntilSuccess--;
+        reject('Failed to get url');
+      } else {
+        resolve(URL);
+      }
+    });
+  };
+
+  const {
+    result,
+    rerender,
+  } = renderHook(({ initialValue }) => useWebSocket(getUrl, options, initialValue), {
+    initialProps: { initialValue: false }
+  });
+
+  expect(result.current.readyState).toEqual(ReadyState.UNINSTANTIATED);
+  rerender({ initialValue: true });
+  await sleep(1000);
+  expect(result.current.readyState).toEqual(ReadyState.CONNECTING);
+  await sleep(1000);
+  await expect(result.current.readyState).toEqual(ReadyState.OPEN);
+  expect(options.onReconnectStop).not.toHaveBeenCalled();
+});
+
+test('a function-promise based url stops retrying if it has exceeded reconnectAttempts', async () => {
+  let attemptsUntilSuccess = 3;
+  options.retryOnError = true;
+  options.reconnectAttempts = 2;
+  options.reconnectInterval = 500;
+  const onReconnectStopFn1 = jest.fn();
+  options.onReconnectStop = onReconnectStopFn1;
+
+  const getUrl = () => {
+    return new Promise<string>((resolve, reject) => {
+      if (attemptsUntilSuccess > 0) {
+        attemptsUntilSuccess--;
+        reject('Failed to get url');
+      } else {
+        resolve(URL);
+      }
+    });
+  };
+
+  const {
+    result,
+    rerender,
+  } = renderHook(({ initialValue }) => useWebSocket(getUrl, options, initialValue), {
+    initialProps: { initialValue: false }
+  });
+
+  expect(result.current.readyState).toEqual(ReadyState.UNINSTANTIATED);
+  rerender({ initialValue: true });
+  await sleep(1000);
+  expect(result.current.readyState).toEqual(ReadyState.CONNECTING);
+  await sleep(1000);
+  await expect(result.current.readyState).toEqual(ReadyState.CLOSED);
+  expect(options.onReconnectStop).toHaveBeenCalled();
+});
+
+test('a function-promise based url does not retry if retryOnError is false', async () => {
+  let attemptsUntilSuccess = 2;
+  options.retryOnError = false;
+  options.reconnectAttempts = 3;
+  options.reconnectInterval = 500;
+  const onReconnectStopFn1 = jest.fn();
+  options.onReconnectStop = onReconnectStopFn1;
+
+  const getUrl = () => {
+    return new Promise<string>((resolve, reject) => {
+      if (attemptsUntilSuccess > 0) {
+        attemptsUntilSuccess--;
+        reject('Failed to get url');
+      } else {
+        resolve(URL);
+      }
+    });
+  };
+
+  const {
+    result,
+    rerender,
+  } = renderHook(({ initialValue }) => useWebSocket(getUrl, options, initialValue), {
+    initialProps: { initialValue: false }
+  });
+
+  expect(result.current.readyState).toEqual(ReadyState.UNINSTANTIATED);
+  rerender({ initialValue: true });
+  await sleep(1000);
+  expect(result.current.readyState).toEqual(ReadyState.CLOSED);
+  await sleep(1000);
+  expect(options.onReconnectStop).not.toHaveBeenCalled();
+});
+
 test('lastMessage updates when websocket receives a message', async () => {
   const {
     result,
