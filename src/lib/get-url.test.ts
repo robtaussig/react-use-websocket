@@ -28,12 +28,12 @@ test('If fromSocketIO is passed as an option, socketIO protocol will be used', a
   optionRef.current.fromSocketIO = true;
 
   const wsUrl = await getUrl(SOCKET_IO_URL, optionRef);
-  expect(wsUrl.endsWith('socket.io/?EIO=3&transport=websocket')).toBe(true);
+  expect(wsUrl!.endsWith('socket.io/?EIO=3&transport=websocket')).toBe(true);
 });
 
 test('If query params are passed in the options, object will be converted to stringified params and appended to url', async () => {
   optionRef.current.queryParams = { type: 'user', id: 5 };
 
   const wsUrl = await getUrl(URL, optionRef);
-  expect(wsUrl.endsWith('?type=user&id=5')).toBe(true);
+  expect(wsUrl!.endsWith('?type=user&id=5')).toBe(true);
 });
