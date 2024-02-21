@@ -58,4 +58,18 @@ describe("heartbeat", () => {
     jest.advanceTimersByTime(25000);
     expect(sendSpy).toHaveBeenCalledWith("pong");
   });
+
+  test("sends a ping message using a function", () => {
+    let id = 0;
+    function nextPing() {
+      return 'msg' + (id++);
+    }
+
+    heartbeat(ws, { message: nextPing, interval: 100 });
+    expect(sendSpy).not.toHaveBeenCalled();
+    jest.advanceTimersByTime(101);
+    expect(sendSpy).toHaveBeenCalledWith('msg0');
+    jest.advanceTimersByTime(100);
+    expect(sendSpy).toHaveBeenCalledWith('msg1');
+  });
 });

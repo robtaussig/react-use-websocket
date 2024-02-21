@@ -152,7 +152,7 @@ type UseWebSocket<T = unknown> = (
     retryOnError?: boolean;
     eventSourceOptions?: EventSourceInit;
     heartbeat?: boolean | {
-      message?: "ping" | "pong" | string;
+      message?: "ping" | "pong" | string | (() => string);
       returnMessage?: "ping" | "pong" | string;
       timeout?: number;
       interval?: number;
