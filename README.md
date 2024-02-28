@@ -232,7 +232,7 @@ Will be an unparsed `MessageEvent` received from the WebSocket.
 ### lastJsonMessage
 
 ```ts
-type lastMessage = any;
+type lastJsonMessage = any;
 ```
 
 A `JSON.parse`d object from the `lastMessage`. If `lastMessage` is not a valid JSON string, `lastJsonMessage` will be an empty object.
