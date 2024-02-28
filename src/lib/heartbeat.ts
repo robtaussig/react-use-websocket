@@ -12,7 +12,11 @@ export function heartbeat(ws: WebSocket, options?: HeartbeatOptions): () => void
 
   const pingTimer = setInterval(() => {
     try {
-      ws.send(message);
+      if (typeof message === 'function') {
+        ws.send(message());
+      } else {
+        ws.send(message);
+      }
     } catch (error) {
       // do nothing
     }

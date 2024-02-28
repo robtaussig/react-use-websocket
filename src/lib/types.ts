@@ -28,7 +28,7 @@ export interface Options {
 export type EventSourceOnly = Omit<Options, 'eventSourceOptions'> & EventSourceInit;
 
 export type HeartbeatOptions = {
-  message?: "ping" | "pong" | string;
+  message?: "ping" | "pong" | string | (() => string);
   returnMessage?: "ping" | "pong" | string;
   timeout?: number;
   interval?: number;
