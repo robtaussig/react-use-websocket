@@ -46,7 +46,7 @@ export const WebSocketDemo = () => {
     if (lastMessage !== null) {
       setMessageHistory((prev) => prev.concat(lastMessage));
     }
-  }, [lastMessage, setMessageHistory]);
+  }, [lastMessage]);
 
   const handleClickChangeSocketUrl = useCallback(
     () => setSocketUrl('wss://demos.kaazing.com/echo'),
