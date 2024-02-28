@@ -14,8 +14,7 @@ export function heartbeat(ws: WebSocket, options?: HeartbeatOptions): () => void
     try {
       if (typeof message === 'function') {
         ws.send(message());
-      }
-      else {
+      } else {
         ws.send(message);
       }
     } catch (error) {
