@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useEventSource } from './use-event-source';
 import WS from "jest-websocket-mock";
 import { EventSourceOptions } from './types';
@@ -22,8 +22,7 @@ afterEach(() => {
 
 test('Options#eventSourceOptions, if provided, instantiates an EventSource instead of a WebSocket', async () => {
   const {
-    result,
-    waitFor
+    result
   } = renderHook(() => useEventSource(URL, options));
 
   await waitFor(() => expect(result.current.getEventSource() instanceof EventSource).toBe(true));
