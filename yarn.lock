@@ -4857,9 +4857,6 @@ __metadata:
     react-dom: 18.3.1
     ts-jest: ^29.2.5
     typescript: ^5.6.2
-  peerDependencies:
-    react: ">= 18.0.0"
-    react-dom: ">= 18.0.0"
   languageName: unknown
   linkType: soft
 
