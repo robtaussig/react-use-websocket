@@ -1,4 +1,4 @@
-import { renderHook } from '@testing-library/react-hooks';
+import { renderHook, waitFor, render } from '@testing-library/react';
 import { useWebSocket } from './use-websocket';
 import WS from "jest-websocket-mock";
 import { Options } from './types';
@@ -231,8 +231,7 @@ test('sendJsonMessage allows component to pass a json object which is serialized
 
 test('getWebSocket returns the underlying websocket if unshared', async () => {
   const {
-    result,
-    waitFor
+    result
   } = renderHook(() => useWebSocket(URL, options))
   await server.connected;
   const ws = result.current.getWebSocket();
@@ -334,8 +333,7 @@ test('Options#fromSocketIO changes the WS url to support socket.io\'s required q
   options.fromSocketIO = true;
 
   const {
-    result,
-    waitFor
+    result
   } = renderHook(() => useWebSocket(URL, options));
 
   await waitFor(() => {
@@ -348,8 +346,7 @@ test('Options#queryParams append object-based params as string to url', async ()
   options.queryParams = { type: 'user', id: 5 };
 
   const {
-    result,
-    waitFor,
+    result
   } = renderHook(() => useWebSocket(URL, options));
 
   await waitFor(() => {
@@ -362,8 +359,7 @@ test('Options#protocols pass the value on to the instantiated WebSocket', async 
   options.protocols = 'chat';
 
   const {
-    result,
-    waitFor,
+    result
   } = renderHook(() => useWebSocket(URL, options));
 
   await waitFor(() => {
@@ -416,7 +412,7 @@ test('Options#onClose is called with the close event when the websocket connecti
   const onCloseFn = jest.fn();
   options.onClose = onCloseFn;
 
-  const { waitFor } = renderHook(() => useWebSocket(URL, options));
+  renderHook(() => useWebSocket(URL, options));
   await server.connected;
 
   server.close();
@@ -430,7 +426,7 @@ test('Options#onMessage is called with the MessageEvent when the websocket recei
   const onMessageFn = jest.fn();
   options.onMessage = onMessageFn;
 
-  const { waitFor } = renderHook(() => useWebSocket(URL, options));
+  renderHook(() => useWebSocket(URL, options));
   await server.connected;
   
   server.send('Hello');
@@ -445,7 +441,7 @@ test('Options#onError is called when the websocket connection errors out', async
   const onErrorFn = jest.fn();
   options.onError = onErrorFn;
 
-  const { waitFor } = renderHook(() => useWebSocket(URL, options));
+  renderHook(() => useWebSocket(URL, options));
   await server.connected;
   
   server.error();
@@ -535,11 +531,11 @@ test('Options#eventSourceOptions, if provided, instantiates an EventSource inste
 
   const {
     result,
-    waitForNextUpdate
+    rerender
   } = renderHook(() => useWebSocket(URL, options));
-  await waitForNextUpdate();
+  rerender();
 
-  expect(result.current.getWebSocket() instanceof EventSource).toBe(true);
+  waitFor(() => expect(result.current.getWebSocket() instanceof EventSource).toBe(true));
 });
 
 test.each([false, true])('Options#heartbeat, if provided, sends a message to the server at the specified interval and works when share is %s', async (shareOption) => {
