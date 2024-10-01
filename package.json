@@ -17,7 +17,6 @@
     "type": "git",
     "url": "git+https://github.com/robtaussig/react-use-websocket.git"
   },
-  "dependencies": {},
   "types": "./dist/index.d.ts",
   "peerDependencies": {
     "react": ">= 18.0.0",
