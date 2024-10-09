@@ -15,6 +15,7 @@ let client: WebSocket;
 let subscriber1: Subscriber;
 let subscriber2: Subscriber;
 let reconnectCountRef: MutableRefObject<number>;
+let lastMessageTimeRef: MutableRefObject<number>;
 let optionRef: MutableRefObject<Options>;
 
 beforeEach(async () => {
@@ -33,6 +34,7 @@ beforeEach(async () => {
     setReadyState: noop,
     optionsRef: optionRef,
     reconnectCount: reconnectCountRef,
+    lastMessageTime: lastMessageTimeRef,
     reconnect: { current: noop },
   }
 
@@ -41,6 +43,7 @@ beforeEach(async () => {
     setReadyState: noop,
     optionsRef: optionRef,
     reconnectCount: reconnectCountRef,
+    lastMessageTime: lastMessageTimeRef,
     reconnect: { current: noop },
   }
 

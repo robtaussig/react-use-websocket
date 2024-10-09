@@ -19,20 +19,15 @@ const bindMessageHandler = (
   webSocketInstance: WebSocketLike,
   optionsRef: MutableRefObject<Options>,
   setLastMessage: Setters['setLastMessage'],
+  lastMessageTime: MutableRefObject<number>,
 ) => {
-  let heartbeatCb: () => void;
-
-  if (optionsRef.current.heartbeat && webSocketInstance instanceof WebSocket) {
-    const heartbeatOptions =
-      typeof optionsRef.current.heartbeat === "boolean"
-        ? undefined
-        : optionsRef.current.heartbeat;
-    heartbeatCb = heartbeat(webSocketInstance, heartbeatOptions);
-  }
-
   webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
-    heartbeatCb?.();
     optionsRef.current.onMessage && optionsRef.current.onMessage(message);
+
+    if (typeof lastMessageTime?.current === 'number') {
+      lastMessageTime.current = Date.now();
+    }
+
     if (typeof optionsRef.current.filter === 'function' && optionsRef.current.filter(message) !== true) {
       return;
     }
@@ -40,8 +35,9 @@ const bindMessageHandler = (
       optionsRef.current.heartbeat &&
       typeof optionsRef.current.heartbeat !== "boolean" &&
       optionsRef.current.heartbeat?.returnMessage === message.data
-    )
+    ) {
       return;
+    }
 
     setLastMessage(message);
   };
@@ -52,11 +48,21 @@ const bindOpenHandler = (
   optionsRef: MutableRefObject<Options>,
   setReadyState: Setters['setReadyState'],
   reconnectCount: MutableRefObject<number>,
+  lastMessageTime: MutableRefObject<number>,
 ) => {
   webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
     optionsRef.current.onOpen && optionsRef.current.onOpen(event);
     reconnectCount.current = 0;
     setReadyState(ReadyState.OPEN);
+    //start heart beat here
+    if (optionsRef.current.heartbeat && webSocketInstance instanceof WebSocket) {
+      const heartbeatOptions =
+        typeof optionsRef.current.heartbeat === "boolean"
+          ? undefined
+          : optionsRef.current.heartbeat;
+      heartbeat(webSocketInstance, lastMessageTime, heartbeatOptions);
+    }
+
   };
 };
 
@@ -68,7 +74,7 @@ const bindCloseHandler = (
   reconnectCount: MutableRefObject<number>,
 ) => {
   if (isEventSourceSupported && webSocketInstance instanceof EventSource) {
-    return () => {};
+    return () => { };
   }
   assertIsWebSocket(webSocketInstance, optionsRef.current.skipAssert);
   let reconnectTimeout: number;
@@ -119,7 +125,7 @@ const bindErrorHandler = (
       setReadyState(ReadyState.CLOSED);
       webSocketInstance.close();
     }
-    
+
     if (optionsRef.current.retryOnError) {
       if (reconnectCount.current < (optionsRef.current.reconnectAttempts ?? DEFAULT_RECONNECT_LIMIT)) {
         const nextReconnectInterval = typeof optionsRef.current.reconnectInterval === 'function' ?
@@ -141,13 +147,14 @@ const bindErrorHandler = (
 };
 
 export const attachListeners = (
-    webSocketInstance: WebSocketLike,
-    setters: Setters,
-    optionsRef: MutableRefObject<Options>,
-    reconnect: () => void,
-    reconnectCount: MutableRefObject<number>,
-    sendMessage: SendMessage,
-  ): (() => void) => {
+  webSocketInstance: WebSocketLike,
+  setters: Setters,
+  optionsRef: MutableRefObject<Options>,
+  reconnect: () => void,
+  reconnectCount: MutableRefObject<number>,
+  lastMessageTime: MutableRefObject<number>,
+  sendMessage: SendMessage
+): (() => void) => {
   const { setLastMessage, setReadyState } = setters;
 
   let interval: number;
@@ -162,6 +169,7 @@ export const attachListeners = (
     webSocketInstance,
     optionsRef,
     setLastMessage,
+    lastMessageTime
   );
 
   bindOpenHandler(
@@ -169,6 +177,7 @@ export const attachListeners = (
     optionsRef,
     setReadyState,
     reconnectCount,
+    lastMessageTime,
   );
 
   cancelReconnectOnClose = bindCloseHandler(

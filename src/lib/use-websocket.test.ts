@@ -8,7 +8,7 @@ import { parseSocketIOUrl } from './socket-io';
 let server: WS;
 const URL = 'ws://localhost:1234';
 const SOCKET_IO_URL = parseSocketIOUrl(URL);
-const noop = () => {};
+const noop = () => { };
 const DEFAULT_OPTIONS: Options = {};
 let options: Options;
 const sleep = (duration: number): Promise<void> => new Promise(resolve => setTimeout(() => resolve(), duration));
@@ -224,9 +224,9 @@ test('sendJsonMessage allows component to pass a json object which is serialized
     result,
   } = renderHook(() => useWebSocket(URL, options))
   await server.connected;
-  result.current.sendJsonMessage({ name: 'Bob'  });
+  result.current.sendJsonMessage({ name: 'Bob' });
 
-  await expect(server).toReceiveMessage(JSON.stringify({ name: 'Bob'  }));
+  await expect(server).toReceiveMessage(JSON.stringify({ name: 'Bob' }));
 })
 
 test('getWebSocket returns the underlying websocket if unshared', async () => {
@@ -261,7 +261,7 @@ test('websocket is closed when the component unmounts', async () => {
   } = renderHook(() => useWebSocket(URL, options))
   await server.connected;
   const ws = result.current.getWebSocket();
-  
+
   unmount();
   expect(ws?.readyState).toBe(ReadyState.CLOSING);
   await sleep(500);
@@ -284,16 +284,16 @@ test('shared websockets receive updates as if unshared', async () => {
   } = renderHook(() => useWebSocket(URL, options))
   await server.connected;
 
-  
+
   server.send('Hello all');
-  
+
   expect(component1.current.lastMessage?.data).toBe('Hello all');
   expect(component2.current.lastMessage?.data).toBe('Hello all');
   expect(component3.current.lastMessage?.data).toBe('Hello all');
 })
 
 test('shared websockets each have callbacks invoked as if unshared', async () => {
-  const component1OnClose = jest.fn(() => {});
+  const component1OnClose = jest.fn(() => { });
   renderHook(() => useWebSocket(URL, {
     ...options,
     onClose: component1OnClose,
@@ -301,7 +301,7 @@ test('shared websockets each have callbacks invoked as if unshared', async () =>
 
   await server.connected;
 
-  const component2OnClose = jest.fn(() => {});
+  const component2OnClose = jest.fn(() => { });
   renderHook(() => useWebSocket(URL, {
     ...options,
     onClose: component2OnClose,
@@ -309,7 +309,7 @@ test('shared websockets each have callbacks invoked as if unshared', async () =>
 
   await server.connected;
 
-  const component3OnClose = jest.fn(() => {}); 
+  const component3OnClose = jest.fn(() => { });
   renderHook(() => useWebSocket(URL, {
     ...options,
     onClose: component3OnClose,
@@ -372,7 +372,7 @@ test('Options#protocols pass the value on to the instantiated WebSocket', async 
 
 test('Options#share subscribes multiple components to a single WebSocket, so long as the URL is the same', async () => {
   options.share = true;
-  
+
   const onConnectionFn = jest.fn();
   server.on('connection', onConnectionFn);
 
@@ -428,7 +428,7 @@ test('Options#onMessage is called with the MessageEvent when the websocket recei
 
   renderHook(() => useWebSocket(URL, options));
   await server.connected;
-  
+
   server.send('Hello');
 
   await waitFor(() => {
@@ -443,7 +443,7 @@ test('Options#onError is called when the websocket connection errors out', async
 
   renderHook(() => useWebSocket(URL, options));
   await server.connected;
-  
+
   server.error();
 
   await waitFor(() => {
@@ -475,7 +475,7 @@ test('Options#onReconnectStop is called when the websocket exceeds maximum recon
   options.shouldReconnect = () => true;
   options.reconnectAttempts = 3;
   options.reconnectInterval = 500; //Default interval is too long for tests
-  const onReconnectStopFn = jest.fn((numAttempts: number) => {});
+  const onReconnectStopFn = jest.fn((numAttempts: number) => { });
   options.onReconnectStop = onReconnectStopFn;
 
   renderHook(() => useWebSocket(URL, options));
@@ -484,7 +484,7 @@ test('Options#onReconnectStop is called when the websocket exceeds maximum recon
   expect(onReconnectStopFn).not.toHaveBeenCalled();
 
   await sleep(2000);
-  
+
   expect(onReconnectStopFn).toHaveBeenCalled();
   expect(onReconnectStopFn.mock.calls[0][0]).toBe(3);
 });
@@ -583,7 +583,7 @@ test.each([false, true])('Options#heartbeat, if provided, do not close websocket
     interval: 500,
   };
   options.share = shareOption;
-  
+
   const {
     result,
   } = renderHook(() => useWebSocket(URL, options));
@@ -591,7 +591,7 @@ test.each([false, true])('Options#heartbeat, if provided, do not close websocket
   if (shareOption) {
     renderHook(() => useWebSocket(URL, options));
   }
-  
+
   await server.connected;
   server.send('ping')
   await sleep(500);
@@ -620,7 +620,7 @@ test.each([false, true])('Options#heartbeat, if provided, lastMessage is updated
   if (shareOption) {
     renderHook(() => useWebSocket(URL, options));
   }
-  
+
   await server.connected;
   server.send('pong');
   expect(result.current.lastMessage?.data).toBe(undefined);
