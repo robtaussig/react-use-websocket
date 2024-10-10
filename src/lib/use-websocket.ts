@@ -30,12 +30,13 @@ export const useWebSocket = <T = unknown>(
         return UNPARSABLE_JSON_OBJECT;
       }
     }
-    return null; 
-  },[lastMessage]);
+    return null;
+  }, [lastMessage]);
   const convertedUrl = useRef<string | null>(null);
   const webSocketRef = useRef<WebSocketLike | null>(null);
   const startRef = useRef<() => void>(() => void 0);
   const reconnectCount = useRef<number>(0);
+  const lastMessageTime = useRef<number>(Date.now());
   const messageQueue = useRef<WebSocketMessage[]>([]);
   const webSocketProxy = useRef<WebSocketLike | null>(null);
   const optionsCache = useRef<Options>(options);
@@ -55,7 +56,7 @@ export const useWebSocket = <T = unknown>(
       console.warn('Unable to send a message from an eventSource');
       return;
     }
-  
+
     if (webSocketRef.current?.readyState === ReadyState.OPEN) {
       assertIsWebSocket(webSocketRef.current, optionsCache.current.skipAssert);
       webSocketRef.current.send(message);
@@ -67,7 +68,7 @@ export const useWebSocket = <T = unknown>(
   const sendJsonMessage: SendJsonMessage = useCallback((message, keep = true) => {
     sendMessage(JSON.stringify(message), keep);
   }, [sendMessage]);
-  
+
   const getWebSocket = useCallback(() => {
     if (optionsCache.current.share !== true || (isEventSourceSupported && webSocketRef.current instanceof EventSource)) {
       return webSocketRef.current;
@@ -106,17 +107,17 @@ export const useWebSocket = <T = unknown>(
             flushSync(() => setLastMessage(message));
           }
         };
-  
+
         const protectedSetReadyState = (state: ReadyState) => {
           if (!expectClose) {
             flushSync(() => setReadyState(prev => ({
               ...prev,
-              ...(convertedUrl.current && {[convertedUrl.current]: state}),
+              ...(convertedUrl.current && { [convertedUrl.current]: state }),
             })));
           }
         };
 
-        if(createOrJoin) {
+        if (createOrJoin) {
           removeListeners = createOrJoinSocket(
             webSocketRef,
             convertedUrl.current,
@@ -125,6 +126,7 @@ export const useWebSocket = <T = unknown>(
             protectedSetLastMessage,
             startRef,
             reconnectCount,
+            lastMessageTime,
             sendMessage,
           );
         }
@@ -137,7 +139,7 @@ export const useWebSocket = <T = unknown>(
           start();
         }
       };
-    
+
       start();
       return () => {
         expectClose = true;
@@ -150,7 +152,7 @@ export const useWebSocket = <T = unknown>(
       reconnectCount.current = 0; // reset reconnection attempts
       setReadyState(prev => ({
         ...prev,
-        ...(convertedUrl.current && {[convertedUrl.current]: ReadyState.CLOSED}),
+        ...(convertedUrl.current && { [convertedUrl.current]: ReadyState.CLOSED }),
       }));
     }
   }, [url, connect, stringifiedQueryParams, sendMessage]);

@@ -10,6 +10,7 @@ const noop = () => { };
 const DEFAULT_OPTIONS: Options = {};
 let client: WebSocket;
 let reconnectCountRef: MutableRefObject<number>;
+let lastMessageTimeRef: MutableRefObject<number>;
 let optionRef: MutableRefObject<Options>;
 const sleep = (duration: number): Promise<void> => new Promise(resolve => setTimeout(() => resolve(), duration));
 
@@ -33,6 +34,7 @@ test('It returns a cleanup function that closes the websocket', () => {
         optionRef,
         noop,
         reconnectCountRef,
+        lastMessageTimeRef,
         noop,
     );
 
@@ -50,6 +52,7 @@ test('Messages received by the webwsocket are passed to the lastMessageSetter', 
         optionRef,
         noop,
         reconnectCountRef,
+        lastMessageTimeRef,
         noop,
     );
 
@@ -67,6 +70,7 @@ test('The readyState setter is called when the websocket connection is open', ()
         optionRef,
         noop,
         reconnectCountRef,
+        lastMessageTimeRef,
         noop,
     );
 
@@ -84,6 +88,7 @@ test('It attempts to reconnect up to specified reconnect attempts', async () => 
             optionRef,
             reconnect,
             reconnectCountRef,
+            lastMessageTimeRef,
             noop,
         );
     });
@@ -97,6 +102,7 @@ test('It attempts to reconnect up to specified reconnect attempts', async () => 
         optionRef,
         reconnect,
         reconnectCountRef,
+        lastMessageTimeRef,
         noop,
     );
 
@@ -116,6 +122,7 @@ test('It accepts a function for reconnectInterval to customize the timing of rec
             optionRef,
             reconnect,
             reconnectCountRef,
+            lastMessageTimeRef,
             noop,
         );
     });
@@ -129,19 +136,20 @@ test('It accepts a function for reconnectInterval to customize the timing of rec
         optionRef,
         reconnect,
         reconnectCountRef,
+        lastMessageTimeRef,
         noop,
     );
 
     await sleep(1000);
     server.close();
     await sleep(1000);
-    
+
     //100 + 200 + 400 = 700 -- a 4th attempt would take 800ms, totalling 1500ms which would exceed the 1000ms since the server closed
     expect(reconnect).toHaveBeenCalledTimes(3);
 })
 
 test('When server closes the websocket, readyState transitions immediately to CLOSED', async () => {
-    const setReadyStateFn = jest.fn((readyState: ReadyState) => {});
+    const setReadyStateFn = jest.fn((readyState: ReadyState) => { });
 
     attachListeners(
         client,
@@ -149,6 +157,7 @@ test('When server closes the websocket, readyState transitions immediately to CL
         optionRef,
         noop,
         reconnectCountRef,
+        lastMessageTimeRef,
         noop,
     );
     await sleep(1000);
@@ -160,14 +169,15 @@ test('When server closes the websocket, readyState transitions immediately to CL
 })
 
 test('When client closes the websocket using the provided cleanup function, readyState transitions to CLOSING and then to CLOSED', async () => {
-    const setReadyStateFn = jest.fn((readyState: ReadyState) => {});
-    
+    const setReadyStateFn = jest.fn((readyState: ReadyState) => { });
+
     const cleanup = attachListeners(
         client,
         { setLastMessage: noop, setReadyState: setReadyStateFn },
         optionRef,
         noop,
         reconnectCountRef,
+        lastMessageTimeRef,
         noop,
     );
 

@@ -73,5 +73,6 @@
   "bugs": {
     "url": "https://github.com/robtaussig/react-use-websocket/issues"
   },
-  "homepage": "https://github.com/robtaussig/react-use-websocket#readme"
+  "homepage": "https://github.com/robtaussig/react-use-websocket#readme",
+  "packageManager": "yarn@4.5.0"
 }

@@ -11,6 +11,7 @@ const noop = () => { };
 const DEFAULT_OPTIONS: Options = { share: true };
 let clientRef: MutableRefObject<WebSocket>;
 let reconnectCountRef: MutableRefObject<number>;
+let lastMessageTimeRef: MutableRefObject<number>;
 let optionRef: MutableRefObject<Options>;
 let noopRef: MutableRefObject<typeof noop>;
 
@@ -31,7 +32,7 @@ afterEach(() => {
 
 test('It only creates 1 websocket per URL and closes websocket when no subscribers are left', () => {
   clientRef = { current: new WebSocket(URL) };
-  const closeFn = jest.fn(() => {});
+  const closeFn = jest.fn(() => { });
 
   const cleanup1 = createOrJoinSocket(
     clientRef,
@@ -41,6 +42,7 @@ test('It only creates 1 websocket per URL and closes websocket when no subscribe
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
   const cleanup2 = createOrJoinSocket(
@@ -51,6 +53,7 @@ test('It only creates 1 websocket per URL and closes websocket when no subscribe
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
   const cleanup3 = createOrJoinSocket(
@@ -61,6 +64,7 @@ test('It only creates 1 websocket per URL and closes websocket when no subscribe
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
 
@@ -82,7 +86,7 @@ test('It only creates 1 websocket per URL and closes websocket when no subscribe
 test('All subscriber option-based onClose callbacks are invoked per close event', () => {
   clientRef = { current: new WebSocket(URL) };
 
-  const onCloseFn = jest.fn(() => {});
+  const onCloseFn = jest.fn(() => { });
 
   optionRef.current.onClose = onCloseFn;
 
@@ -94,9 +98,10 @@ test('All subscriber option-based onClose callbacks are invoked per close event'
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -105,9 +110,10 @@ test('All subscriber option-based onClose callbacks are invoked per close event'
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -116,20 +122,21 @@ test('All subscriber option-based onClose callbacks are invoked per close event'
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
 
   expect(onCloseFn).toHaveBeenCalledTimes(0);
 
   server.close();
-  
+
   expect(onCloseFn).toHaveBeenCalledTimes(3);
 });
 
 test('All subscriber option-based onError callbacks are not invoked on close event', () => {
   clientRef = { current: new WebSocket(URL) };
 
-  const onErrorFn = jest.fn(() => {});
+  const onErrorFn = jest.fn(() => { });
 
   optionRef.current.onError = onErrorFn;
 
@@ -141,9 +148,10 @@ test('All subscriber option-based onError callbacks are not invoked on close eve
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -152,9 +160,10 @@ test('All subscriber option-based onError callbacks are not invoked on close eve
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -163,19 +172,20 @@ test('All subscriber option-based onError callbacks are not invoked on close eve
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
 
 
   server.close();
-  
+
   expect(onErrorFn).toHaveBeenCalledTimes(0);
 });
 
 test('All subscriber option-based onMessage callbacks are invoked per message event', () => {
   clientRef = { current: new WebSocket(URL) };
 
-  const onMessageFn = jest.fn(() => {});
+  const onMessageFn = jest.fn(() => { });
 
   optionRef.current.onMessage = onMessageFn;
 
@@ -187,9 +197,10 @@ test('All subscriber option-based onMessage callbacks are invoked per message ev
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -198,9 +209,10 @@ test('All subscriber option-based onMessage callbacks are invoked per message ev
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -209,6 +221,7 @@ test('All subscriber option-based onMessage callbacks are invoked per message ev
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
 
@@ -218,14 +231,14 @@ test('All subscriber option-based onMessage callbacks are invoked per message ev
   server.send('Hello');
   server.send('There');
   server.close();
-  
+
   expect(onMessageFn).toHaveBeenCalledTimes(6);
 });
 
 test('All subscriber option-based onError callbacks are invoked per error event', () => {
   clientRef = { current: new WebSocket(URL) };
 
-  const onErrorFn = jest.fn(() => {});
+  const onErrorFn = jest.fn(() => { });
 
   optionRef.current.onError = onErrorFn;
 
@@ -237,9 +250,10 @@ test('All subscriber option-based onError callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -248,9 +262,10 @@ test('All subscriber option-based onError callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -259,21 +274,22 @@ test('All subscriber option-based onError callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
 
   expect(onErrorFn).toHaveBeenCalledTimes(0);
 
   server.error();
-  
+
   expect(onErrorFn).toHaveBeenCalledTimes(3);
 });
 
 test('All subscriber option-based onClose callbacks are invoked per error event', () => {
   clientRef = { current: new WebSocket(URL) };
 
-  const onErrorFn = jest.fn(() => {});
-  const onCloseFn = jest.fn(() => {});
+  const onErrorFn = jest.fn(() => { });
+  const onCloseFn = jest.fn(() => { });
 
   optionRef.current.onError = onErrorFn;
   optionRef.current.onClose = onCloseFn;
@@ -286,9 +302,10 @@ test('All subscriber option-based onClose callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -297,9 +314,10 @@ test('All subscriber option-based onClose callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
-  
+
   createOrJoinSocket(
     clientRef,
     URL,
@@ -308,6 +326,7 @@ test('All subscriber option-based onClose callbacks are invoked per error event'
     noop,
     noopRef,
     reconnectCountRef,
+    lastMessageTimeRef,
     noop,
   );
 
@@ -315,7 +334,7 @@ test('All subscriber option-based onClose callbacks are invoked per error event'
   expect(onCloseFn).toHaveBeenCalledTimes(0);
 
   server.error();
-  
+
   expect(onErrorFn).toHaveBeenCalledTimes(3);
   expect(onCloseFn).toHaveBeenCalledTimes(3);
 });

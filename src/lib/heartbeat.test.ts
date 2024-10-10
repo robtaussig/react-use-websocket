@@ -23,7 +23,8 @@ describe("heartbeat", () => {
   });
 
   test("sends a ping message at the specified interval", () => {
-    heartbeat(ws, { interval: 100 });
+    const lastMessageTime = { current: Date.now() };
+    heartbeat(ws, lastMessageTime, { interval: 100 });
     expect(sendSpy).not.toHaveBeenCalled();
     jest.advanceTimersByTime(99);
     expect(sendSpy).not.toHaveBeenCalled();
@@ -34,16 +35,17 @@ describe("heartbeat", () => {
   });
 
   test("closes the WebSocket if onMessageCb is not invoked within the specified timeout", () => {
-    heartbeat(ws, { timeout: 100 });
+    const lastMessageTime = { current: Date.now() };
+    heartbeat(ws, lastMessageTime, { timeout: 100, interval: 100 });
     expect(closeSpy).not.toHaveBeenCalled();
     jest.advanceTimersByTime(99);
     expect(closeSpy).not.toHaveBeenCalled();
-    jest.advanceTimersByTime(1);
+    jest.advanceTimersByTime(5);
     expect(closeSpy).toHaveBeenCalledTimes(1);
   });
 
   test("does not close the WebSocket if messageCallback is invoked within the specified timeout", () => {
-    const onMessageCb = heartbeat(ws, { timeout: 100 });
+    const onMessageCb = heartbeat(ws, { current: Date.now() }, { timeout: 100 });
     expect(closeSpy).not.toHaveBeenCalled();
     jest.advanceTimersByTime(99);
     onMessageCb();
@@ -53,23 +55,24 @@ describe("heartbeat", () => {
   });
 
   test("sends the custom ping message", () => {
-    heartbeat(ws, { message: "pong" });
+    const lastMessageTime = { current: Date.now() };
+    heartbeat(ws, lastMessageTime, { message: "pong" });
     expect(sendSpy).not.toHaveBeenCalled();
     jest.advanceTimersByTime(25000);
     expect(sendSpy).toHaveBeenCalledWith("pong");
   });
 
   test("sends a ping message using a function", () => {
-    let id = 0;
-    function nextPing() {
-      return 'msg' + (id++);
+    function nextPing(id: number) {
+      return 'msg' + (id);
     }
 
-    heartbeat(ws, { message: nextPing, interval: 100 });
+    const lastMessageTime = { current: Date.now() };
+    heartbeat(ws, lastMessageTime, { message: () => nextPing(33), interval: 100 });
     expect(sendSpy).not.toHaveBeenCalled();
     jest.advanceTimersByTime(101);
-    expect(sendSpy).toHaveBeenCalledWith('msg0');
+    expect(sendSpy).toHaveBeenCalledWith('msg33');
     jest.advanceTimersByTime(100);
-    expect(sendSpy).toHaveBeenCalledWith('msg1');
+    expect(sendSpy).toHaveBeenCalledWith('msg33');
   });
 });

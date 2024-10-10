@@ -9,13 +9,14 @@ import { Subscriber } from './types';
 
 const URL = 'ws://localhost:1234';
 const SECOND_URL = 'ws://localhost:4321'
-const noop = () => {};
+const noop = () => { };
 
 const subscriber1: Subscriber = {
     setLastMessage: noop,
     setReadyState: noop,
     optionsRef: { current: {} },
     reconnectCount: { current: 0 },
+    lastMessageTime: { current: Date.now() },
     reconnect: { current: noop },
 };
 
@@ -24,6 +25,7 @@ const subscriber2: Subscriber = {
     setReadyState: noop,
     optionsRef: { current: {} },
     reconnectCount: { current: 0 },
+    lastMessageTime: { current: Date.now() },
     reconnect: { current: noop },
 };
 
