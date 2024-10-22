@@ -11,14 +11,7 @@ const bindMessageHandler = (
   url: string,
   heartbeatOptions?: boolean | HeartbeatOptions
 ) => {
-  let onMessageCb: () => void;
-
-  if (heartbeatOptions && webSocketInstance instanceof WebSocket) {
-    onMessageCb = heartbeat(webSocketInstance, typeof heartbeatOptions === 'boolean' ? undefined : heartbeatOptions);
-  }
-
   webSocketInstance.onmessage = (message: WebSocketEventMap['message']) => {
-    onMessageCb?.();
     getSubscribers(url).forEach(subscriber => {
       if (subscriber.optionsRef.current.onMessage) {
         subscriber.optionsRef.current.onMessage(message);
@@ -29,6 +22,10 @@ const bindMessageHandler = (
         subscriber.optionsRef.current.filter(message) !== true
       ) {
         return;
+      }
+
+      if (typeof subscriber?.lastMessageTime?.current === 'number') {
+        subscriber.lastMessageTime.current = Date.now();
       }
 
       if (
@@ -46,6 +43,7 @@ const bindMessageHandler = (
 const bindOpenHandler = (
   webSocketInstance: WebSocketLike,
   url: string,
+  heartbeatOptions?: boolean | HeartbeatOptions
 ) => {
   webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
     getSubscribers(url).forEach(subscriber => {
@@ -55,6 +53,12 @@ const bindOpenHandler = (
       }
 
       subscriber.setReadyState(ReadyState.OPEN);
+
+      let onMessageCb: () => void;
+
+      if (heartbeatOptions && webSocketInstance instanceof WebSocket) {
+        heartbeat(webSocketInstance, subscriber.lastMessageTime, typeof heartbeatOptions === 'boolean' ? undefined : heartbeatOptions,);
+      }
     });
   };
 };
@@ -69,12 +73,12 @@ const bindCloseHandler = (
         if (subscriber.optionsRef.current.onClose) {
           subscriber.optionsRef.current.onClose(event);
         }
-  
+
         subscriber.setReadyState(ReadyState.CLOSED);
       });
-      
+
       delete sharedWebSockets[url];
-  
+
       getSubscribers(url).forEach(subscriber => {
         if (
           subscriber.optionsRef.current.shouldReconnect &&
@@ -116,7 +120,7 @@ const bindErrorHandler = (
           reason: `An error occurred with the EventSource: ${error}`,
           wasClean: false,
         });
-  
+
         subscriber.setReadyState(ReadyState.CLOSED);
       }
     });
@@ -140,7 +144,7 @@ export const attachSharedListeners = (
 
   bindMessageHandler(webSocketInstance, url, optionsRef.current.heartbeat);
   bindCloseHandler(webSocketInstance, url);
-  bindOpenHandler(webSocketInstance, url);
+  bindOpenHandler(webSocketInstance, url, optionsRef.current.heartbeat);
   bindErrorHandler(webSocketInstance, url);
 
   return () => {

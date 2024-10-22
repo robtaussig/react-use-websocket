@@ -56,6 +56,7 @@ export type Subscriber<T = WebSocketEventMap['message']> = {
   setReadyState: (readyState: ReadyState) => void,
   optionsRef: MutableRefObject<Options>,
   reconnectCount: MutableRefObject<number>,
+  lastMessageTime: MutableRefObject<number>,
   reconnect: MutableRefObject<() => void>,
 }
 
