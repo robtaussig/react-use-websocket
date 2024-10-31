@@ -17,15 +17,15 @@ const bindMessageHandler = (
         subscriber.optionsRef.current.onMessage(message);
       }
 
+      if (typeof subscriber?.lastMessageTime?.current === 'number') {
+        subscriber.lastMessageTime.current = Date.now();
+      }
+
       if (
         typeof subscriber.optionsRef.current.filter === 'function' &&
         subscriber.optionsRef.current.filter(message) !== true
       ) {
         return;
-      }
-
-      if (typeof subscriber?.lastMessageTime?.current === 'number') {
-        subscriber.lastMessageTime.current = Date.now();
       }
 
       if (
@@ -57,6 +57,7 @@ const bindOpenHandler = (
       let onMessageCb: () => void;
 
       if (heartbeatOptions && webSocketInstance instanceof WebSocket) {
+        subscriber.lastMessageTime.current = Date.now();
         heartbeat(webSocketInstance, subscriber.lastMessageTime, typeof heartbeatOptions === 'boolean' ? undefined : heartbeatOptions,);
       }
     });

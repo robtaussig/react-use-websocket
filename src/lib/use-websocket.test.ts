@@ -292,6 +292,60 @@ test('shared websockets receive updates as if unshared', async () => {
   expect(component3.current.lastMessage?.data).toBe('Hello all');
 })
 
+test('shared=false websocket can re-connect after timeout', async () => {
+  options.heartbeat = {
+    message: 'ping',
+    returnMessage: 'pong',
+    timeout: 100,
+    interval: 30,
+  };
+  options.share = false;
+  options.reconnectInterval = 10;
+  options.reconnectAttempts = 10;
+  options.shouldReconnect = () => true;
+  options.filter = event => event.data !== '"pong"';
+
+  const {
+    result: component1,
+  } = renderHook(() => useWebSocket(URL, options))
+
+  await server.connected;
+  expect(component1.current.getWebSocket()?.readyState).toBe(WebSocket.OPEN);
+
+  await sleep(200);
+
+  await server.connected;
+  server.send('pong');
+  expect(component1.current.getWebSocket()?.readyState).toBe(WebSocket.OPEN);
+});
+
+test('shared=true websocket can re-connect after timeout', async () => {
+  options.heartbeat = {
+    message: 'ping',
+    returnMessage: 'pong',
+    timeout: 100,
+    interval: 10,
+  };
+  options.share = true;
+  options.reconnectInterval = 10;
+  options.reconnectAttempts = 10;
+  options.shouldReconnect = () => true;
+  options.filter = event => event.data !== '"pong"';
+
+  const {
+    result: component1,
+  } = renderHook(() => useWebSocket(URL, options))
+
+  await server.connected;
+  expect(component1.current.getWebSocket()?.readyState).toBe(WebSocket.OPEN);
+
+  await sleep(200);
+
+  await server.connected;
+  server.send('pong');
+  expect(component1.current.getWebSocket()?.readyState).toBe(WebSocket.OPEN);
+});
+
 test('shared websockets each have callbacks invoked as if unshared', async () => {
   const component1OnClose = jest.fn(() => { });
   renderHook(() => useWebSocket(URL, {

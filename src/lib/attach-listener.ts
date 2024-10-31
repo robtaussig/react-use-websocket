@@ -60,6 +60,7 @@ const bindOpenHandler = (
         typeof optionsRef.current.heartbeat === "boolean"
           ? undefined
           : optionsRef.current.heartbeat;
+      lastMessageTime.current = Date.now();
       heartbeat(webSocketInstance, lastMessageTime, heartbeatOptions);
     }
 
