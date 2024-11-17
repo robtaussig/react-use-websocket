@@ -1,4 +1,5 @@
-export { useWebSocket as default } from './lib/use-websocket';
+import { useWebSocket } from './lib/use-websocket';
+export default useWebSocket;
 
 export { SendMessage, Options } from './lib/types';
 
