@@ -64,7 +64,7 @@ export type WebSocketHook<T = unknown, P = WebSocketEventMap['message'] | null> 
   sendMessage: SendMessage,
   sendJsonMessage: SendJsonMessage,
   lastMessage: P,
-  lastJsonMessage: T,
+  lastJsonMessage: T | null,
   readyState: ReadyState,
   getWebSocket: () => (WebSocketLike | null),
 }
