@@ -614,7 +614,7 @@ test.each([false, true])('Options#heartbeat, if provided, close websocket if no 
   options.heartbeat = {
     message: 'ping',
     timeout: 1000,
-    interval: 500,
+    interval: 400,
   };
   options.share = shareOption;
 
@@ -627,6 +627,7 @@ test.each([false, true])('Options#heartbeat, if provided, close websocket if no 
   }
   await server.connected;
   await sleep(1600);
+  expect(server.messages).toEqual(['ping', 'ping'])
   expect(result.current.readyState).toBe(WebSocket.CLOSED);
 });
 
@@ -681,5 +682,41 @@ test.each([false, true])('Options#heartbeat, if provided, lastMessage is updated
   server.send('ping');
   expect(result.current.lastMessage?.data).toBe('ping');
 });
+
+test.each([false, true])('Options#heartbeat, can handle case when interval is very close to timeout', async (shareOption) => {
+  options.heartbeat = {
+    message: "ping",
+    returnMessage: "pong",
+    timeout: 1000,
+    interval: 800,
+  };
+  options.share = shareOption;
+
+  const { result } = renderHook(() => useWebSocket(URL, options));
+
+  if (shareOption) {
+    renderHook(() => useWebSocket(URL, options));
+  }
+
+  await server.connected;
+  await sleep(50);
+  expect(result.current.readyState).toEqual(ReadyState.OPEN);
+
+  result.current.sendMessage("token");
+  await sleep(50);
+  expect(server).toHaveReceivedMessages(["token"]);
+
+  server.send("authorized");
+  await sleep(50);
+  expect(result.current.lastMessage?.data).toEqual("authorized");
+
+  await sleep(850);
+  // it does not matter is it shared mode or not, in both cases only one timer is used that means only one ping message is sent for all subscribers
+  expect(server.messages).toEqual(["token", "ping"]);
+  server.send("pong");
+
+  expect(result.current.readyState).toBe(WebSocket.OPEN);
+}
+);
 
 // //TODO: Write companion tests for useSocketIO
