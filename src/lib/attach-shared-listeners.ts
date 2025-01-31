@@ -46,7 +46,8 @@ const bindOpenHandler = (
   heartbeatOptions?: boolean | HeartbeatOptions
 ) => {
   webSocketInstance.onopen = (event: WebSocketEventMap['open']) => {
-    getSubscribers(url).forEach(subscriber => {
+    const subscribers = getSubscribers(url);
+    subscribers.forEach(subscriber => {
       subscriber.reconnectCount.current = 0;
       if (subscriber.optionsRef.current.onOpen) {
         subscriber.optionsRef.current.onOpen(event);
@@ -58,9 +59,11 @@ const bindOpenHandler = (
 
       if (heartbeatOptions && webSocketInstance instanceof WebSocket) {
         subscriber.lastMessageTime.current = Date.now();
-        heartbeat(webSocketInstance, subscriber.lastMessageTime, typeof heartbeatOptions === 'boolean' ? undefined : heartbeatOptions,);
       }
     });
+    if (heartbeatOptions && webSocketInstance instanceof WebSocket) {
+      heartbeat(webSocketInstance, subscribers.map(subscriber => subscriber.lastMessageTime), typeof heartbeatOptions === 'boolean' ? undefined : heartbeatOptions,);
+    }
   };
 };
 
