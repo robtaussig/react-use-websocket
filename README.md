@@ -38,7 +38,8 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 export const WebSocketDemo = () => {
   //Public API that will echo messages sent to it back to the client
   const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org');
-  const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
+  const [messageHistory, setMessageHistory] =
+    useState < MessageEvent < any > [] > [];
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
@@ -149,6 +150,7 @@ type UseWebSocket<T = unknown> = (
     reconnectInterval?: number | ((lastAttemptNumber: number) => number);
     reconnectAttempts?: number;
     filter?: (message: WebSocketEventMap['message']) => boolean;
+    disableJson?: boolean;
     retryOnError?: boolean;
     eventSourceOptions?: EventSourceInit;
     heartbeat?: boolean | {
@@ -235,7 +237,7 @@ Will be an unparsed `MessageEvent` received from the WebSocket.
 type lastJsonMessage = any;
 ```
 
-A `JSON.parse`d object from the `lastMessage`. If `lastMessage` is not a valid JSON string, `lastJsonMessage` will be an empty object.
+A `JSON.parse`d object from the `lastMessage`. If `lastMessage` is not a valid JSON string, `lastJsonMessage` will be an empty object. If `Options#disableJson` is `true`, `lastMessage` will not be automatically parsed, and `lastJsonMessage` will always be `null`.
 
 ### readyState
 
@@ -345,6 +347,7 @@ interface Options {
   reconnectInterval?: number | ((lastAttemptNumber: number) => number);
   reconnectAttempts?: number;
   filter?: (message: WebSocketEventMap['message']) => boolean;
+  disableJson?: boolean;
   retryOnError?: boolean;
   onOpen?: (event: WebSocketEventMap['open']) => void;
   onClose?: (event: WebSocketEventMap['close']) => void;
@@ -357,12 +360,14 @@ interface Options {
   };
   protocols?: string | string[];
   eventSourceOptions?: EventSourceInit;
-  heartbeat?: boolean | {
-    message?: "ping" | "pong" | string;
-    returnMessage?: "ping" | "pong" | string;
-    timeout?: number;
-    interval?: number;
-  };
+  heartbeat?:
+    | boolean
+    | {
+        message?: 'ping' | 'pong' | string;
+        returnMessage?: 'ping' | 'pong' | string;
+        timeout?: number;
+        interval?: number;
+      };
 }
 ```
 
@@ -445,8 +450,7 @@ const { sendMessage, lastMessage, readyState } = useWebSocket(
 
 If a function is provided with the key `filter`, incoming messages will be passed through the function, and only if it returns `true` will the hook pass along the `lastMessage` and update your component.
 
-
-Example: 
+Example:
 
 ```js
   filter: (message) => {
@@ -462,6 +466,10 @@ Example:
 ```
 
 The component will rerender every time the WebSocket receives a message that does not match your conditional in this case `isPingMessage`, if the condition is true, you can do some stuff, for this example that is updating the heartbeat time, but you could just avoid unnecessary renders simply returning `false`.
+
+### disableJson: Boolean
+
+If `true`, `lastMessage` will not be automatically parsed and returned as `lastJsonMessage`, in which case `lastJsonMessage` will always be `null`.
 
 ## useEventSource
 
