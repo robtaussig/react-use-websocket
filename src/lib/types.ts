@@ -23,6 +23,7 @@ export interface Options {
   eventSourceOptions?: EventSourceOnly;
   skipAssert?: boolean;
   heartbeat?: boolean | HeartbeatOptions;
+  disableJson?: boolean;
 }
 
 export type EventSourceOnly = Omit<Options, 'eventSourceOptions'> & EventSourceInit;

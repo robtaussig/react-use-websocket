@@ -1,4 +1,4 @@
-import { renderHook, waitFor, render } from '@testing-library/react';
+import { renderHook, waitFor } from '@testing-library/react';
 import { useWebSocket } from './use-websocket';
 import WS from "jest-websocket-mock";
 import { Options } from './types';
@@ -17,6 +17,7 @@ console.error = noop;
 beforeEach(() => {
   server = new WS(URL);
   options = { ...DEFAULT_OPTIONS };
+  jest.resetAllMocks();
 });
 
 afterEach(() => {
@@ -188,18 +189,34 @@ test('lastMessage updates when websocket receives a message', async () => {
   server.send('There');
   server.send('Friend');
   expect(result.current.lastMessage?.data).toBe('Friend');
-})
+});
 
 test('lastJsonMessage updates with a json object when websocket receives a message', async () => {
+  const jsonParseSpy = jest.spyOn(JSON, 'parse');
   const {
     result,
   } = renderHook(() => useWebSocket<{ name: string }>(URL, options))
   await server.connected;
   expect(result.current.lastJsonMessage).toBe(null);
-
-  server.send(JSON.stringify({ name: 'Bob' }));
+  const serverMessage = JSON.stringify({ name: 'Bob' });
+  server.send(serverMessage);
   expect(result.current.lastJsonMessage.name).toBe('Bob');
-})
+  expect(jsonParseSpy).toHaveBeenCalledWith(serverMessage);
+});
+
+test('lastJsonMessage does not update with a json object when options#disableJson is true', async () => {
+  const jsonParseSpy = jest.spyOn(JSON, 'parse');
+  options.disableJson = true;
+  const {
+    result,
+  } = renderHook(() => useWebSocket<{ name: string }>(URL, options))
+  await server.connected;
+  expect(result.current.lastJsonMessage).toBe(null);
+  const serverMessage = JSON.stringify({ name: 'Bob' });
+  server.send(serverMessage);
+  expect(result.current.lastJsonMessage).toBe(null);
+  expect(jsonParseSpy).not.toHaveBeenCalledWith(serverMessage);
+});
 
 test('sendMessage passes message to websocket and sends to server', async () => {
   const {

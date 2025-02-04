@@ -23,7 +23,7 @@ export const useWebSocket = <T = unknown>(
   const [lastMessage, setLastMessage] = useState<WebSocketEventMap['message'] | null>(null);
   const [readyState, setReadyState] = useState<ReadyStateState>({});
   const lastJsonMessage: T = useMemo(() => {
-    if (lastMessage) {
+    if (!options.disableJson && lastMessage) {
       try {
         return JSON.parse(lastMessage.data);
       } catch (e) {
@@ -31,7 +31,7 @@ export const useWebSocket = <T = unknown>(
       }
     }
     return null;
-  }, [lastMessage]);
+  }, [lastMessage, options.disableJson]);
   const convertedUrl = useRef<string | null>(null);
   const webSocketRef = useRef<WebSocketLike | null>(null);
   const startRef = useRef<() => void>(() => void 0);
