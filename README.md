@@ -38,8 +38,7 @@ import useWebSocket, { ReadyState } from 'react-use-websocket';
 export const WebSocketDemo = () => {
   //Public API that will echo messages sent to it back to the client
   const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org');
-  const [messageHistory, setMessageHistory] =
-    useState < MessageEvent < any > [] > [];
+  const [messageHistory, setMessageHistory] = useState<MessageEvent<any>[]>([]);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
@@ -75,11 +74,15 @@ export const WebSocketDemo = () => {
       >
         Click Me to send 'Hello'
       </button>
+      <br />
       <span>The WebSocket is currently {connectionStatus}</span>
+      <br />
       {lastMessage ? <span>Last message: {lastMessage.data}</span> : null}
+      <br />
+      <h3>Message History</h3>
       <ul>
         {messageHistory.map((message, idx) => (
-          <span key={idx}>{message ? message.data : null}</span>
+          <li key={idx}>{message ? message.data : null}</li>
         ))}
       </ul>
     </div>
