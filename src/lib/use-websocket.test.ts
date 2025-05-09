@@ -31,6 +31,11 @@ test('useWebsocket should work with just a url provided', () => {
 })
 
 test('readyState changes across readyState transitions', async () => {
+  const onCloseMock = jest.fn();
+  const onConnectionMock = jest.fn();
+  server.on("close", onCloseMock);
+  server.on("connection", onConnectionMock);
+
   const {
     result,
     rerender,
@@ -44,9 +49,32 @@ test('readyState changes across readyState transitions', async () => {
   expect(result.current.readyState).toEqual(ReadyState.CONNECTING);
   await server.connected;
   expect(result.current.readyState).toEqual(ReadyState.OPEN);
+  expect(onConnectionMock).toHaveBeenCalledTimes(1);
+
+  rerender({
+    initialValue: false
+  });
+
+  await server.closed;
+  expect(onCloseMock).toHaveBeenCalledTimes(1);
+
+  expect(result.current.readyState).toEqual(ReadyState.CLOSED);
+
+
+  rerender({ initialValue: true });
+
+  // for some reason, the connecting state is too fast here to show up, just wait for OPEN
+  await waitFor(() => {
+    expect(result.current.readyState).toEqual(ReadyState.OPEN);
+  });
+
+  await server.connected;
+  expect(onConnectionMock).toHaveBeenCalledTimes(2);
 
   server.close();
-  await expect(result.current.readyState).toEqual(ReadyState.CLOSED);
+  await server.closed;
+  expect(onCloseMock).toHaveBeenCalledTimes(2);
+  expect(result.current.readyState).toEqual(ReadyState.CLOSED);
 })
 
 test('a function-promise based url works the same as a string-based url', async () => {
