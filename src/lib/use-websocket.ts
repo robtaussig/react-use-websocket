@@ -15,11 +15,11 @@ import {
 } from './types';
 import { assertIsWebSocket } from './util';
 
-export const useWebSocket = <T = unknown>(
+export const useWebSocket = <T = unknown, P = WebSocketEventMap['message'] | null>(
   url: string | (() => string | Promise<string>) | null,
   options: Options = DEFAULT_OPTIONS,
   connect: boolean = true,
-): WebSocketHook<T> => {
+): WebSocketHook<T, P> => {
   const [lastMessage, setLastMessage] = useState<WebSocketEventMap['message'] | null>(null);
   const [readyState, setReadyState] = useState<ReadyStateState>({});
   const lastJsonMessage: T = useMemo(() => {
