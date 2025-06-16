@@ -511,7 +511,7 @@ To avoid troubles with the new initialization of components related to the same 
 import React, { useEffect } from 'react';
 import { resetGlobalState } from 'react-use-websocket';
 
-// insside second window opened via window.open
+// inside second window opened via window.open
 export const ChildWindow = () => {
   useEffect(() => {
     window.addEventListener('unload', () => {
