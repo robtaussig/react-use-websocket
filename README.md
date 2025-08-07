@@ -39,7 +39,7 @@ export const WebSocketDemo = () => {
   //Public API that will echo messages sent to it back to the client
   const [socketUrl, setSocketUrl] = useState('wss://echo.websocket.org');
   const [messageHistory, setMessageHistory] =
-    useState < MessageEvent < any > [] > [];
+    useState < MessageEvent < any > [] > ([]);
 
   const { sendMessage, lastMessage, readyState } = useWebSocket(socketUrl);
 
@@ -306,7 +306,7 @@ const [sendMessage, lastMessage, readyState] = useWebSocket(
   {
     shouldReconnect: (closeEvent) => {
       /*
-      useWebSocket will handle unmounting for you, but this is an example of a 
+      useWebSocket will handle unmounting for you, but this is an example of a
       case in which you would not want it to automatically reconnect
     */
       return didUnmount.current === false;
