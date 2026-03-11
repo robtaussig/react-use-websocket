@@ -1,8 +1,8 @@
 import { MutableRefObject } from 'react';
-import { attachListeners } from './attach-listener';
+import { attachListeners } from './attach-listener.js';
 import WS from "jest-websocket-mock";
-import { Options } from './types';
-import { ReadyState } from './constants';
+import { Options } from './types.js';
+import { ReadyState } from './constants.js';
 
 let server: WS;
 

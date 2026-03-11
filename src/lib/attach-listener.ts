@@ -1,14 +1,14 @@
 import { MutableRefObject } from 'react';
-import { setUpSocketIOPing } from './socket-io';
-import { heartbeat } from './heartbeat';
+import { setUpSocketIOPing } from './socket-io.js';
+import { heartbeat } from './heartbeat.js';
 import {
   DEFAULT_RECONNECT_LIMIT,
   DEFAULT_RECONNECT_INTERVAL_MS,
   ReadyState,
   isEventSourceSupported,
-} from './constants';
-import { Options, SendMessage, WebSocketLike } from './types';
-import { assertIsWebSocket } from './util';
+} from './constants.js';
+import { Options, SendMessage, WebSocketLike } from './types.js';
+import { assertIsWebSocket } from './util.js';
 
 export interface Setters {
   setLastMessage: (message: WebSocketEventMap['message']) => void;

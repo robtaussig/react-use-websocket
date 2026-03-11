@@ -1,4 +1,4 @@
-import { Subscriber } from './types';
+import { Subscriber } from './types.js';
 
 export type Subscribers = {
     [url: string]: Set<Subscriber>,

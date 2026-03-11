@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { useWebSocket } from './use-websocket'
-import { DEFAULT_EVENT_SOURCE_OPTIONS, EMPTY_EVENT_HANDLERS } from './constants'
-import { EventSourceOptions, Options, EventSourceHook, EventSourceEventHandlers } from './types';
+import { useWebSocket } from './use-websocket.js'
+import { DEFAULT_EVENT_SOURCE_OPTIONS, EMPTY_EVENT_HANDLERS } from './constants.js'
+import { EventSourceOptions, Options, EventSourceHook, EventSourceEventHandlers } from './types.js';
 
 export const useEventSource = (
   url: string | (() => string | Promise<string>) | null,

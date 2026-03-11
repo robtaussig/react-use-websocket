@@ -1,5 +1,5 @@
-import { sharedWebSockets, resetWebSockets } from './globals';
-import { WebSocketLike } from './types';
+import { sharedWebSockets, resetWebSockets } from './globals.js';
+import { WebSocketLike } from './types.js';
 
 const FIRST_URL = 'ws://localhost:1234';
 const SECOND_URL = 'ws://localhost:4321';

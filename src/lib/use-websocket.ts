@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { flushSync } from 'react-dom';
-import { DEFAULT_OPTIONS, isEventSourceSupported, ReadyState, UNPARSABLE_JSON_OBJECT } from './constants';
-import { createOrJoinSocket } from './create-or-join';
-import { getUrl } from './get-url';
-import websocketWrapper from './proxy';
+import { DEFAULT_OPTIONS, isEventSourceSupported, ReadyState, UNPARSABLE_JSON_OBJECT } from './constants.js';
+import { createOrJoinSocket } from './create-or-join.js';
+import { getUrl } from './get-url.js';
+import websocketWrapper from './proxy.js';
 import {
   Options,
   ReadyStateState,
@@ -12,8 +12,8 @@ import {
   WebSocketMessage,
   WebSocketHook,
   WebSocketLike,
-} from './types';
-import { assertIsWebSocket } from './util';
+} from './types.js';
+import { assertIsWebSocket } from './util.js';
 
 export const useWebSocket = <T = unknown>(
   url: string | (() => string | Promise<string>) | null,

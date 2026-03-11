@@ -10,6 +10,10 @@ React Hook designed to provide robust WebSocket integrations to your React Compo
 
 Pull requests welcomed!
 
+## ESM-only package
+
+Starting with this version, `react-use-websocket` is published as ESM-only. Use `import` syntax when consuming the package. CommonJS `require('react-use-websocket')` is not supported.
+
 ## New in 4.0.0
 
 - `react-use-websocket` now supports (and depends on) React 18. If you are not ready to upgrade to React 18, please install version `3.0.0`:

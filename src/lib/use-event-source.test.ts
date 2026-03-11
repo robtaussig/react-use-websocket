@@ -1,8 +1,8 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useEventSource } from './use-event-source';
+import { useEventSource } from './use-event-source.js';
 import WS from "jest-websocket-mock";
-import { EventSourceOptions } from './types';
-import { DEFAULT_EVENT_SOURCE_OPTIONS } from './constants';
+import { EventSourceOptions } from './types.js';
+import { DEFAULT_EVENT_SOURCE_OPTIONS } from './constants.js';
 
 let server: WS;
 const URL = 'ws://localhost:1234';

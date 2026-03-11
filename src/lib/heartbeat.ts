@@ -1,6 +1,6 @@
 import { MutableRefObject } from "react";
-import { DEFAULT_HEARTBEAT } from "./constants";
-import { HeartbeatOptions } from "./types";
+import { DEFAULT_HEARTBEAT } from "./constants.js";
+import { HeartbeatOptions } from "./types.js";
 
 function getLastMessageTime(lastMessageTime: MutableRefObject<number> | MutableRefObject<number>[]): number {
   if (Array.isArray(lastMessageTime)) {

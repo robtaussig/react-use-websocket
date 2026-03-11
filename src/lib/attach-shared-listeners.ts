@@ -1,10 +1,10 @@
-import { sharedWebSockets } from './globals';
-import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState, isEventSourceSupported } from './constants';
-import { getSubscribers } from './manage-subscribers';
+import { sharedWebSockets } from './globals.js';
+import { DEFAULT_RECONNECT_LIMIT, DEFAULT_RECONNECT_INTERVAL_MS, ReadyState, isEventSourceSupported } from './constants.js';
+import { getSubscribers } from './manage-subscribers.js';
 import { MutableRefObject } from 'react';
-import { HeartbeatOptions, Options, SendMessage, WebSocketLike } from './types';
-import { setUpSocketIOPing } from './socket-io';
-import { heartbeat } from './heartbeat';
+import { HeartbeatOptions, Options, SendMessage, WebSocketLike } from './types.js';
+import { setUpSocketIOPing } from './socket-io.js';
+import { heartbeat } from './heartbeat.js';
 
 const bindMessageHandler = (
   webSocketInstance: WebSocketLike,

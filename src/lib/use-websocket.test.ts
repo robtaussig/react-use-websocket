@@ -1,9 +1,9 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useWebSocket } from './use-websocket';
+import { useWebSocket } from './use-websocket.js';
 import WS from "jest-websocket-mock";
-import { Options } from './types';
-import { ReadyState } from './constants';
-import { parseSocketIOUrl } from './socket-io';
+import { Options } from './types.js';
+import { ReadyState } from './constants.js';
+import { parseSocketIOUrl } from './socket-io.js';
 
 let server: WS;
 const URL = 'ws://localhost:1234';

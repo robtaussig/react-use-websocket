@@ -1,10 +1,10 @@
 import { MutableRefObject } from 'react';
-import { attachSharedListeners } from './attach-shared-listeners';
+import { attachSharedListeners } from './attach-shared-listeners.js';
 import WS from "jest-websocket-mock";
-import { Options, Subscriber } from './types';
-import { ReadyState } from './constants';
-import { sharedWebSockets } from './globals';
-import { addSubscriber, removeSubscriber, getSubscribers, hasSubscribers } from './manage-subscribers';
+import { Options, Subscriber } from './types.js';
+import { ReadyState } from './constants.js';
+import { sharedWebSockets } from './globals.js';
+import { addSubscriber, removeSubscriber, getSubscribers, hasSubscribers } from './manage-subscribers.js';
 
 let server: WS;
 const URL = 'ws://localhost:1234';

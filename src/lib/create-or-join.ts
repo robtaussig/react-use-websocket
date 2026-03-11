@@ -1,10 +1,10 @@
 import { MutableRefObject } from 'react';
-import { sharedWebSockets } from './globals';
-import { Options, SendMessage, Subscriber, WebSocketLike } from './types';
-import { isEventSourceSupported, ReadyState, isReactNative } from './constants';
-import { attachListeners } from './attach-listener';
-import { attachSharedListeners } from './attach-shared-listeners';
-import { addSubscriber, removeSubscriber, hasSubscribers } from './manage-subscribers';
+import { sharedWebSockets } from './globals.js';
+import { Options, SendMessage, Subscriber, WebSocketLike } from './types.js';
+import { isEventSourceSupported, ReadyState, isReactNative } from './constants.js';
+import { attachListeners } from './attach-listener.js';
+import { attachSharedListeners } from './attach-shared-listeners.js';
+import { addSubscriber, removeSubscriber, hasSubscribers } from './manage-subscribers.js';
 
 //TODO ensure that all onClose callbacks are called
 

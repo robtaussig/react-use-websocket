@@ -1,4 +1,4 @@
-import { WebSocketLike } from "./types";
+import { WebSocketLike } from "./types.js";
 
 export interface SharedWebSockets {
   [url: string]: WebSocketLike;
