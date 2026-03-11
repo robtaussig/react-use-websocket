@@ -1,4 +1,4 @@
-import { EventSourceEventHandlers, EventSourceOptions } from "./types";
+import { EventSourceEventHandlers, EventSourceOptions } from "./types.js";
 
 const MILLISECONDS = 1;
 const SECONDS = 1000 * MILLISECONDS;

@@ -4,8 +4,8 @@ import {
     addSubscriber,
     removeSubscriber,
     resetSubscribers,
-} from './manage-subscribers';
-import { Subscriber } from './types';
+} from './manage-subscribers.js';
+import { Subscriber } from './types.js';
 
 const URL = 'ws://localhost:1234';
 const SECOND_URL = 'ws://localhost:4321'

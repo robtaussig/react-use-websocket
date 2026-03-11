@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "target": "es5",
+    "jsx": "react",
+    "skipLibCheck": true,
+    "lib": [
+      "es2017",
+      "dom"
+    ],
+    "strict": true,
+    "declaration": true,
+    "baseUrl": ".",
+    "paths": {
+      "@lib/*": [
+        "src/lib/*"
+      ]
+    }
+  },
+  "files": [
+    "./src/index.ts"
+  ],
+  "include": [
+    "src/*"
+  ]
+}

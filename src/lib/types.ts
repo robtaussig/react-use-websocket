@@ -1,5 +1,5 @@
 import { MutableRefObject } from 'react';
-import { ReadyState } from './constants';
+import { ReadyState } from './constants.js';
 
 export interface QueryParams {
   [key: string]: string | number;

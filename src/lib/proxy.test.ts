@@ -1,4 +1,4 @@
-import { websocketWrapper } from './proxy';
+import { websocketWrapper } from './proxy.js';
 import WS from "jest-websocket-mock";
 
 let server: WS;

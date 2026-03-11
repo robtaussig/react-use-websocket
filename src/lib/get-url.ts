@@ -1,7 +1,7 @@
 import { MutableRefObject } from 'react';
-import { parseSocketIOUrl, appendQueryParams } from './socket-io';
-import { Options } from './types';
-import { DEFAULT_RECONNECT_INTERVAL_MS, DEFAULT_RECONNECT_LIMIT } from './constants';
+import { parseSocketIOUrl, appendQueryParams } from './socket-io.js';
+import { Options } from './types.js';
+import { DEFAULT_RECONNECT_INTERVAL_MS, DEFAULT_RECONNECT_LIMIT } from './constants.js';
 
 const waitFor = (duration: number) => new Promise(resolve => window.setTimeout(resolve, duration));
 

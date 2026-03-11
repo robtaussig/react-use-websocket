@@ -1,5 +1,5 @@
-import { SOCKET_IO_PING_INTERVAL, SOCKET_IO_PATH, SOCKET_IO_PING_CODE } from './constants';
-import { QueryParams, SendMessage } from './types';
+import { SOCKET_IO_PING_INTERVAL, SOCKET_IO_PATH, SOCKET_IO_PING_CODE } from './constants.js';
+import { QueryParams, SendMessage } from './types.js';
 
 export const parseSocketIOUrl = (url: string) => {
   if (url) {

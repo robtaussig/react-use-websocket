@@ -1,6 +1,6 @@
 import { MutableRefObject } from 'react';
-import { getUrl } from './get-url';
-import { Options } from './types';
+import { getUrl } from './get-url.js';
+import { Options } from './types.js';
 
 let optionRef: MutableRefObject<Options>;
 

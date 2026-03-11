@@ -2,8 +2,8 @@ import {
   parseSocketIOUrl,
   appendQueryParams,
   setUpSocketIOPing,
-} from './socket-io';
-import { SOCKET_IO_PING_CODE } from './constants';
+} from './socket-io.js';
+import { SOCKET_IO_PING_CODE } from './constants.js';
 import WS from "jest-websocket-mock";
 
 let server: WS;
