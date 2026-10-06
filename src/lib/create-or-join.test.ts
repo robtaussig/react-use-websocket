@@ -3,6 +3,8 @@ import { createOrJoinSocket } from './create-or-join';
 import WS from "jest-websocket-mock";
 import { Options } from './types';
 import { removeSubscriber, getSubscribers, hasSubscribers } from './manage-subscribers';
+import { sharedWebSockets } from './globals';
+import { ReadyState } from './constants';
 
 let server: WS;
 const URL = 'ws://localhost:1234';
@@ -19,6 +21,7 @@ beforeEach(async () => {
   server = new WS(URL);
   clientRef = { current: new WebSocket(URL) };
   reconnectCountRef = { current: 0 };
+  lastMessageTimeRef = { current: Date.now() };
   optionRef = { current: { ...DEFAULT_OPTIONS } };
   noopRef = { current: noop };
   if (hasSubscribers(URL)) {
@@ -337,4 +340,24 @@ test('All subscriber option-based onClose callbacks are invoked per error event'
 
   expect(onErrorFn).toHaveBeenCalledTimes(3);
   expect(onCloseFn).toHaveBeenCalledTimes(3);
+});
+
+test('A subscriber that leaves while a new shared socket is being created does not take that socket with it', () => {
+  // A is the last subscriber of a socket that has since gone away (its close
+  // handler deleted it), and is about to unmount.
+  const cleanupA = createOrJoinSocket(
+    clientRef, URL, noop, optionRef, noop, noopRef, reconnectCountRef, lastMessageTimeRef, noop,
+  );
+  delete sharedWebSockets[URL];
+
+  // B creates the replacement. Reporting CONNECTING is a synchronous render
+  // (flushSync), and A's unmount cleanup runs inside it.
+  const setReadyStateB = (state: ReadyState) => {
+    if (state === ReadyState.CONNECTING) cleanupA();
+  };
+
+  expect(() => createOrJoinSocket(
+    clientRef, URL, setReadyStateB, optionRef, noop, noopRef, reconnectCountRef, lastMessageTimeRef, noop,
+  )).not.toThrow();
+  expect(sharedWebSockets[URL]).toBeDefined();
 });

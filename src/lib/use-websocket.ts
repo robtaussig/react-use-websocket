@@ -84,7 +84,7 @@ export const useWebSocket = <T = unknown>(
 
   useEffect(() => {
     if (url !== null && connect === true) {
-      let removeListeners: () => void;
+      let removeListeners: (() => void) | undefined;
       let expectClose = false;
       let createOrJoin = true;
 
@@ -129,6 +129,14 @@ export const useWebSocket = <T = unknown>(
             lastMessageTime,
             sendMessage,
           );
+
+          // Creating the socket renders synchronously (flushSync), and the
+          // effect can be cleaned up inside that render, before this
+          // assignment. Tear down what it would otherwise leave behind.
+          if (expectClose) {
+            removeListeners();
+            removeListeners = undefined;
+          }
         }
       };
 
@@ -136,6 +144,9 @@ export const useWebSocket = <T = unknown>(
         if (!expectClose) {
           if (webSocketProxy.current) webSocketProxy.current = null;
           removeListeners?.();
+          // Already run: a cleanup before the next connection is assigned
+          // must not run it again against the socket that replaces it.
+          removeListeners = undefined;
           start();
         }
       };

@@ -4,6 +4,8 @@ import WS from "jest-websocket-mock";
 import { Options } from './types';
 import { ReadyState } from './constants';
 import { parseSocketIOUrl } from './socket-io';
+import { sharedWebSockets } from './globals';
+import { hasSubscribers } from './manage-subscribers';
 
 let server: WS;
 const URL = 'ws://localhost:1234';
@@ -737,3 +739,31 @@ test.each([false, true])('Options#heartbeat, can handle case when interval is ve
 );
 
 // //TODO: Write companion tests for useSocketIO
+
+test('a shared socket is torn down cleanly when the url changes in the render that opens its reconnect', async () => {
+  options.share = true;
+  options.reconnectInterval = 10;
+  options.shouldReconnect = () => true;
+
+  const unhandled = jest.fn();
+  process.on('unhandledRejection', unhandled);
+
+  // Read during render, so it takes effect in whichever render comes next.
+  let currentUrl: string | null = URL;
+  const { result } = renderHook(() => useWebSocket(currentUrl, options));
+  await server.connected;
+
+  server.close();
+  await waitFor(() => expect(result.current.readyState).toBe(ReadyState.CLOSED));
+
+  // The next render is the one the reconnect forces, with flushSync, while it
+  // is creating the new socket: the effect cleanup runs inside it.
+  currentUrl = null;
+  await sleep(100);
+
+  process.off('unhandledRejection', unhandled);
+  expect(unhandled).not.toHaveBeenCalled();
+  expect(sharedWebSockets[URL]).toBeUndefined();
+  // Nothing left subscribed on behalf of an effect that has been cleaned up.
+  expect(hasSubscribers(URL)).toBe(false);
+});

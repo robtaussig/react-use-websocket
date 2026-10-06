@@ -60,6 +60,21 @@ export const createOrJoinSocket = (
 
   if (optionsRef.current.share) {
     let clearSocketIoPingInterval: ((() => void) | null) = null;
+
+    // Registered before anything below can render synchronously: reporting
+    // CONNECTING goes through flushSync, and a subscriber that unmounts
+    // inside that render must see this one, or it closes and deletes the
+    // socket being created (#284).
+    const subscriber: Subscriber = {
+      setLastMessage,
+      setReadyState,
+      optionsRef,
+      reconnectCount,
+      lastMessageTime,
+      reconnect: startRef,
+    };
+    addSubscriber(url, subscriber);
+
     if (sharedWebSockets[url] === undefined) {
       sharedWebSockets[url] = optionsRef.current.eventSourceOptions ?
         new EventSource(url, optionsRef.current.eventSourceOptions) :
@@ -76,17 +91,6 @@ export const createOrJoinSocket = (
       webSocketRef.current = sharedWebSockets[url];
       setReadyState(sharedWebSockets[url].readyState);
     }
-
-    const subscriber: Subscriber = {
-      setLastMessage,
-      setReadyState,
-      optionsRef,
-      reconnectCount,
-      lastMessageTime,
-      reconnect: startRef,
-    };
-
-    addSubscriber(url, subscriber);
 
     return cleanSubscribers(
       url,
