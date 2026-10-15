@@ -737,3 +737,29 @@ test.each([false, true])('Options#heartbeat, can handle case when interval is ve
 );
 
 // //TODO: Write companion tests for useSocketIO
+
+test.each(['resolve', 'reject'])('ignores an async URL that %ss after the URL changes', async (settlement) => {
+  let resolveOldUrl!: (url: string) => void;
+  let rejectOldUrl!: (reason: Error) => void;
+  const oldUrl = () => new Promise<string>((resolve, reject) => {
+    resolveOldUrl = resolve;
+    rejectOldUrl = reject;
+  });
+  const { result, rerender } = renderHook(({ url }) => useWebSocket(url), {
+    initialProps: { url: oldUrl as string | (() => Promise<string>) },
+  });
+
+  rerender({ url: URL });
+  await server.connected;
+  expect(result.current.readyState).toBe(ReadyState.OPEN);
+
+  if (settlement === 'resolve') resolveOldUrl('ws://localhost:5678');
+  else rejectOldUrl(new Error('obsolete URL lookup'));
+  await sleep(0);
+  rerender({ url: URL });
+  expect(result.current.readyState).toBe(ReadyState.OPEN);
+
+  server.send('current connection');
+  await waitFor(() => expect(result.current.lastMessage?.data).toBe('current connection'));
+  expect(result.current.readyState).toBe(ReadyState.OPEN);
+});

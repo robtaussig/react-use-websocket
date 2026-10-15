@@ -89,7 +89,9 @@ export const useWebSocket = <T = unknown>(
       let createOrJoin = true;
 
       const start = async () => {
-        convertedUrl.current = await getUrl(url, optionsCache);
+        const nextUrl = await getUrl(url, optionsCache);
+        if (expectClose) return;
+        convertedUrl.current = nextUrl;
 
         if (convertedUrl.current === null) {
           console.error('Failed to get a valid URL. WebSocket connection aborted.');
